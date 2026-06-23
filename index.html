@@ -178,17 +178,16 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
     <div class="card">
       <div class="card-hdr"><span class="card-title">Dados do Evento</span></div>
       <div class="card-body">
-        <div class="frow f4">
+        <div class="frow f3">
           <div class="fg"><label class="fl">Cliente</label><input id="ev-cliente" type="text" placeholder="Nome do cliente"></div>
           <div class="fg"><label class="fl">Data do Evento</label><input id="ev-data" type="date"></div>
           <div class="fg"><label class="fl">Nº de Convidados</label><input id="ev-conv" type="number" min="1" placeholder="150" onchange="recalc()"></div>
-          <div class="fg"><label class="fl">Montagem</label><select id="ev-montagem"></select></div>
         </div>
         <div class="frow f4">
-          <div class="fg"><label class="fl">Chegada do Cliente</label><input id="ev-chegada" type="time" value="12:00"></div>
-          <div class="fg"><label class="fl">Início do Evento</label><input id="ev-inicio" type="time" value="18:00" onchange="calcHoras()"></div>
-          <div class="fg"><label class="fl">Término do Evento</label><input id="ev-termino" type="time" value="22:00" onchange="calcHoras()"></div>
-          <div class="fg"><label class="fl">Total Contratado</label><input id="ev-horas" type="text" readonly placeholder="Calculado auto."></div>
+          <div class="fg"><label class="fl">Chegada do Cliente</label><input id="ev-chegada" type="time" value="" onchange="calcHoras()"></div>
+          <div class="fg"><label class="fl">Início do Evento</label><input id="ev-inicio" type="time" value="" onchange="calcHoras()"></div>
+          <div class="fg"><label class="fl">Término do Evento</label><input id="ev-termino" type="time" value="" onchange="calcHoras()"></div>
+          <div class="fg"><label class="fl">Horas Totais Contratadas</label><input id="ev-horas" type="text" readonly placeholder="Calculado auto."></div>
         </div>
       </div>
     </div>
@@ -605,9 +604,9 @@ function refreshItemPrices(tbodyId, items, priceIdx) {
 // HOURS CALC
 // ════════════════════════════════════════════
 function calcHoras() {
-  const ini = g('ev-inicio'), fim = g('ev-termino');
-  if (!ini || !fim) return;
-  const [ih,im] = ini.split(':').map(Number);
+  const cheg = g('ev-chegada'), fim = g('ev-termino');
+  if (!cheg || !fim) return;
+  const [ih,im] = cheg.split(':').map(Number);
   const [fh,fm] = fim.split(':').map(Number);
   let mins = (fh*60+fm) - (ih*60+im);
   if (mins < 0) mins += 1440;
@@ -1181,7 +1180,6 @@ function exportPDF() {
 // ════════════════════════════════════════════
 (function init() {
   populateTableSelect();
-  populateMontagem();
   calcHoras();
   renderConds(DEFAULT_CONDS);
   renderAdmTables();
