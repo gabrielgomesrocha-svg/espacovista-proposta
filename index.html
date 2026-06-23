@@ -274,9 +274,12 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
             <div class="sr"><span class="sl">Gastronomia</span><span class="sv" id="rs-gast">R$ 0,00</span></div>
             <div class="sr"><span class="sl">Equipamentos e Serviços</span><span class="sv" id="rs-equip">R$ 0,00</span></div>
             <div class="sr sub-row"><span class="sl">Subtotal</span><span class="sv" id="rs-sub">R$ 0,00</span></div>
-            <div class="sr disc-row">
-              <span class="sl">Desconto de Consumação</span>
-              <span class="sv">− R$ <input type="number" id="rs-desc" value="0" min="0" onchange="recalc()"></span>
+            <div class="sr disc-row" id="sr-cons-row" style="display:none">
+              <span class="sl" id="sr-cons-label">Desconto de Consumação (teto R$ 0)</span>
+              <span class="sv" id="rs-desc">− R$ 0,00</span>
+            </div>
+            <div class="sr" id="sr-cons-info" style="display:none;font-size:11px;color:var(--gr);justify-content:flex-end;padding:2px 8px">
+              <span id="rs-cons-info-txt"></span>
             </div>
             <div class="sr">
               <span class="sl">Crédito Disponível</span>
@@ -762,6 +765,65 @@ function updateItemRow(tr, tbodyId) {
 // ════════════════════════════════════════════
 // RECALC
 // ════════════════════════════════════════════
+const CONSUMACAO_EXCLUIDOS = [
+  'Estacionamento - até 20 carros',
+  'Estacionamento - até 30 carros',
+  'Gerador de energia 110 kVa (stand by -10h)',
+  'Gerador de energia 110 kVa (em uso -10h)',
+  'Recepcionista',
+  'Garçom extra',
+  'Segurança',
+  'Técnico de áudio e vídeo',
+];
+
+// Consumação teto por espaço
+const CONSUMACAO_TETO = {
+  'Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)': 10000,
+  'Sala Ouro Preto (plenária) e Sala Mariana (foyer)': 3000,
+};
+
+function getConsumacaoTeto() {
+  let teto = 0;
+  document.querySelectorAll('#esp-tbody tr').forEach(tr => {
+    const sel = tr.querySelector('select.esp-sel');
+    const nome = sel?.value;
+    if (nome && CONSUMACAO_TETO[nome]) {
+      teto = Math.max(teto, CONSUMACAO_TETO[nome]);
+    }
+  });
+  return teto;
+}
+
+function calcConsumacao() {
+  // Sum all eligible items (gast + equip, excluding CONSUMACAO_EXCLUIDOS)
+  let eligible = 0;
+
+  document.querySelectorAll('#gast-tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    const sel = cells[0]?.querySelector('select');
+    const man = cells[0]?.querySelector('input[type=text]');
+    const nome = (sel?.value === '__manual__' ? man?.value : sel?.value) || '';
+    if (!nome || CONSUMACAO_EXCLUIDOS.includes(nome)) return;
+    const qty  = parseFloat(cells[3]?.querySelector('input')?.value) || 0;
+    const unit = parseFloat(cells[4]?.querySelector('input')?.value) || 0;
+    eligible += qty * unit;
+  });
+
+  document.querySelectorAll('#equip-tbody tr').forEach(tr => {
+    const cells = tr.querySelectorAll('td');
+    const sel = cells[0]?.querySelector('select');
+    const man = cells[0]?.querySelector('input[type=text]');
+    const nome = (sel?.value === '__manual__' ? man?.value : sel?.value) || '';
+    if (!nome || CONSUMACAO_EXCLUIDOS.includes(nome)) return;
+    const qty  = parseFloat(cells[1]?.querySelector('input')?.value) || 0;
+    const unit = parseFloat(cells[3]?.querySelector('input')?.value) || 0;
+    eligible += qty * unit;
+  });
+
+  const teto = getConsumacaoTeto();
+  return { eligible, teto, desconto: Math.min(eligible, teto) };
+}
+
 function recalc() {
   let esp=0, gast=0, equip=0;
   document.querySelectorAll('#esp-tbody tr').forEach(tr => {
@@ -777,11 +839,38 @@ function recalc() {
     const t = (parseFloat(c[1]?.querySelector('input')?.value)||0) * (parseFloat(c[3]?.querySelector('input')?.value)||0);
     equip += t; c[4].textContent = fmt(t);
   });
-  const sub = esp + gast + equip;
-  const desc = parseFloat(g('rs-desc'))||0;
+
+  // Consumação automática
+  const cons = calcConsumacao();
+  const teto = cons.teto;
+  const desconto = cons.desconto;
+
+  // Show/hide consumação row
+  const consRow = $('sr-cons-row');
+  const consInfo = $('sr-cons-info');
+  if (teto > 0) {
+    consRow.style.display = 'flex';
+    consInfo.style.display = 'flex';
+    $('sr-cons-label').textContent = `Desconto de Consumação (teto ${fmt(teto)})`;
+    $('rs-desc').textContent = `− ${fmt(desconto)}`;
+    // Info text
+    const restante = teto - cons.eligible;
+    if (cons.eligible >= teto) {
+      $('rs-cons-info-txt').textContent = `Consumação utilizada integralmente (${fmt(cons.eligible)} consumido)`;
+      $('rs-cons-info-txt').style.color = '#2a7a2a';
+    } else {
+      $('rs-cons-info-txt').textContent = `${fmt(cons.eligible)} consumido de ${fmt(teto)} — ainda pode usar ${fmt(restante)} sem custo adicional`;
+      $('rs-cons-info-txt').style.color = 'var(--w)';
+    }
+  } else {
+    consRow.style.display = 'none';
+    consInfo.style.display = 'none';
+  }
+
+  const sub  = esp + gast + equip;
   const cred = parseFloat(g('rs-cred'))||0;
   const ext  = parseFloat(g('rs-ext'))||0;
-  const tot  = Math.max(0, sub - desc - cred + ext);
+  const tot  = Math.max(0, sub - desconto - cred + ext);
   $('rs-esp').textContent   = fmt(esp);
   $('rs-gast').textContent  = fmt(gast);
   $('rs-equip').textContent = fmt(equip);
