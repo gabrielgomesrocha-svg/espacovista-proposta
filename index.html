@@ -178,10 +178,16 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
     <div class="card">
       <div class="card-hdr"><span class="card-title">Dados do Evento</span></div>
       <div class="card-body">
-        <div class="frow f3">
+        <div class="frow f2">
           <div class="fg"><label class="fl">Cliente</label><input id="ev-cliente" type="text" placeholder="Nome do cliente"></div>
-          <div class="fg"><label class="fl">Data do Evento</label><input id="ev-data" type="date"></div>
           <div class="fg"><label class="fl">Nº de Convidados</label><input id="ev-conv" type="number" min="1" placeholder="Ex: 150" onchange="onConvChange()"></div>
+        </div>
+        <div class="fg" style="margin-bottom:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="fl">Datas do Evento</label>
+            <button class="btn btn-o btn-sm" onclick="addEventDate()">+ Adicionar data</button>
+          </div>
+          <div id="ev-dates-wrap" style="display:flex;flex-wrap:wrap;gap:8px"></div>
         </div>
         <div class="frow f4">
           <div class="fg"><label class="fl">Chegada do Cliente</label><input id="ev-chegada" type="time" value="" onchange="calcHoras()"></div>
@@ -202,6 +208,7 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
         <div class="tw">
           <table class="et">
             <thead><tr>
+              <th style="min-width:100px">Data</th>
               <th style="min-width:240px">Espaço</th>
               <th style="min-width:130px">Montagem</th>
               <th>Observações</th>
@@ -225,6 +232,7 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
         <div class="tw">
           <table class="et">
             <thead><tr>
+              <th style="min-width:100px">Data</th>
               <th style="min-width:200px">Item</th>
               <th style="min-width:140px">Horário / Período</th>
               <th>Observações</th>
@@ -250,6 +258,7 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
         <div class="tw">
           <table class="et">
             <thead><tr>
+              <th style="min-width:100px">Data</th>
               <th style="min-width:220px">Item</th>
               <th class="r" style="width:55px">Qtd.</th>
               <th>Observação</th>
@@ -541,6 +550,67 @@ function getPriceForItem(items, itemName, tableName) {
 }
 
 // ════════════════════════════════════════════
+// MULTI-DATE MANAGEMENT
+// ════════════════════════════════════════════
+let eventDates = []; // array of {id, value, label}
+let dateIdCounter = 0;
+
+function addEventDate(val='') {
+  const id = ++dateIdCounter;
+  const wrap = $('ev-dates-wrap');
+  const div = document.createElement('div');
+  div.id = 'evdate-'+id;
+  div.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--wp);border:1.5px solid var(--w);border-radius:5px;padding:5px 10px';
+  div.innerHTML = `
+    <input type="date" value="${val}" style="border:none;background:transparent;font-weight:600;color:var(--dk);font-size:12.5px;width:130px"
+      onchange="onEventDateChange()">
+    <button class="x-btn" style="color:#ccc" onclick="removeEventDate(${id})">×</button>
+  `;
+  wrap.appendChild(div);
+  onEventDateChange();
+}
+
+function removeEventDate(id) {
+  const el = $('evdate-'+id);
+  if (el) el.remove();
+  onEventDateChange();
+}
+
+function getEventDates() {
+  const dates = [];
+  document.querySelectorAll('#ev-dates-wrap input[type=date]').forEach(inp => {
+    if (inp.value) dates.push(inp.value);
+  });
+  return dates;
+}
+
+function onEventDateChange() {
+  // Rebuild date selects in all table rows
+  ['esp-tbody','gast-tbody','equip-tbody'].forEach(tbodyId => {
+    document.querySelectorAll('#'+tbodyId+' tr').forEach(tr => {
+      const dateCell = tr.querySelectorAll('td')[0];
+      if (!dateCell) return;
+      const sel = dateCell.querySelector('select');
+      const curVal = sel ? sel.value : '';
+      dateCell.innerHTML = buildDateSelect(curVal);
+    });
+  });
+}
+
+function buildDateSelect(current='') {
+  const dates = getEventDates();
+  if (dates.length === 0) {
+    return `<input type="date" value="${current}" style="width:120px;font-size:12px">`;
+  }
+  const fmtD = d => { if(!d) return d; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
+  let opts = '<option value="">— Data —</option>';
+  dates.forEach(d => {
+    opts += `<option value="${d}" ${d===current?'selected':''}>${fmtD(d)}</option>`;
+  });
+  return `<select style="width:110px;font-size:12px">${opts}</select>`;
+}
+
+// ════════════════════════════════════════════
 // NAV
 // ════════════════════════════════════════════
 document.querySelectorAll('.sb-link').forEach(el => {
@@ -583,8 +653,8 @@ function onTableChange() {
     updateEspRow(tr);
   });
   // Refresh gast/equip prices
-  refreshItemPrices('gast-tbody', STATE.gast_items, 4);
-  refreshItemPrices('equip-tbody', STATE.equip_items, 3);
+  refreshItemPrices('gast-tbody', STATE.gast_items, 5);
+  refreshItemPrices('equip-tbody', STATE.equip_items, 4);
   recalc();
   toast('Tabela alterada — preços atualizados');
 }
@@ -635,11 +705,12 @@ function buildEspacoSelect(current) {
   return o;
 }
 
-function addEspaco(name='', montagem='', obs='', val=0) {
+function addEspaco(name='', montagem='', obs='', val=0, date='') {
   const tbody = $('esp-tbody');
   const tr = document.createElement('tr');
   const tbl = getCurrentTable();
   tr.innerHTML = `
+    <td>${buildDateSelect(date)}</td>
     <td>
       <select class="esp-sel" style="width:100%" onchange="onEspacoSelect(this)">${buildEspacoSelect(name)}</select>
       <input type="text" placeholder="Nome do espaço" style="margin-top:4px;display:${name&&!STATE.spaces.find(s=>s.name===name)?'block':'none'};" value="${name&&!STATE.spaces.find(s=>s.name===name)?name:''}">
@@ -680,13 +751,14 @@ function buildItemSelect(items, current) {
   return o;
 }
 
-function addGast(name='',hor='',obs='',qty=0,unit=0) {
+function addGast(name='',hor='',obs='',qty=0,unit=0,date='') {
   const tbody = $('gast-tbody');
   const tbl = getCurrentTable();
   const p = name ? (getPriceForItem(STATE.gast_items, name, tbl) ?? unit) : unit;
   const autoQty = qty || parseInt(g('ev-conv')) || 0;
   const tr = document.createElement('tr');
   tr.innerHTML = `
+    <td>${buildDateSelect(date)}</td>
     <td>
       <select class="item-sel" style="width:100%" onchange="onGastSelect(this)">${buildItemSelect(STATE.gast_items, name)}</select>
       <input type="text" placeholder="Nome do item" style="margin-top:4px;display:none;">
@@ -709,10 +781,10 @@ function onGastSelect(sel) {
   manInput.style.display = 'none';
   const item = STATE.gast_items.find(i => i.name === sel.value);
   if (item) {
-    cells[2].querySelector('input').value = item.desc || '';
+    cells[3].querySelector('input').value = item.desc || '';
     const tbl = getCurrentTable();
     const p = getPriceForItem(STATE.gast_items, sel.value, tbl);
-    if (p !== null) cells[4].querySelector('input').value = p;
+    if (p !== null) cells[5].querySelector('input').value = p;
   }
   updateItemRow(tr, 'gast-tbody'); recalc();
 }
@@ -720,12 +792,13 @@ function onGastSelect(sel) {
 // ════════════════════════════════════════════
 // EQUIPAMENTOS
 // ════════════════════════════════════════════
-function addEquip(name='',qty=1,obs='',unit=0) {
+function addEquip(name='',qty=1,obs='',unit=0,date='') {
   const tbody = $('equip-tbody');
   const tbl = getCurrentTable();
   const p = name ? (getPriceForItem(STATE.equip_items, name, tbl) ?? unit) : unit;
   const tr = document.createElement('tr');
   tr.innerHTML = `
+    <td>${buildDateSelect(date)}</td>
     <td>
       <select class="item-sel" style="width:100%" onchange="onEquipSelect(this)">${buildItemSelect(STATE.equip_items, name)}</select>
       <input type="text" placeholder="Nome do item" style="margin-top:4px;display:none;">
@@ -747,7 +820,7 @@ function onEquipSelect(sel) {
   manInput.style.display = 'none';
   const tbl = getCurrentTable();
   const p = getPriceForItem(STATE.equip_items, sel.value, tbl);
-  if (p !== null) cells[3].querySelector('input').value = p;
+  if (p !== null) cells[4].querySelector('input').value = p;
   updateItemRow(tr, 'equip-tbody'); recalc();
 }
 
@@ -755,11 +828,13 @@ function updateItemRow(tr, tbodyId) {
   const cells = tr.querySelectorAll('td');
   let total = 0;
   if (tbodyId === 'gast-tbody') {
-    total = (parseFloat(cells[3].querySelector('input')?.value)||0) * (parseFloat(cells[4].querySelector('input')?.value)||0);
-    cells[5].textContent = fmt(total);
+    // cols: 0=date,1=item,2=hor,3=obs,4=qty,5=unit,6=tot,7=del
+    total = (parseFloat(cells[4].querySelector('input')?.value)||0) * (parseFloat(cells[5].querySelector('input')?.value)||0);
+    cells[6].textContent = fmt(total);
   } else {
-    total = (parseFloat(cells[1].querySelector('input')?.value)||0) * (parseFloat(cells[3].querySelector('input')?.value)||0);
-    cells[4].textContent = fmt(total);
+    // cols: 0=date,1=item,2=qty,3=obs,4=unit,5=tot,6=del
+    total = (parseFloat(cells[2].querySelector('input')?.value)||0) * (parseFloat(cells[4].querySelector('input')?.value)||0);
+    cells[5].textContent = fmt(total);
   }
 }
 
@@ -770,7 +845,7 @@ function onConvChange() {
   const qty = parseInt(g('ev-conv')) || 0;
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const cells = tr.querySelectorAll('td');
-    const qtyInput = cells[3]?.querySelector('input');
+    const qtyInput = cells[4]?.querySelector('input');
     if (qtyInput) {
       qtyInput.value = qty || '';
       updateItemRow(tr, 'gast-tbody');
@@ -817,23 +892,23 @@ function calcConsumacao() {
 
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const cells = tr.querySelectorAll('td');
-    const sel = cells[0]?.querySelector('select');
-    const man = cells[0]?.querySelector('input[type=text]');
+    const sel = cells[1]?.querySelector('select');
+    const man = cells[1]?.querySelector('input[type=text]');
     const nome = (sel?.value === '__manual__' ? man?.value : sel?.value) || '';
     if (!nome || CONSUMACAO_EXCLUIDOS.includes(nome)) return;
-    const qty  = parseFloat(cells[3]?.querySelector('input')?.value) || 0;
-    const unit = parseFloat(cells[4]?.querySelector('input')?.value) || 0;
+    const qty  = parseFloat(cells[4]?.querySelector('input')?.value) || 0;
+    const unit = parseFloat(cells[5]?.querySelector('input')?.value) || 0;
     eligible += qty * unit;
   });
 
   document.querySelectorAll('#equip-tbody tr').forEach(tr => {
     const cells = tr.querySelectorAll('td');
-    const sel = cells[0]?.querySelector('select');
-    const man = cells[0]?.querySelector('input[type=text]');
+    const sel = cells[1]?.querySelector('select');
+    const man = cells[1]?.querySelector('input[type=text]');
     const nome = (sel?.value === '__manual__' ? man?.value : sel?.value) || '';
     if (!nome || CONSUMACAO_EXCLUIDOS.includes(nome)) return;
-    const qty  = parseFloat(cells[1]?.querySelector('input')?.value) || 0;
-    const unit = parseFloat(cells[3]?.querySelector('input')?.value) || 0;
+    const qty  = parseFloat(cells[2]?.querySelector('input')?.value) || 0;
+    const unit = parseFloat(cells[4]?.querySelector('input')?.value) || 0;
     eligible += qty * unit;
   });
 
@@ -848,13 +923,13 @@ function recalc() {
   });
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const c = tr.querySelectorAll('td');
-    const t = (parseFloat(c[3]?.querySelector('input')?.value)||0) * (parseFloat(c[4]?.querySelector('input')?.value)||0);
-    gast += t; c[5].textContent = fmt(t);
+    const t = (parseFloat(c[4]?.querySelector('input')?.value)||0) * (parseFloat(c[5]?.querySelector('input')?.value)||0);
+    gast += t; c[6].textContent = fmt(t);
   });
   document.querySelectorAll('#equip-tbody tr').forEach(tr => {
     const c = tr.querySelectorAll('td');
-    const t = (parseFloat(c[1]?.querySelector('input')?.value)||0) * (parseFloat(c[3]?.querySelector('input')?.value)||0);
-    equip += t; c[4].textContent = fmt(t);
+    const t = (parseFloat(c[2]?.querySelector('input')?.value)||0) * (parseFloat(c[4]?.querySelector('input')?.value)||0);
+    equip += t; c[5].textContent = fmt(t);
   });
 
   // Consumação automática
@@ -1134,37 +1209,46 @@ function exportPDF() {
 
   document.querySelectorAll('#esp-tbody tr').forEach(tr => {
     const cells=tr.querySelectorAll('td');
-    const sel=cells[0].querySelector('select');
-    const man=cells[0].querySelector('input[type=text]');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const dateVal=dateSel?.value||'';
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
     const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
     if(!nome) return;
-    const val=parseFloat(cells[3].querySelector('input')?.value)||0;
+    const val=parseFloat(cells[4].querySelector('input')?.value)||0;
     espTotal+=val;
-    espacos.push({nome, montagem:cells[1].querySelector('select')?.value||'', obs:cells[2].querySelector('input')?.value||'', val});
+    const fmtD = d => { if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
+    espacos.push({nome, montagem:cells[2].querySelector('select')?.value||'', obs:cells[3].querySelector('input')?.value||'', val, date:fmtD(dateVal)});
   });
 
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const cells=tr.querySelectorAll('td');
-    const sel=cells[0].querySelector('select');
-    const man=cells[0].querySelector('input[type=text]');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const dateVal=dateSel?.value||'';
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
     const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
     if(!nome) return;
-    const qty=parseFloat(cells[3].querySelector('input')?.value)||0;
-    const unit=parseFloat(cells[4].querySelector('input')?.value)||0;
+    const qty=parseFloat(cells[4].querySelector('input')?.value)||0;
+    const unit=parseFloat(cells[5].querySelector('input')?.value)||0;
     gastTotal+=qty*unit;
-    gastRows.push({nome, hor:cells[1].querySelector('input')?.value||'', obs:cells[2].querySelector('input')?.value||'', qty, unit, tot:qty*unit});
+    const fmtD = d => { if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
+    gastRows.push({nome, hor:cells[2].querySelector('input')?.value||'', obs:cells[3].querySelector('input')?.value||'', qty, unit, tot:qty*unit, date:fmtD(dateVal)});
   });
 
   document.querySelectorAll('#equip-tbody tr').forEach(tr => {
     const cells=tr.querySelectorAll('td');
-    const sel=cells[0].querySelector('select');
-    const man=cells[0].querySelector('input[type=text]');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const dateVal=dateSel?.value||'';
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
     const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
     if(!nome) return;
-    const qty=parseFloat(cells[1].querySelector('input')?.value)||0;
-    const unit=parseFloat(cells[3].querySelector('input')?.value)||0;
+    const qty=parseFloat(cells[2].querySelector('input')?.value)||0;
+    const unit=parseFloat(cells[4].querySelector('input')?.value)||0;
     equipTotal+=qty*unit;
-    equipRows.push({nome, qty, obs:cells[2].querySelector('input')?.value||'', unit, tot:qty*unit});
+    const fmtD = d => { if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
+    equipRows.push({nome, qty, obs:cells[3].querySelector('input')?.value||'', unit, tot:qty*unit, date:fmtD(dateVal)});
   });
 
   const conds=[];
@@ -1177,16 +1261,16 @@ function exportPDF() {
   const tot=Math.max(0,sub-desc-cred+ext);
 
   const espHtml = espacos.length
-    ? espacos.map(e=>`<tr><td>${e.nome}</td><td>${e.montagem}</td><td>${e.obs}</td><td class="r"><strong>${fmt(e.val)}</strong></td></tr>`).join('')
-    : '<tr><td colspan="4" style="color:#999;font-style:italic">Nenhum espaço adicionado</td></tr>';
+    ? espacos.map(e=>`<tr><td>${e.date||'—'}</td><td>${e.nome}</td><td>${e.montagem}</td><td>${e.obs}</td><td class="r"><strong>${fmt(e.val)}</strong></td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:#999;font-style:italic">Nenhum espaço adicionado</td></tr>';
 
   const gastHtml = gastRows.length
-    ? gastRows.map(r=>`<tr><td><strong>${r.nome}</strong></td><td>${r.hor}</td><td>${r.obs}</td><td class="r">${r.qty||'—'}</td><td class="r">${r.unit?fmt(r.unit):'—'}</td><td class="r"><strong>${r.tot?fmt(r.tot):'Consumo'}</strong></td></tr>`).join('')
-    : '<tr><td colspan="6" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
+    ? gastRows.map(r=>`<tr><td>${r.date||'—'}</td><td><strong>${r.nome}</strong></td><td>${r.hor}</td><td>${r.obs}</td><td class="r">${r.qty||'—'}</td><td class="r">${r.unit?fmt(r.unit):'—'}</td><td class="r"><strong>${r.tot?fmt(r.tot):'Consumo'}</strong></td></tr>`).join('')
+    : '<tr><td colspan="7" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
 
   const equipHtml = equipRows.length
-    ? equipRows.map(r=>`<tr><td>${r.nome}</td><td class="r">${r.qty}</td><td>${r.obs||'—'}</td><td class="r">${fmt(r.unit)}</td><td class="r"><strong>${fmt(r.tot)}</strong></td></tr>`).join('')
-    : '<tr><td colspan="5" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
+    ? equipRows.map(r=>`<tr><td>${r.date||'—'}</td><td>${r.nome}</td><td class="r">${r.qty}</td><td>${r.obs||'—'}</td><td class="r">${fmt(r.unit)}</td><td class="r"><strong>${fmt(r.tot)}</strong></td></tr>`).join('')
+    : '<tr><td colspan="6" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
 
   const condsHtml = conds.map((c,i)=>`<tr><td style="color:#8B0000;font-weight:700;font-size:7.5px;white-space:nowrap;vertical-align:top;padding-right:5px">${i+1}.</td><td style="font-size:8px;color:#555;line-height:1.5">${c}</td></tr>`).join('');
 
@@ -1257,11 +1341,11 @@ function exportPDF() {
     </table></div>
   </div>
   <div class="sec" style="margin-top:13px">Locação de Espaço</div><hr>
-  <table class="t"><thead><tr><th>Espaço</th><th>Montagem</th><th>Incluso / Observações</th><th class="r">Valor</th></tr></thead><tbody>${espHtml}</tbody></table>
+  <table class="t"><thead><tr><th>Data</th><th>Espaço</th><th>Montagem</th><th>Incluso / Observações</th><th class="r">Valor</th></tr></thead><tbody>${espHtml}</tbody></table>
   <div class="sec">Gastronomia</div><hr>
-  <table class="t"><thead><tr><th>Item</th><th>Horário / Período</th><th>Descrição</th><th class="r">Qtd.</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${gastHtml}</tbody></table>
+  <table class="t"><thead><tr><th>Data</th><th>Item</th><th>Horário / Período</th><th>Descrição</th><th class="r">Qtd.</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${gastHtml}</tbody></table>
   <div class="sec">Equipamentos e Serviços</div><hr>
-  <table class="t"><thead><tr><th>Item</th><th class="r">Qtd.</th><th>Observação</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${equipHtml}</tbody></table>
+  <table class="t"><thead><tr><th>Data</th><th>Item</th><th class="r">Qtd.</th><th>Observação</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${equipHtml}</tbody></table>
   <div class="sec">Resumo do Investimento</div><hr>
   <div class="sum-wrap"><table class="sum">
     <tr><td class="l">Valor do Espaço</td><td class="v">${fmt(espTotal)}</td></tr>
