@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Espaço Vista — Proposta Comercial</title>
+<style>
+:root{
+  --w:#8B0000;--wd:#6B0000;--wp:#F9F4F4;--wl:#F2EEEE;
+  --dk:#1A1A1A;--md:#555;--gr:#999;--ru:#E5E5E5;--wh:#fff;
+  --sb:230px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;color:var(--md);background:#F0F0F0;display:flex;min-height:100vh}
+
+/* ── sidebar ── */
+.sidebar{width:var(--sb);background:var(--dk);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid #2a2a2a}
+.sb-logo img{width:110px}
+.sb-section{padding:8px 0}
+.sb-label{padding:8px 16px 4px;font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.1em}
+.sb-link{display:flex;align-items:center;gap:8px;padding:9px 16px;color:#aaa;text-decoration:none;font-size:12.5px;font-weight:500;border-left:3px solid transparent;cursor:pointer;transition:all .15s;user-select:none}
+.sb-link:hover{color:#fff;background:#222}
+.sb-link.active{color:#fff;border-left-color:var(--w);background:#222}
+.sb-link .ic{width:16px;text-align:center;font-size:13px}
+.sb-foot{padding:12px 16px;border-top:1px solid #2a2a2a;font-size:10px;color:#555;margin-top:auto}
+
+/* ── main ── */
+.main{margin-left:var(--sb);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--wh);border-bottom:1px solid var(--ru);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:14px;font-weight:700;color:var(--dk)}
+.tb-acts{display:flex;gap:8px;align-items:center}
+
+/* ── tabela badge (always visible in topbar) ── */
+.tabela-selector{display:flex;align-items:center;gap:8px;background:var(--wp);border:1.5px solid var(--w);border-radius:6px;padding:5px 12px}
+.tabela-selector label{font-size:10px;font-weight:700;color:var(--w);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap}
+.tabela-selector select{border:none;background:transparent;color:var(--dk);font-weight:700;font-size:12px;cursor:pointer;outline:none;min-width:220px}
+
+.btn{padding:7px 14px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:background .15s}
+.btn-o{background:var(--wh);border:1.5px solid var(--ru);color:var(--md)}
+.btn-o:hover{border-color:var(--w);color:var(--w)}
+.btn-w{background:var(--w);color:#fff}
+.btn-w:hover{background:var(--wd)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-ghost{background:none;border:1.5px dashed var(--ru);color:var(--gr);font-size:11px;padding:6px 12px;border-radius:4px;cursor:pointer;width:100%;margin-top:8px;transition:all .15s}
+.btn-ghost:hover{border-color:var(--w);color:var(--w)}
+
+/* ── content ── */
+.content{padding:20px 24px;flex:1}
+.view{display:none}.view.active{display:block}
+
+/* ── cards ── */
+.card{background:var(--wh);border:1px solid var(--ru);border-radius:6px;margin-bottom:16px}
+.card-hdr{padding:12px 18px 10px;border-bottom:1px solid var(--ru);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:10.5px;font-weight:700;color:var(--w);letter-spacing:.08em;text-transform:uppercase}
+.card-body{padding:16px 18px}
+
+/* ── form ── */
+.frow{display:grid;gap:12px;margin-bottom:12px}
+.f2{grid-template-columns:1fr 1fr}
+.f3{grid-template-columns:1fr 1fr 1fr}
+.f4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+label.fl{font-size:10px;font-weight:700;color:var(--gr);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{border:1.5px solid var(--ru);border-radius:4px;padding:7px 9px;font-size:12.5px;color:var(--dk);background:var(--wh);transition:border-color .15s;font-family:inherit;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--w)}
+textarea{resize:vertical;min-height:60px}
+input[readonly]{background:#f8f8f8;color:var(--w);font-weight:700}
+
+/* ── tables ── */
+.tw{overflow-x:auto}
+table.et{width:100%;border-collapse:collapse;font-size:12.5px}
+table.et th{background:var(--wl);color:var(--dk);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:8px 9px;text-align:left;border-bottom:2px solid var(--w);white-space:nowrap}
+table.et th.r{text-align:right}
+table.et td{padding:6px 9px;border-bottom:1px solid var(--ru);vertical-align:middle}
+table.et tr:last-child td{border-bottom:none}
+table.et tr:hover td{background:var(--wp)}
+table.et td.r{text-align:right}
+table.et td.tot{font-weight:700;color:var(--dk);text-align:right}
+table.et td input,table.et td select{padding:4px 6px;font-size:12px}
+.x-btn{background:none;border:none;color:#ddd;cursor:pointer;font-size:17px;padding:1px 4px;line-height:1}
+.x-btn:hover{color:var(--w)}
+
+/* ── resumo ── */
+.sum-wrap{display:flex;justify-content:flex-end;margin-bottom:16px}
+.sum-inner{width:360px}
+.sr{display:flex;justify-content:space-between;padding:5px 8px;font-size:12.5px}
+.sr .sl{color:var(--md);text-align:right}
+.sr .sv{font-weight:600;color:var(--dk);min-width:110px;text-align:right}
+.sr.sub-row{border-top:2px solid var(--w);border-bottom:2px solid var(--w);font-weight:700}
+.sr.disc-row .sl,.sr.disc-row .sv{color:var(--w);font-weight:700}
+.grand-row{background:var(--dk);border-radius:4px;margin-top:4px}
+.grand-row .sl,.grand-row .sv{color:#fff!important;font-weight:700!important;font-size:13.5px!important}
+.sr input[type=number]{width:90px;text-align:right;padding:3px 6px;font-size:12px}
+
+/* ── admin tabs ── */
+.adm-tabs{display:flex;gap:0;border-bottom:2px solid var(--ru);margin-bottom:16px;overflow-x:auto}
+.adm-tab{padding:9px 16px;font-size:12px;font-weight:600;color:var(--gr);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+.adm-tab:hover{color:var(--dk)}
+.adm-tab.active{color:var(--w);border-bottom-color:var(--w)}
+.adm-pane{display:none}.adm-pane.active{display:block}
+
+/* ── cardapio moments ── */
+.mom-card{border:1px solid var(--ru);border-radius:5px;margin-bottom:10px;overflow:hidden}
+.mom-hdr{background:var(--wl);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--ru)}
+.mom-hdr:hover{background:#ede9e9}
+.mom-hdr strong{font-size:12.5px;color:var(--dk)}
+.mom-body{padding:12px 14px}
+.cat-sec{margin-bottom:10px}
+.cat-lbl{font-size:10px;font-weight:700;color:var(--w);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px}
+.chip{display:flex;align-items:center;gap:4px;padding:3px 9px;background:var(--wp);border:1px solid #e0d5d5;border-radius:20px;font-size:11.5px;color:var(--md)}
+.chip .rm{cursor:pointer;color:#ccc;font-size:13px;line-height:1}.chip .rm:hover{color:var(--w)}
+.chip-row{display:flex;gap:6px;margin-top:4px}
+.chip-row input{flex:1;font-size:12px;padding:5px 8px}
+
+/* ── condições ── */
+.cond-li{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--ru);align-items:flex-start}
+.cond-li:last-child{border-bottom:none}
+.cond-n{color:var(--w);font-weight:700;font-size:11px;min-width:18px;padding-top:3px}
+.cond-li textarea{border:none;background:transparent;padding:0;font-size:12.5px;color:var(--md);resize:none;min-height:36px}
+.cond-li textarea:focus{background:var(--wp);padding:3px 6px;border-radius:3px}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--dk);color:#fff;padding:10px 18px;border-radius:5px;font-size:12px;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;border-left:4px solid var(--w)}
+.toast.on{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo"><img src="data:image/png;base64,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" alt="Espaço Vista"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Proposta</div>
+    <div class="sb-link active" data-view="investimento"><span class="ic">📋</span>Investimento</div>
+    <div class="sb-link" data-view="cardapios"><span class="ic">🍽️</span>Cardápios</div>
+    <div class="sb-link" data-view="condicoes"><span class="ic">📄</span>Condições Gerais</div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-label">Administração</div>
+    <div class="sb-link" data-view="adm-cadastro"><span class="ic">👤</span>Cadastro Cliente</div>
+    <div class="sb-link" data-view="adm-tabelas"><span class="ic">💰</span>Tabelas de Preços</div>
+    <div class="sb-link" data-view="adm-espacos"><span class="ic">🏛️</span>Espaços</div>
+    <div class="sb-link" data-view="adm-gastronomia"><span class="ic">🍴</span>Itens Gastronomia</div>
+    <div class="sb-link" data-view="adm-equipamentos"><span class="ic">🎙️</span>Equipamentos</div>
+    <div class="sb-link" data-view="adm-listas"><span class="ic">📝</span>Listas & Opções</div>
+  </div>
+
+  <div class="sb-foot">GVG Eventos e Alimentos Ltda<br>CNPJ: 11.309.019/0001-30</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Investimento</span>
+    <div class="tb-acts">
+      <!-- Tabela selector — always visible, controls all prices -->
+      <div class="tabela-selector">
+        <label>⚡ Tabela de Preços</label>
+        <select id="tabela-global" onchange="onTableChange()">
+          <option value="">— Selecione a tabela —</option>
+        </select>
+      </div>
+      <button class="btn btn-o" onclick="toast('Dados salvos no navegador.')">💾 Salvar</button>
+      <button class="btn btn-w" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ═══════════ INVESTIMENTO ═══════════ -->
+  <div class="view active" id="view-investimento">
+
+    <!-- Cabeçalho evento -->
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Dados do Evento</span></div>
+      <div class="card-body">
+        <div class="frow f4">
+          <div class="fg"><label class="fl">Cliente</label><input id="ev-cliente" type="text" placeholder="Nome do cliente"></div>
+          <div class="fg"><label class="fl">Data do Evento</label><input id="ev-data" type="date"></div>
+          <div class="fg"><label class="fl">Nº de Convidados</label><input id="ev-conv" type="number" min="1" placeholder="150" onchange="recalc()"></div>
+          <div class="fg"><label class="fl">Montagem</label><select id="ev-montagem"></select></div>
+        </div>
+        <div class="frow f4">
+          <div class="fg"><label class="fl">Chegada do Cliente</label><input id="ev-chegada" type="time" value="12:00"></div>
+          <div class="fg"><label class="fl">Início do Evento</label><input id="ev-inicio" type="time" value="18:00" onchange="calcHoras()"></div>
+          <div class="fg"><label class="fl">Término do Evento</label><input id="ev-termino" type="time" value="22:00" onchange="calcHoras()"></div>
+          <div class="fg"><label class="fl">Total Contratado</label><input id="ev-horas" type="text" readonly placeholder="Calculado auto."></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Espaços -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Espaços</span>
+        <button class="btn btn-o btn-sm" onclick="addEspaco()">+ Adicionar</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th style="min-width:240px">Espaço</th>
+              <th style="min-width:130px">Montagem</th>
+              <th>Observações</th>
+              <th class="r" style="min-width:110px">Valor (R$)</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="esp-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addEspaco()">+ Adicionar espaço</button>
+      </div>
+    </div>
+
+    <!-- Gastronomia -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Gastronomia</span>
+        <button class="btn btn-o btn-sm" onclick="addGast()">+ Adicionar</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th style="min-width:200px">Item</th>
+              <th style="min-width:140px">Horário / Período</th>
+              <th>Observações</th>
+              <th class="r" style="width:60px">Qtd.</th>
+              <th class="r" style="width:95px">Vlr. Unit.</th>
+              <th class="r" style="width:105px">Subtotal</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="gast-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addGast()">+ Adicionar item de gastronomia</button>
+      </div>
+    </div>
+
+    <!-- Equipamentos -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Equipamentos e Serviços</span>
+        <button class="btn btn-o btn-sm" onclick="addEquip()">+ Adicionar</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th style="min-width:220px">Item</th>
+              <th class="r" style="width:55px">Qtd.</th>
+              <th>Observação</th>
+              <th class="r" style="width:100px">Vlr. Unit.</th>
+              <th class="r" style="width:105px">Subtotal</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="equip-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addEquip()">+ Adicionar equipamento / serviço</button>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Resumo do Investimento</span></div>
+      <div class="card-body">
+        <div class="sum-wrap">
+          <div class="sum-inner">
+            <div class="sr"><span class="sl">Valor do Espaço</span><span class="sv" id="rs-esp">R$ 0,00</span></div>
+            <div class="sr"><span class="sl">Gastronomia</span><span class="sv" id="rs-gast">R$ 0,00</span></div>
+            <div class="sr"><span class="sl">Equipamentos e Serviços</span><span class="sv" id="rs-equip">R$ 0,00</span></div>
+            <div class="sr sub-row"><span class="sl">Subtotal</span><span class="sv" id="rs-sub">R$ 0,00</span></div>
+            <div class="sr disc-row">
+              <span class="sl">Desconto de Consumação</span>
+              <span class="sv">− R$ <input type="number" id="rs-desc" value="0" min="0" onchange="recalc()"></span>
+            </div>
+            <div class="sr">
+              <span class="sl">Crédito Disponível</span>
+              <span class="sv">R$ <input type="number" id="rs-cred" value="0" min="0" onchange="recalc()"></span>
+            </div>
+            <div class="sr">
+              <span class="sl">Extras</span>
+              <span class="sv">R$ <input type="number" id="rs-ext" value="0" min="0" onchange="recalc()"></span>
+            </div>
+            <div class="sr grand-row"><span class="sl">VALOR TOTAL</span><span class="sv" id="rs-tot">R$ 0,00</span></div>
+          </div>
+        </div>
+        <div class="frow f2">
+          <div class="fg"><label class="fl">Forma de Pagamento</label>
+            <input id="rs-pagto" type="text" value="50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.">
+          </div>
+          <div class="fg"><label class="fl">Validade da Proposta</label>
+            <select id="ev-validade"><option>7 dias úteis</option><option>5 dias úteis</option><option>10 dias úteis</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /investimento -->
+
+  <!-- ═══════════ CARDÁPIOS ═══════════ -->
+  <div class="view" id="view-cardapios">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Cardápios por Momento</span>
+        <button class="btn btn-o btn-sm" onclick="addMoment()">+ Novo momento</button>
+      </div>
+      <div class="card-body" id="moments-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CONDIÇÕES ═══════════ -->
+  <div class="view" id="view-condicoes">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Condições Gerais</span>
+        <button class="btn btn-o btn-sm" onclick="addCond()">+ Adicionar</button>
+      </div>
+      <div class="card-body">
+        <p style="font-size:11px;color:var(--gr);margin-bottom:12px">Clique em qualquer cláusula para editar.</p>
+        <div id="cond-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: CADASTRO ═══════════ -->
+  <div class="view" id="view-adm-cadastro">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Dados da Empresa Contratante</span></div>
+      <div class="card-body">
+        <div class="frow f2">
+          <div class="fg"><label class="fl">Razão Social</label><input id="a-razao" type="text"></div>
+          <div class="fg"><label class="fl">Nome Fantasia</label><input id="a-fantasia" type="text"></div>
+        </div>
+        <div class="frow f3">
+          <div class="fg"><label class="fl">CNPJ / CPF</label><input id="a-cnpj" type="text" placeholder="00.000.000/0001-00"></div>
+          <div class="fg"><label class="fl">Inscrição Estadual</label><input id="a-ie" type="text"></div>
+          <div class="fg"><label class="fl">Retenção de ISS</label><select id="a-iss"><option>Não</option><option>Sim</option></select></div>
+        </div>
+        <div class="frow f2">
+          <div class="fg"><label class="fl">Endereço Completo</label><input id="a-end" type="text"></div>
+          <div class="fg"><label class="fl">Bairro</label><input id="a-bairro" type="text"></div>
+        </div>
+        <div class="frow f3">
+          <div class="fg"><label class="fl">CEP</label><input id="a-cep" type="text"></div>
+          <div class="fg"><label class="fl">Cidade / Estado</label><input id="a-cid" type="text" placeholder="Belo Horizonte / MG"></div>
+          <div class="fg"><label class="fl">Telefone</label><input id="a-tel" type="text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Responsável pela Assinatura</span></div>
+      <div class="card-body">
+        <div class="frow f2">
+          <div class="fg"><label class="fl">Nome Completo</label><input id="a-ass-nome" type="text"></div>
+          <div class="fg"><label class="fl">CPF</label><input id="a-ass-cpf" type="text"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Responsável pelo Evento</span></div>
+      <div class="card-body">
+        <div class="frow f2">
+          <div class="fg"><label class="fl">Nome Completo</label><input id="a-resp-nome" type="text"></div>
+          <div class="fg"><label class="fl">Telefone</label><input id="a-resp-tel" type="text"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: TABELAS ═══════════ -->
+  <div class="view" id="view-adm-tabelas">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Tabelas de Preços</span>
+        <button class="btn btn-o btn-sm" onclick="addTable()">+ Nova tabela</button>
+      </div>
+      <div class="card-body" id="adm-tables-wrap">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: ESPAÇOS ═══════════ -->
+  <div class="view" id="view-adm-espacos">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Espaços Disponíveis</span>
+        <button class="btn btn-o btn-sm" onclick="addAdmEspaco()">+ Novo espaço</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th>Nome do Espaço</th>
+              <th>Incluso / Descrição</th>
+              <th class="r" style="width:280px">Preços por Tabela</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="adm-esp-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addAdmEspaco()">+ Novo espaço</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: GASTRONOMIA ═══════════ -->
+  <div class="view" id="view-adm-gastronomia">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Itens de Gastronomia</span>
+        <button class="btn btn-o btn-sm" onclick="addAdmGast()">+ Novo item</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th style="min-width:200px">Nome do Item</th>
+              <th>Descrição</th>
+              <th class="r" style="width:80px">T1</th>
+              <th class="r" style="width:80px">T2</th>
+              <th class="r" style="width:80px">T3</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="adm-gast-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addAdmGast()">+ Novo item de gastronomia</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: EQUIPAMENTOS ═══════════ -->
+  <div class="view" id="view-adm-equipamentos">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Equipamentos e Serviços</span>
+        <button class="btn btn-o btn-sm" onclick="addAdmEquip()">+ Novo item</button>
+      </div>
+      <div class="card-body">
+        <div class="tw">
+          <table class="et">
+            <thead><tr>
+              <th style="min-width:220px">Nome do Item</th>
+              <th class="r" style="width:80px">T1</th>
+              <th class="r" style="width:80px">T2</th>
+              <th class="r" style="width:80px">T3</th>
+              <th style="width:30px"></th>
+            </tr></thead>
+            <tbody id="adm-equip-tbody"></tbody>
+          </table>
+        </div>
+        <button class="btn-ghost" onclick="addAdmEquip()">+ Novo equipamento / serviço</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADM: LISTAS ═══════════ -->
+  <div class="view" id="view-adm-listas">
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Tipos de Montagem</span><button class="btn btn-o btn-sm" onclick="addListItem('mont')">+ Adicionar</button></div>
+      <div class="card-body"><div id="list-mont" class="chips" style="gap:6px"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Durações de Locação</span><button class="btn btn-o btn-sm" onclick="addListItem('dur')">+ Adicionar</button></div>
+      <div class="card-body"><div id="list-dur" class="chips" style="gap:6px"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-title">Categorias dos Cardápios</span><button class="btn btn-o btn-sm" onclick="addListItem('cat')">+ Adicionar</button></div>
+      <div class="card-body"><div id="list-cat" class="chips" style="gap:6px"></div></div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ════════════════════════════════════════════
+// DATA (from Excel)
+// ════════════════════════════════════════════
+const D = {"tables": ["Tabela 1 - 15 a 50 pessoas", "Tabela 2 - 15 a 50 pessoas", "Tabela 3 - 15 a 50 pessoas", "Tabela 1 - a partir de 50 pessoas", "Tabela 2 - a partir de 50 pessoas", "Tabela 3 - a partir de 50 pessoas"], "spaces": ["Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)", "Sala Ouro Preto (plenária) e Sala Mariana (foyer)", "Sala Tiradentes", "Espaço Inteiro - Exclusividade"], "space_prices": {"Tabela 1 - 15 a 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 4970.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 1650.0, "Sala Tiradentes": 460.0, "Espaço Inteiro - Exclusividade": 6990.0}, "Tabela 2 - 15 a 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 5470.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 1840.0, "Sala Tiradentes": 660.0, "Espaço Inteiro - Exclusividade": 7690.0}, "Tabela 3 - 15 a 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 6090.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 2090.0, "Sala Tiradentes": 730.0, "Espaço Inteiro - Exclusividade": 8490.0}, "Tabela 1 - a partir de 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 4970.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 1650.0, "Sala Tiradentes": 460.0, "Espaço Inteiro - Exclusividade": 6990.0}, "Tabela 2 - a partir de 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 5470.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 1840.0, "Sala Tiradentes": 660.0, "Espaço Inteiro - Exclusividade": 7690.0}, "Tabela 3 - a partir de 50 pessoas": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": 6090.0, "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": 2090.0, "Sala Tiradentes": 730.0, "Espaço Inteiro - Exclusividade": 8490.0}}, "space_desc": {"Salão Vista (plenária), Salão Real (foyer) e Espaço Serra do Curral (área externa)": "Incluso: painel LED 200 pol, 1 microfone, sonorização e mobiliário", "Sala Ouro Preto (plenária) e Sala Mariana (foyer)": "Incluso: projetor, telão, 1 microfone, sonorização e mobiliário", "Espaço Inteiro - Exclusividade": "Salão Vista + Salão Real + Espaço Serra do Curral (área externa) + Sala Ouro Preto + Sala Mariana + Sala Tiradentes"}, "gast_items": [{"name": "Serviço de sala: água", "prices": {"Tabela 1 - 15 a 50 pessoas": 3.9, "Tabela 2 - 15 a 50 pessoas": 3.9, "Tabela 3 - 15 a 50 pessoas": 3.9}, "desc": "Água mineral com e sem gás (330 ml). Sugestão inicial: 3 unidades por convidado. *Sob consumo."}, {"name": "Serviço de sala: água em jarra", "prices": {"Tabela 1 - 15 a 50 pessoas": 7.9, "Tabela 2 - 15 a 50 pessoas": 7.9, "Tabela 3 - 15 a 50 pessoas": 7.9}, "desc": "Água mineral em jarra servido de forma ilimitada. *Valor cobrado por pessoa."}, {"name": "Serviço de sala: café", "prices": {"Tabela 1 - 15 a 50 pessoas": 11.9, "Tabela 2 - 15 a 50 pessoas": 13.1, "Tabela 3 - 15 a 50 pessoas": 14.5}, "desc": "Café servido em garrafa durante todo o evento. Inclui garçom e vasilhames de louça. *Valor cobrado por pessoa."}, {"name": "Serviço de sala: café expresso (cápsula)", "prices": {"Tabela 1 - 15 a 50 pessoas": 7.0, "Tabela 2 - 15 a 50 pessoas": 7.7, "Tabela 3 - 15 a 50 pessoas": 8.5}, "desc": "Máquina de café expresso cobrado por cápsula. Inclui garçom e vasilhames de louça."}, {"name": "Serviço de sala: petit four", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Petit four (2 variedades) servido durante o evento. *Valor cobrado por pessoa."}, {"name": "Coffee Break: Categoria Executivo", "prices": {"Tabela 1 - 15 a 50 pessoas": 26.9, "Tabela 2 - 15 a 50 pessoas": 29.9, "Tabela 3 - 15 a 50 pessoas": 32.9}, "desc": "Café e leite; Pão de queijo, biscoito de queijo e petit four."}, {"name": "Coffee Break: Categoria Master", "prices": {"Tabela 1 - 15 a 50 pessoas": 39.9, "Tabela 2 - 15 a 50 pessoas": 43.9, "Tabela 3 - 15 a 50 pessoas": 49.3}, "desc": "Café, suco natural e refrigerante; Mini sandúiche, pão de queijo, biscoito de queijo, bolo e frutas da estação."}, {"name": "Coffee Break: Categoria Premium", "prices": {"Tabela 1 - 15 a 50 pessoas": 52.5, "Tabela 2 - 15 a 50 pessoas": 58.0, "Tabela 3 - 15 a 50 pessoas": 63.8}, "desc": "Café, sucos naturais e refrigerante; Mini sandúiches, pão de queijo, biscoito de queijo, bolo, mini salgados, saladas de frutas e petit four."}, {"name": "Almoço: Categoria Executivo", "prices": {"Tabela 1 - 15 a 50 pessoas": 79.9, "Tabela 2 - 15 a 50 pessoas": 87.9, "Tabela 3 - 15 a 50 pessoas": 96.7}, "desc": "Escolha uma das três sugestões criteriosamente preparadas pelo chef. Inclui suco natural, refrigerante comum e zero, além de água mineral."}, {"name": "Almoço: Categoria Master", "prices": {"Tabela 1 - 15 a 50 pessoas": 119.0, "Tabela 2 - 15 a 50 pessoas": 131.0, "Tabela 3 - 15 a 50 pessoas": 144.3}, "desc": "Escolha uma das três sugestões criteriosamente preparadas pelo chef. Inclui suco natural, refrigerante comum e zero, além de água mineral."}, {"name": "Almoço: Categoria Premium", "prices": {"Tabela 1 - 15 a 50 pessoas": 210.0, "Tabela 2 - 15 a 50 pessoas": 231.0, "Tabela 3 - 15 a 50 pessoas": 254.0}, "desc": "Escolha uma das três sugestões criteriosamente preparadas pelo chef. Inclui suco natural, refrigerante comum e zero, além de água mineral."}, {"name": "Almoço: Categoria Mineira", "prices": {"Tabela 1 - 15 a 50 pessoas": 93.0, "Tabela 2 - 15 a 50 pessoas": 102.3, "Tabela 3 - 15 a 50 pessoas": 112.6}, "desc": "Escolha uma das três sugestões criteriosamente preparadas pelo chef. Inclui suco natural, refrigerante comum e zero, além de água mineral."}, {"name": "Almoço: Categoria Executivo  - Sugestão 1", "prices": {"Tabela 1 - 15 a 50 pessoas": 79.9, "Tabela 2 - 15 a 50 pessoas": 87.9, "Tabela 3 - 15 a 50 pessoas": 96.7}, "desc": "Frango com catupiry, pernil suíno acebolado em perfume de laranja, batata saute, penne ao sugo, arroz branco e salada de folhas verdes, tomate cereja e lascas de parmesão."}, {"name": "Almoço: Categoria Executivo  - Sugestão 2", "prices": {"Tabela 1 - 15 a 50 pessoas": 79.9, "Tabela 2 - 15 a 50 pessoas": 87.9, "Tabela 3 - 15 a 50 pessoas": 96.7}, "desc": "Strogonoff de frango com champignon, lombo suíno ao molho de vinho tinto e ervas, batata palha, farfalle ao molho de queijo, arroz branco e salada de folhas verdes, tomate cereja e lascas de parmesão."}, {"name": "Almoço: Categoria Executivo  - Sugestão 3", "prices": {"Tabela 1 - 15 a 50 pessoas": 79.9, "Tabela 2 - 15 a 50 pessoas": 87.9, "Tabela 3 - 15 a 50 pessoas": 96.7}, "desc": "Peito de frango grelhado, costela suína ao molho barbecue, farofa de alho e bacon, feijão preto da casa, batata frita, fettuccine ao molho alfredo, arroz de salsa e alho e salada de folhas, tomate cereja e parmesão."}, {"name": "Almoço: Categoria Master  - Sugestão 1", "prices": {"Tabela 1 - 15 a 50 pessoas": 119.0, "Tabela 2 - 15 a 50 pessoas": 131.0, "Tabela 3 - 15 a 50 pessoas": 144.3}, "desc": "Salmão com molho oriental e crisp de alho-poró, miolo de alcatra ao molho de mostarda dijon, legumes grelhados, penne ao molho pesto, arroz de amêndoas ou arroz branco; e salada de folhas, tomate cereja com castanhas caramelizadas e balsâmico."}, {"name": "Almoço: Categoria Master  - Sugestão 2", "prices": {"Tabela 1 - 15 a 50 pessoas": 119.0, "Tabela 2 - 15 a 50 pessoas": 131.0, "Tabela 3 - 15 a 50 pessoas": 144.3}, "desc": "Filet mignon a poivre, pimenta verde ao perfume de conhaque; frango oriental, risoto de cogumelos, batata frita, arroz branco ou com brócolis e salada verde com parmesão e nozes."}, {"name": "Almoço: Categoria Master  - Sugestão 3", "prices": {"Tabela 1 - 15 a 50 pessoas": 119.0, "Tabela 2 - 15 a 50 pessoas": 131.0, "Tabela 3 - 15 a 50 pessoas": 144.3}, "desc": "Picanha grelhada e molho de cebola e alho, lombo com abacaxi, mandioca na manteiga de garrafa, farofa à brasileira, vinagrete de tomate e pimenta biquinho, arroz biro-biro ou arroz branco e salada verde com tomate cereja e rúcula."}, {"name": "Almoço:  Categoria Premium  - Sugestão 1", "prices": {"Tabela 1 - 15 a 50 pessoas": 210.0, "Tabela 2 - 15 a 50 pessoas": 231.0, "Tabela 3 - 15 a 50 pessoas": 254.0}, "desc": ""}, {"name": "Almoço: Categoria Premium  - Sugestão 2", "prices": {"Tabela 1 - 15 a 50 pessoas": 210.0, "Tabela 2 - 15 a 50 pessoas": 231.0, "Tabela 3 - 15 a 50 pessoas": 254.0}, "desc": "Baby beef ao molho gruyère, bacalhoada do porto, batata gratinada com queijo canastra, arroz branco e ao alho, penne ao molho funghi, salada de folhas, balsâmico e nozes; e salada de folhas verdes, rúcula, tomate seco, mussarela de búfala e champignon."}, {"name": "Almoço: Categoria Premium  - Sugestão 3", "prices": {"Tabela 1 - 15 a 50 pessoas": 210.0, "Tabela 2 - 15 a 50 pessoas": 231.0, "Tabela 3 - 15 a 50 pessoas": 254.0}, "desc": "Bobó de camarão, bife de ancho ao molho parrilero, batata roquefort, farofa de dendê, arroz branco e ao alho e óleo, salada de frutos do mar (lula, kani, mexilhão e camarão) e salada verde com lascas de parmesão."}, {"name": "Almoço: Categoria Mineira  - Sugestão 1", "prices": {"Tabela 1 - 15 a 50 pessoas": 93.0, "Tabela 2 - 15 a 50 pessoas": 102.3, "Tabela 3 - 15 a 50 pessoas": 112.6}, "desc": "Feijoada completa, feijoada magra, farofa de alho e bacon, couve, arroz branco, torresminho, molho apimentado, laranja e abacaxi."}, {"name": "Almoço: Categoria Mineira  - Sugestão 2", "prices": {"Tabela 1 - 15 a 50 pessoas": 93.0, "Tabela 2 - 15 a 50 pessoas": 102.3, "Tabela 3 - 15 a 50 pessoas": 112.6}, "desc": "Frango com quiabo, costelhinha à mineira, couve, angu, arroz branco, torresmo, farofa e salada de folhas."}, {"name": "Almoço: Categoria Mineira  - Sugestão 3", "prices": {"Tabela 1 - 15 a 50 pessoas": 93.0, "Tabela 2 - 15 a 50 pessoas": 102.3, "Tabela 3 - 15 a 50 pessoas": 112.6}, "desc": "Frango ao molho pardo, pernil gratinado, angu, couve, arroz branco, farofa e salada verde."}, {"name": "Mini churros com doce de leite", "prices": {"Tabela 1 - 15 a 50 pessoas": 6.0, "Tabela 2 - 15 a 50 pessoas": 6.0, "Tabela 3 - 15 a 50 pessoas": 6.0}, "desc": "Crocantes mini churros dourados, polvilhados com canela e açúcar, acompanhados de irresistível doce de leite cremoso."}, {"name": "Espetado de goiabada e queijo minas", "prices": {"Tabela 1 - 15 a 50 pessoas": 4.0, "Tabela 2 - 15 a 50 pessoas": 4.0, "Tabela 3 - 15 a 50 pessoas": 4.0}, "desc": "Suculenta goiabada caseira espetada com cubos de queijo minas fresco, uma releitura do clássico Romeu e Julieta."}, {"name": "Brownie com sorvete de creme e calda de chocolate", "prices": {"Tabela 1 - 15 a 50 pessoas": 10.0, "Tabela 2 - 15 a 50 pessoas": 10.0, "Tabela 3 - 15 a 50 pessoas": 10.0}, "desc": "Delicioso brownie artesanal servido com um cremoso sorvete de creme e generosa calda de chocolate."}, {"name": "Mousse de chocolate", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Mousse de chocolate belga aerado e aveludado, coroado com raspas de chocolate meio amargo."}, {"name": "Mousse de limão", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Refrescante mousse de limão, com equilíbrio perfeito entre acidez e doçura, finalizado com raspas cítricas."}, {"name": "Mousse de maracujá", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Mousse tropical de maracujá, leve e cremoso, decorado com calda e sementes frescas da fruta."}, {"name": "Pavê de chocolate", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Pavê de chocolate em camadas intercaladas de biscoito, creme de baunilha e ganache, finalizado com raspas de chocolate."}, {"name": "Petit gateau servido com sorvete de creme", "prices": {"Tabela 1 - 15 a 50 pessoas": 14.0, "Tabela 2 - 15 a 50 pessoas": 14.0, "Tabela 3 - 15 a 50 pessoas": 14.0}, "desc": "Petit gateau de chocolate com centro derretido, acompanhado de sorvete artesanal de creme."}, {"name": "Pudim de leite condensado", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Clássico pudim de leite condensado cremoso, com textura aveludada e coberto por caramelo dourado."}, {"name": "Salada de frutas", "prices": {"Tabela 1 - 15 a 50 pessoas": 6.0, "Tabela 2 - 15 a 50 pessoas": 6.0, "Tabela 3 - 15 a 50 pessoas": 6.0}, "desc": "Refrescante mix de frutas da estação fatiadas."}, {"name": "Sundae de sorvete de creme, castanha de cajú e calda", "prices": {"Tabela 1 - 15 a 50 pessoas": 8.0, "Tabela 2 - 15 a 50 pessoas": 8.0, "Tabela 3 - 15 a 50 pessoas": 8.0}, "desc": "Sundae de sorvete de creme, coberto com castanhas de caju e calda."}, {"name": "Cheese cake de caramelo", "prices": {"Tabela 1 - 15 a 50 pessoas": 14.0, "Tabela 2 - 15 a 50 pessoas": 14.0, "Tabela 3 - 15 a 50 pessoas": 14.0}, "desc": "Irresistível cheese cake de caramelo dourado com farofinha de biscoito amanteigado finalizado com crocante de amendoas."}, {"name": "Banoffee", "prices": {"Tabela 1 - 15 a 50 pessoas": 12.0, "Tabela 2 - 15 a 50 pessoas": 12.0, "Tabela 3 - 15 a 50 pessoas": 12.0}, "desc": "Deliciosa combinação de bananas maduras, doce de leite cremoso e chantilly aveludado, com um toque de canela."}, {"name": "Bombom de nozes", "prices": {"Tabela 1 - 15 a 50 pessoas": 12.0, "Tabela 2 - 15 a 50 pessoas": 12.0, "Tabela 3 - 15 a 50 pessoas": 12.0}, "desc": "Irresistível recheio cremoso rico em nozes moídas, com sabor intenso amanteigado com chocolate que derrete na boca."}, {"name": "Chargito", "prices": {"Tabela 1 - 15 a 50 pessoas": 12.0, "Tabela 2 - 15 a 50 pessoas": 12.0, "Tabela 3 - 15 a 50 pessoas": 12.0}, "desc": "Casquinha crocante de chocolate meio amargo com um toque suave de flor de sal, envolvendo um recheio cremoso de brownie, caramelo, amendoim."}, {"name": "Mousse de chocolate e nutella", "prices": {"Tabela 1 - 15 a 50 pessoas": 14.0, "Tabela 2 - 15 a 50 pessoas": 14.0, "Tabela 3 - 15 a 50 pessoas": 14.0}, "desc": "Mistura sedosa e aerada de chocolate intenso com ganache de Nutella, finalizada com crocante de avelã."}, {"name": "Sobremesa sugestão", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": ""}, {"name": "Butiquim Vista: Opção 1", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "150 pessoas - O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de 7 variedades de petit gourmet/petiscos. Inclui cerveja, refrigerante e água."}, {"name": "Butiquim Vista: Opção 2", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "pessoas - O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de 7 variedades de petit gourmet/petiscos e 1 variedade de prato quente. Inclui cerveja, refrigerante e água"}, {"name": "Butiquim Vista: Opção 3", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "pessoas - O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de 7 variedades de petit gourmet/petiscos, 1 variedade de prato quente e 02 variedades de Frutos do Mar . Inclui cerveja, refrigerante e água."}, {"name": "Coquetel Vista: Opção 1", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "pessoas - O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha 12 opções entre petit gourmet, frios, assados e fritos. Inclui cerveja, refrigerante e água."}, {"name": "Coquetel Vista: Opção 2", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "pessoas - O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha 12 opções entre petit gourmet (frios, assados e fritos) e 02 variedades de Especiais. Inclui cerveja, refrigerante e água."}, {"name": "Coquetel Vista: Opção 3", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": "pessoas - O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha 12 opções entre petit gourmet (frios, assados e fritos), 02 variedades de Especiais e sobremesa (mini churros). Inclui cerveja, refrigerante, suco natural e água."}, {"name": "Cardápio personalizado", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": ""}], "equip_items": [{"name": "Pacote de 6 Tvs - Entrada + Salão Real", "prices": {"Tabela 1 - 15 a 50 pessoas": 1140.0, "Tabela 2 - 15 a 50 pessoas": 1140.0, "Tabela 3 - 15 a 50 pessoas": 1140.0}, "desc": ""}, {"name": "Pacote 3 TVs - Jardim Vertical", "prices": {"Tabela 1 - 15 a 50 pessoas": 640.0, "Tabela 2 - 15 a 50 pessoas": 640.0, "Tabela 3 - 15 a 50 pessoas": 640.0}, "desc": ""}, {"name": "Pacote 3 TV´s - Salão Real", "prices": {"Tabela 1 - 15 a 50 pessoas": 640.0, "Tabela 2 - 15 a 50 pessoas": 640.0, "Tabela 3 - 15 a 50 pessoas": 640.0}, "desc": ""}, {"name": "Totem com TV 4K 49\"", "prices": {"Tabela 1 - 15 a 50 pessoas": 320.0, "Tabela 2 - 15 a 50 pessoas": 320.0, "Tabela 3 - 15 a 50 pessoas": 320.0}, "desc": ""}, {"name": "Porta banner", "prices": {"Tabela 1 - 15 a 50 pessoas": 60.0, "Tabela 2 - 15 a 50 pessoas": 60.0, "Tabela 3 - 15 a 50 pessoas": 60.0}, "desc": ""}, {"name": "Link dedicado 100mb", "prices": {"Tabela 1 - 15 a 50 pessoas": 980.0, "Tabela 2 - 15 a 50 pessoas": 1080.0, "Tabela 3 - 15 a 50 pessoas": 1190.0}, "desc": ""}, {"name": "Monitor de palco 28 polegadas", "prices": {"Tabela 1 - 15 a 50 pessoas": 720.0, "Tabela 2 - 15 a 50 pessoas": 800.0, "Tabela 3 - 15 a 50 pessoas": 880.0}, "desc": ""}, {"name": "Pontos para outros equipamentos", "prices": {"Tabela 1 - 15 a 50 pessoas": 20.0, "Tabela 2 - 15 a 50 pessoas": 22.0, "Tabela 3 - 15 a 50 pessoas": 25.0}, "desc": ""}, {"name": "Parled", "prices": {"Tabela 1 - 15 a 50 pessoas": 100.0, "Tabela 2 - 15 a 50 pessoas": 110.0, "Tabela 3 - 15 a 50 pessoas": 120.0}, "desc": ""}, {"name": "Caneta bic", "prices": {"Tabela 1 - 15 a 50 pessoas": 3.0, "Tabela 2 - 15 a 50 pessoas": 3.3, "Tabela 3 - 15 a 50 pessoas": 3.7}, "desc": ""}, {"name": "Passador de slide", "prices": {"Tabela 1 - 15 a 50 pessoas": 55.0, "Tabela 2 - 15 a 50 pessoas": 60.0, "Tabela 3 - 15 a 50 pessoas": 65.0}, "desc": ""}, {"name": "Link dedicado 50 MB", "prices": {"Tabela 1 - 15 a 50 pessoas": 650.0, "Tabela 2 - 15 a 50 pessoas": 720.0, "Tabela 3 - 15 a 50 pessoas": 800.0}, "desc": ""}, {"name": "Microfone adicional sem fio", "prices": {"Tabela 1 - 15 a 50 pessoas": 320.0, "Tabela 2 - 15 a 50 pessoas": 360.0, "Tabela 3 - 15 a 50 pessoas": 400.0}, "desc": ""}, {"name": "Notebook", "prices": {"Tabela 1 - 15 a 50 pessoas": 320.0, "Tabela 2 - 15 a 50 pessoas": 360.0, "Tabela 3 - 15 a 50 pessoas": 400.0}, "desc": ""}, {"name": "Púlpito", "prices": {"Tabela 1 - 15 a 50 pessoas": 210.0, "Tabela 2 - 15 a 50 pessoas": 240.0, "Tabela 3 - 15 a 50 pessoas": 270.0}, "desc": ""}, {"name": "Quadro branco", "prices": {"Tabela 1 - 15 a 50 pessoas": 50.0, "Tabela 2 - 15 a 50 pessoas": 55.0, "Tabela 3 - 15 a 50 pessoas": 60.0}, "desc": ""}, {"name": "Palco 5m x 2m", "prices": {"Tabela 1 - 15 a 50 pessoas": 1090.0, "Tabela 2 - 15 a 50 pessoas": 1200.0, "Tabela 3 - 15 a 50 pessoas": 1320.0}, "desc": ""}, {"name": "Palco 7m x 2m", "prices": {"Tabela 1 - 15 a 50 pessoas": 1390.0, "Tabela 2 - 15 a 50 pessoas": 1530.0, "Tabela 3 - 15 a 50 pessoas": 1690.0}, "desc": ""}, {"name": "Ponto de energia para notebook (cada)", "prices": {"Tabela 1 - 15 a 50 pessoas": 20.0, "Tabela 2 - 15 a 50 pessoas": 22.0, "Tabela 3 - 15 a 50 pessoas": 25.0}, "desc": ""}, {"name": "Kit flipchart com 5 folhas e 1 pincel", "prices": {"Tabela 1 - 15 a 50 pessoas": 60.0, "Tabela 2 - 15 a 50 pessoas": 65.0, "Tabela 3 - 15 a 50 pessoas": 70.0}, "desc": ""}, {"name": "Papel para flipchart (5 folhas)", "prices": {"Tabela 1 - 15 a 50 pessoas": 30.0, "Tabela 2 - 15 a 50 pessoas": 35.0, "Tabela 3 - 15 a 50 pessoas": 40.0}, "desc": ""}, {"name": "Pincel atômico (3 pincéis)", "prices": {"Tabela 1 - 15 a 50 pessoas": 40.0, "Tabela 2 - 15 a 50 pessoas": 45.0, "Tabela 3 - 15 a 50 pessoas": 50.0}, "desc": ""}, {"name": "Impressão a laser preto e branco", "prices": {"Tabela 1 - 15 a 50 pessoas": 2.0, "Tabela 2 - 15 a 50 pessoas": 2.2, "Tabela 3 - 15 a 50 pessoas": 2.5}, "desc": ""}, {"name": "Toalhas p/ mesa escolar ou redonda", "prices": {"Tabela 1 - 15 a 50 pessoas": 320.0, "Tabela 2 - 15 a 50 pessoas": 360.0, "Tabela 3 - 15 a 50 pessoas": 400.0}, "desc": ""}, {"name": "Ribalta", "prices": {"Tabela 1 - 15 a 50 pessoas": 190.0, "Tabela 2 - 15 a 50 pessoas": 210.0, "Tabela 3 - 15 a 50 pessoas": 230.0}, "desc": ""}, {"name": "Rádio Comunicação Motorola", "prices": {"Tabela 1 - 15 a 50 pessoas": 100.0, "Tabela 2 - 15 a 50 pessoas": 110.0, "Tabela 3 - 15 a 50 pessoas": 120.0}, "desc": ""}, {"name": "Combo 1: Palco 5x2m + Monitor de retorno + Púlpito", "prices": {"Tabela 1 - 15 a 50 pessoas": 1750.0, "Tabela 2 - 15 a 50 pessoas": 1930.0, "Tabela 3 - 15 a 50 pessoas": 2140.0}, "desc": ""}, {"name": "Combo 2: Palco 5x2m + Monitor de retorno + Microfone", "prices": {"Tabela 1 - 15 a 50 pessoas": 1860.0, "Tabela 2 - 15 a 50 pessoas": 2050.0, "Tabela 3 - 15 a 50 pessoas": 2260.0}, "desc": ""}, {"name": "Combo 3: Palco 5x2m + 4 Parleds", "prices": {"Tabela 1 - 15 a 50 pessoas": 1380.0, "Tabela 2 - 15 a 50 pessoas": 1520.0, "Tabela 3 - 15 a 50 pessoas": 1680.0}, "desc": ""}, {"name": "Outros", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": ""}, {"name": "Gerador de energia 110 kVa (stand by -10h)", "prices": {"Tabela 1 - 15 a 50 pessoas": 2940.0, "Tabela 2 - 15 a 50 pessoas": 3240.0, "Tabela 3 - 15 a 50 pessoas": 3570.0}, "desc": ""}, {"name": "Gerador de energia 110 kVa (em uso -10h)", "prices": {"Tabela 1 - 15 a 50 pessoas": 3790.0, "Tabela 2 - 15 a 50 pessoas": 4170.0, "Tabela 3 - 15 a 50 pessoas": 4590.0}, "desc": ""}, {"name": "Técnico de áudio e vídeo", "prices": {"Tabela 1 - 15 a 50 pessoas": 650.0, "Tabela 2 - 15 a 50 pessoas": 720.0, "Tabela 3 - 15 a 50 pessoas": 795.0}, "desc": ""}, {"name": "Recepcionista", "prices": {"Tabela 1 - 15 a 50 pessoas": 360.0, "Tabela 2 - 15 a 50 pessoas": 400.0, "Tabela 3 - 15 a 50 pessoas": 440.0}, "desc": ""}, {"name": "Segurança", "prices": {"Tabela 1 - 15 a 50 pessoas": 360.0, "Tabela 2 - 15 a 50 pessoas": 400.0, "Tabela 3 - 15 a 50 pessoas": 440.0}, "desc": ""}, {"name": "Garçom extra", "prices": {"Tabela 1 - 15 a 50 pessoas": 360.0, "Tabela 2 - 15 a 50 pessoas": 400.0, "Tabela 3 - 15 a 50 pessoas": 440.0}, "desc": ""}, {"name": "Estacionamento - até 20 carros", "prices": {"Tabela 1 - 15 a 50 pessoas": 770.0, "Tabela 2 - 15 a 50 pessoas": 850.0, "Tabela 3 - 15 a 50 pessoas": 940.0}, "desc": ""}, {"name": "Estacionamento - até 30 carros", "prices": {"Tabela 1 - 15 a 50 pessoas": 1150.0, "Tabela 2 - 15 a 50 pessoas": 1270.0, "Tabela 3 - 15 a 50 pessoas": 1400.0}, "desc": ""}, {"name": "Outros", "prices": {"Tabela 1 - 15 a 50 pessoas": null, "Tabela 2 - 15 a 50 pessoas": null, "Tabela 3 - 15 a 50 pessoas": null}, "desc": ""}]};
+
+// Mutable state (admin can edit)
+let STATE = {
+  tables: [...D.tables],
+  spaces: D.spaces.map(s => ({ name: s, desc: D.space_desc[s]||'', prices: {} })),
+  gast_items: D.gast_items.map(i => ({...i})),
+  equip_items: D.equip_items.map(i => ({...i})),
+  montagem_opts: ['Auditório','Escolar','"U"','"U" sobre "U"','Mesas redondas','Confraternização'],
+  dur_opts: ['Entre 0 e 8 horas','Entre 8 e 12 horas'],
+  cat_opts: ['Alimentos','Bebidas','Sobremesas','Salgados','Prato Quente','Frutos do Mar','Kids'],
+};
+
+// Init space prices from pricing data
+STATE.spaces.forEach(sp => {
+  D.tables.forEach(t => {
+    sp.prices[t] = (D.space_prices[t] && D.space_prices[t][sp.name]) ? D.space_prices[t][sp.name] : 0;
+  });
+});
+
+// ════════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════════
+const fmt = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtDate = d => { if(!d) return ''; const [y,m,day]=d.split('-'); const mn=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']; return `${+day} de ${mn[+m]} de ${y}`; };
+const $ = id => document.getElementById(id);
+const g = id => ($(id)||{}).value || '';
+
+function toast(msg) {
+  const el = $('toast-el'); el.textContent = msg; el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'), 2500);
+}
+
+function getCurrentTable() { return g('tabela-global'); }
+
+function getPriceForItem(items, itemName, tableName) {
+  if (!tableName) return null;
+  const item = items.find(i => i.name === itemName);
+  if (!item) return null;
+  // Map table to T1/T2/T3 key
+  const tMap = {
+    'Tabela 1 - 15 a 50 pessoas':       'Tabela 1 - 15 a 50 pessoas',
+    'Tabela 2 - 15 a 50 pessoas':       'Tabela 2 - 15 a 50 pessoas',
+    'Tabela 3 - 15 a 50 pessoas':       'Tabela 3 - 15 a 50 pessoas',
+    'Tabela 1 - a partir de 50 pessoas':'Tabela 1 - 15 a 50 pessoas',
+    'Tabela 2 - a partir de 50 pessoas':'Tabela 2 - 15 a 50 pessoas',
+    'Tabela 3 - a partir de 50 pessoas':'Tabela 3 - 15 a 50 pessoas',
+    'Dezembro 30k':                     'Tabela 1 - 15 a 50 pessoas',
+  };
+  const key = tMap[tableName] || tableName;
+  return item.prices[key] ?? null;
+}
+
+// ════════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════════
+document.querySelectorAll('.sb-link').forEach(el => {
+  el.addEventListener('click', () => {
+    const v = el.dataset.view;
+    document.querySelectorAll('.sb-link').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    el.classList.add('active');
+    $('view-'+v).classList.add('active');
+    $('topbar-title').textContent = el.textContent.trim();
+    if (v === 'investimento') recalc();
+  });
+});
+
+// ════════════════════════════════════════════
+// TABLE SELECTOR
+// ════════════════════════════════════════════
+function populateTableSelect() {
+  const sel = $('tabela-global');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Selecione a tabela —</option>';
+  STATE.tables.forEach(t => {
+    const o = document.createElement('option');
+    o.value = o.textContent = t;
+    if (t === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function onTableChange() {
+  const tbl = getCurrentTable();
+  // Refresh espaco prices
+  document.querySelectorAll('#esp-tbody tr').forEach(tr => {
+    const sel = tr.querySelector('select.esp-sel');
+    if (!sel || !sel.value) return;
+    const sp = STATE.spaces.find(s => s.name === sel.value);
+    if (sp && sp.prices[tbl] !== undefined) {
+      tr.querySelector('.esp-val').value = sp.prices[tbl];
+    }
+    updateEspRow(tr);
+  });
+  // Refresh gast/equip prices
+  refreshItemPrices('gast-tbody', STATE.gast_items, 4);
+  refreshItemPrices('equip-tbody', STATE.equip_items, 3);
+  recalc();
+  toast('Tabela alterada — preços atualizados');
+}
+
+function refreshItemPrices(tbodyId, items, priceIdx) {
+  const tbl = getCurrentTable();
+  document.querySelectorAll('#'+tbodyId+' tr').forEach(tr => {
+    const sel = tr.querySelector('select.item-sel');
+    if (!sel || !sel.value || sel.value==='__manual__') return;
+    const p = getPriceForItem(items, sel.value, tbl);
+    if (p !== null) {
+      const cells = tr.querySelectorAll('td');
+      cells[priceIdx].querySelector('input').value = p;
+    }
+    updateItemRow(tr, tbodyId);
+  });
+}
+
+// ════════════════════════════════════════════
+// HOURS CALC
+// ════════════════════════════════════════════
+function calcHoras() {
+  const ini = g('ev-inicio'), fim = g('ev-termino');
+  if (!ini || !fim) return;
+  const [ih,im] = ini.split(':').map(Number);
+  const [fh,fm] = fim.split(':').map(Number);
+  let mins = (fh*60+fm) - (ih*60+im);
+  if (mins < 0) mins += 1440;
+  const h = Math.floor(mins/60), m = mins%60;
+  $('ev-horas').value = m > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${h}h de locação`;
+}
+
+// ════════════════════════════════════════════
+// MONTAGEM SELECT
+// ════════════════════════════════════════════
+function populateMontagem() {
+  const sel = $('ev-montagem');
+  sel.innerHTML = STATE.montagem_opts.map(m => `<option>${m}</option>`).join('');
+}
+
+// ════════════════════════════════════════════
+// ESPAÇOS
+// ════════════════════════════════════════════
+function buildEspacoSelect(current) {
+  let o = '<option value="">— Selecione —</option>';
+  STATE.spaces.forEach(s => { o += `<option value="${s.name}" ${s.name===current?'selected':''}>${s.name}</option>`; });
+  o += `<option value="__manual__">✏️ Digitar...${current&&!STATE.spaces.find(s=>s.name===current)?` selected`:''}</option>`;
+  return o;
+}
+
+function addEspaco(name='', montagem='', obs='', val=0) {
+  const tbody = $('esp-tbody');
+  const tr = document.createElement('tr');
+  const tbl = getCurrentTable();
+  tr.innerHTML = `
+    <td>
+      <select class="esp-sel" style="width:100%" onchange="onEspacoSelect(this)">${buildEspacoSelect(name)}</select>
+      <input type="text" placeholder="Nome do espaço" style="margin-top:4px;display:${name&&!STATE.spaces.find(s=>s.name===name)?'block':'none'};" value="${name&&!STATE.spaces.find(s=>s.name===name)?name:''}">
+    </td>
+    <td><select style="width:100%">${STATE.montagem_opts.map(m=>`<option ${m===montagem?'selected':''}>${m}</option>`).join('')}</select></td>
+    <td><input type="text" placeholder="Observações..." value="${obs}" style="width:100%"></td>
+    <td class="r"><input class="esp-val" type="number" value="${val}" min="0" step="0.01" style="width:100%;text-align:right" onchange="updateEspRow(this.closest('tr'));recalc()"></td>
+    <td><button class="x-btn" onclick="this.closest('tr').remove();recalc()">×</button></td>
+  `;
+  tbody.appendChild(tr);
+}
+
+function onEspacoSelect(sel) {
+  const tr = sel.closest('tr');
+  const manInput = sel.nextElementSibling;
+  const valInput = tr.querySelector('.esp-val');
+  const obsInput = tr.querySelectorAll('td')[2].querySelector('input');
+  if (sel.value === '__manual__') { manInput.style.display='block'; return; }
+  manInput.style.display = 'none';
+  const sp = STATE.spaces.find(s => s.name === sel.value);
+  if (sp) {
+    obsInput.value = sp.desc || '';
+    const tbl = getCurrentTable();
+    if (tbl && sp.prices[tbl] !== undefined) valInput.value = sp.prices[tbl];
+  }
+  updateEspRow(tr); recalc();
+}
+
+function updateEspRow(tr) { /* no subtotal col for spaces */ recalc(); }
+
+// ════════════════════════════════════════════
+// GASTRONOMIA
+// ════════════════════════════════════════════
+function buildItemSelect(items, current) {
+  let o = '<option value="">— Selecione —</option>';
+  items.forEach(i => { o += `<option value="${i.name}" ${i.name===current?'selected':''}>${i.name}</option>`; });
+  o += '<option value="__manual__">✏️ Digitar...</option>';
+  return o;
+}
+
+function addGast(name='',hor='',obs='',qty=0,unit=0) {
+  const tbody = $('gast-tbody');
+  const tbl = getCurrentTable();
+  const p = name ? (getPriceForItem(STATE.gast_items, name, tbl) ?? unit) : unit;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <select class="item-sel" style="width:100%" onchange="onGastSelect(this)">${buildItemSelect(STATE.gast_items, name)}</select>
+      <input type="text" placeholder="Nome do item" style="margin-top:4px;display:none;">
+    </td>
+    <td><input type="text" value="${hor}" placeholder="Ex: Tarde / 30 min." style="width:100%"></td>
+    <td><input type="text" value="${obs}" placeholder="Descrição..." style="width:100%"></td>
+    <td class="r"><input type="number" value="${qty}" min="0" style="width:55px;text-align:right" onchange="updateItemRow(this.closest('tr'),'gast-tbody');recalc()"></td>
+    <td class="r"><input type="number" value="${p||unit}" min="0" step="0.01" style="width:85px;text-align:right" onchange="updateItemRow(this.closest('tr'),'gast-tbody');recalc()"></td>
+    <td class="tot">R$ 0,00</td>
+    <td><button class="x-btn" onclick="this.closest('tr').remove();recalc()">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateItemRow(tr, 'gast-tbody');
+}
+
+function onGastSelect(sel) {
+  const tr = sel.closest('tr'); const cells = tr.querySelectorAll('td');
+  const manInput = sel.nextElementSibling;
+  if (sel.value === '__manual__') { manInput.style.display='block'; return; }
+  manInput.style.display = 'none';
+  const item = STATE.gast_items.find(i => i.name === sel.value);
+  if (item) {
+    cells[2].querySelector('input').value = item.desc || '';
+    const tbl = getCurrentTable();
+    const p = getPriceForItem(STATE.gast_items, sel.value, tbl);
+    if (p !== null) cells[4].querySelector('input').value = p;
+  }
+  updateItemRow(tr, 'gast-tbody'); recalc();
+}
+
+// ════════════════════════════════════════════
+// EQUIPAMENTOS
+// ════════════════════════════════════════════
+function addEquip(name='',qty=1,obs='',unit=0) {
+  const tbody = $('equip-tbody');
+  const tbl = getCurrentTable();
+  const p = name ? (getPriceForItem(STATE.equip_items, name, tbl) ?? unit) : unit;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td>
+      <select class="item-sel" style="width:100%" onchange="onEquipSelect(this)">${buildItemSelect(STATE.equip_items, name)}</select>
+      <input type="text" placeholder="Nome do item" style="margin-top:4px;display:none;">
+    </td>
+    <td class="r"><input type="number" value="${qty}" min="0" style="width:50px;text-align:right" onchange="updateItemRow(this.closest('tr'),'equip-tbody');recalc()"></td>
+    <td><input type="text" value="${obs}" placeholder="Observação..." style="width:100%"></td>
+    <td class="r"><input type="number" value="${p||unit}" min="0" step="0.01" style="width:85px;text-align:right" onchange="updateItemRow(this.closest('tr'),'equip-tbody');recalc()"></td>
+    <td class="tot">R$ 0,00</td>
+    <td><button class="x-btn" onclick="this.closest('tr').remove();recalc()">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateItemRow(tr, 'equip-tbody');
+}
+
+function onEquipSelect(sel) {
+  const tr = sel.closest('tr'); const cells = tr.querySelectorAll('td');
+  const manInput = sel.nextElementSibling;
+  if (sel.value === '__manual__') { manInput.style.display='block'; return; }
+  manInput.style.display = 'none';
+  const tbl = getCurrentTable();
+  const p = getPriceForItem(STATE.equip_items, sel.value, tbl);
+  if (p !== null) cells[3].querySelector('input').value = p;
+  updateItemRow(tr, 'equip-tbody'); recalc();
+}
+
+function updateItemRow(tr, tbodyId) {
+  const cells = tr.querySelectorAll('td');
+  let total = 0;
+  if (tbodyId === 'gast-tbody') {
+    total = (parseFloat(cells[3].querySelector('input')?.value)||0) * (parseFloat(cells[4].querySelector('input')?.value)||0);
+    cells[5].textContent = fmt(total);
+  } else {
+    total = (parseFloat(cells[1].querySelector('input')?.value)||0) * (parseFloat(cells[3].querySelector('input')?.value)||0);
+    cells[4].textContent = fmt(total);
+  }
+}
+
+// ════════════════════════════════════════════
+// RECALC
+// ════════════════════════════════════════════
+function recalc() {
+  let esp=0, gast=0, equip=0;
+  document.querySelectorAll('#esp-tbody tr').forEach(tr => {
+    esp += parseFloat(tr.querySelector('.esp-val')?.value)||0;
+  });
+  document.querySelectorAll('#gast-tbody tr').forEach(tr => {
+    const c = tr.querySelectorAll('td');
+    const t = (parseFloat(c[3]?.querySelector('input')?.value)||0) * (parseFloat(c[4]?.querySelector('input')?.value)||0);
+    gast += t; c[5].textContent = fmt(t);
+  });
+  document.querySelectorAll('#equip-tbody tr').forEach(tr => {
+    const c = tr.querySelectorAll('td');
+    const t = (parseFloat(c[1]?.querySelector('input')?.value)||0) * (parseFloat(c[3]?.querySelector('input')?.value)||0);
+    equip += t; c[4].textContent = fmt(t);
+  });
+  const sub = esp + gast + equip;
+  const desc = parseFloat(g('rs-desc'))||0;
+  const cred = parseFloat(g('rs-cred'))||0;
+  const ext  = parseFloat(g('rs-ext'))||0;
+  const tot  = Math.max(0, sub - desc - cred + ext);
+  $('rs-esp').textContent   = fmt(esp);
+  $('rs-gast').textContent  = fmt(gast);
+  $('rs-equip').textContent = fmt(equip);
+  $('rs-sub').textContent   = fmt(sub);
+  $('rs-tot').textContent   = fmt(tot);
+}
+
+// ════════════════════════════════════════════
+// CARDÁPIOS
+// ════════════════════════════════════════════
+let momId = 0;
+function addMoment(name='', hor='') {
+  const id = ++momId;
+  const wrap = $('moments-wrap');
+  const div = document.createElement('div');
+  div.className = 'mom-card'; div.id = 'mom-'+id;
+  div.innerHTML = `
+    <div class="mom-hdr" onclick="toggleMom(${id})">
+      <div style="display:flex;align-items:center;gap:10px">
+        <strong><input type="text" value="${name||'Novo momento'}" style="background:none;border:none;font-size:12.5px;font-weight:700;color:var(--dk);width:180px" onclick="event.stopPropagation()"></strong>
+        <input type="text" value="${hor}" placeholder="Horário / período" style="background:none;border:none;font-size:11px;color:var(--gr);width:180px" onclick="event.stopPropagation()">
+      </div>
+      <div style="display:flex;gap:8px">
+        <span style="font-size:11px;color:var(--gr)">▼</span>
+        <button class="x-btn" onclick="event.stopPropagation();$('mom-${id}').remove()">×</button>
+      </div>
+    </div>
+    <div class="mom-body" id="mom-body-${id}">
+      ${STATE.cat_opts.map(cat => `
+        <div class="cat-sec">
+          <div class="cat-lbl">${cat}</div>
+          <div class="chips" id="chips-${id}-${cat.replace(/\s/g,'_')}"></div>
+          <div class="chip-row">
+            <input type="text" placeholder="Adicionar item..." id="chip-input-${id}-${cat.replace(/\s/g,'_')}">
+            <button class="btn btn-o btn-sm" onclick="addChip(${id},'${cat.replace(/\s/g,'_')}')">+ Adicionar</button>
+          </div>
+        </div>`).join('')}
+    </div>
+  `;
+  wrap.appendChild(div);
+}
+
+function addChip(momId, cat) {
+  const inp = $(`chip-input-${momId}-${cat}`);
+  const val = inp.value.trim(); if (!val) return;
+  const container = $(`chips-${momId}-${cat}`);
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.innerHTML = `${val}<span class="rm" onclick="this.parentElement.remove()">×</span>`;
+  container.appendChild(chip); inp.value='';
+}
+
+function toggleMom(id) {
+  const b = $('mom-body-'+id);
+  b.style.display = b.style.display==='none' ? 'block' : 'none';
+}
+
+// ════════════════════════════════════════════
+// CONDIÇÕES
+// ════════════════════════════════════════════
+const DEFAULT_CONDS = [
+  "Esta proposta não garante a reserva da data. A confirmação ocorre após preenchimento do cadastro e assinatura do contrato. Após assinatura, o quantitativo pode ser aumentado, mas não diminuído.",
+  "Toda e qualquer atividade da casa terá fim às 00:00h.",
+  "Alteração no número de participantes ou na data pode alterar o valor da proposta.",
+  "A opção de coffee break não é ofertada entre 11:00h e 14:00h. Para cada momento de buffet, é necessário intervalo mínimo de 2 horas.",
+  "O cardápio deverá ser enviado em até 7 dias úteis antes do evento. Caso contrário, as escolhas serão realizadas pelo chef de cozinha conforme a categoria contratada.",
+  "O cronograma, montagem da sala e todas as contratações deverão ser definidos em até 10 dias úteis antes do evento.",
+  "Para alterações de horário de início ou término, é necessário solicitar nova proposta. Para locação de diária de montagem e/ou desmontagem, o valor é R$ 9.000,00.",
+  "Na contratação do pacote de mídia, o prazo limite para envio das artes é de 3 dias úteis antes do evento.",
+  "A projeção é compatível com equipamentos com entrada HDMI.",
+  "Os valores desta proposta são referentes à diária.",
+  "Esta proposta é válida por 7 dias úteis a partir da data de envio."
+];
+
+function renderConds(list) {
+  const wrap = $('cond-wrap'); wrap.innerHTML='';
+  list.forEach((txt,i) => {
+    const div = document.createElement('div'); div.className='cond-li';
+    div.innerHTML=`<span class="cond-n">${i+1}.</span>
+      <textarea rows="2" style="width:100%">${txt}</textarea>
+      <button class="x-btn" onclick="this.closest('.cond-li').remove();renumConds()">×</button>`;
+    wrap.appendChild(div);
+  });
+}
+
+function addCond() {
+  const wrap = $('cond-wrap');
+  const n = wrap.children.length+1;
+  const div = document.createElement('div'); div.className='cond-li';
+  div.innerHTML=`<span class="cond-n">${n}.</span>
+    <textarea rows="2" style="width:100%" placeholder="Nova cláusula..."></textarea>
+    <button class="x-btn" onclick="this.closest('.cond-li').remove();renumConds()">×</button>`;
+  wrap.appendChild(div);
+  div.querySelector('textarea').focus();
+}
+
+function renumConds() {
+  document.querySelectorAll('.cond-n').forEach((el,i) => el.textContent=(i+1)+'.');
+}
+
+// ════════════════════════════════════════════
+// ADM: TABELAS
+// ════════════════════════════════════════════
+function renderAdmTables() {
+  const wrap = $('adm-tables-wrap'); wrap.innerHTML='';
+  STATE.tables.forEach((t, idx) => {
+    const div = document.createElement('div');
+    div.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--ru)';
+    div.innerHTML=`
+      <input type="text" value="${t}" style="flex:1;font-weight:600"
+        onchange="STATE.tables[${idx}]=this.value;populateTableSelect();renderAdmTables()">
+      <button class="x-btn" onclick="STATE.tables.splice(${idx},1);populateTableSelect();renderAdmTables()">×</button>`;
+    wrap.appendChild(div);
+  });
+}
+
+function addTable() {
+  STATE.tables.push('Nova Tabela');
+  populateTableSelect(); renderAdmTables();
+}
+
+// ════════════════════════════════════════════
+// ADM: ESPAÇOS
+// ════════════════════════════════════════════
+function renderAdmEspacos() {
+  const tbody = $('adm-esp-tbody'); tbody.innerHTML='';
+  STATE.spaces.forEach((sp, idx) => {
+    const tr = document.createElement('tr');
+    const priceInputs = STATE.tables.map(t =>
+      `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">
+        <span style="font-size:10px;color:var(--gr);min-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t}">${t.substring(0,12)}…</span>
+        <input type="number" value="${sp.prices[t]||0}" step="0.01" style="width:80px;text-align:right;font-size:12px"
+          onchange="STATE.spaces[${idx}].prices['${t}']=parseFloat(this.value)||0">
+      </div>`
+    ).join('');
+    tr.innerHTML=`
+      <td><input type="text" value="${sp.name}" style="width:100%;font-weight:600" onchange="STATE.spaces[${idx}].name=this.value"></td>
+      <td><input type="text" value="${sp.desc}" style="width:100%" onchange="STATE.spaces[${idx}].desc=this.value"></td>
+      <td>${priceInputs}</td>
+      <td><button class="x-btn" onclick="STATE.spaces.splice(${idx},1);renderAdmEspacos()">×</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addAdmEspaco() {
+  const prices={};
+  STATE.tables.forEach(t => prices[t]=0);
+  STATE.spaces.push({name:'Novo Espaço',desc:'',prices});
+  renderAdmEspacos();
+}
+
+// ════════════════════════════════════════════
+// ADM: GASTRONOMIA
+// ════════════════════════════════════════════
+function renderAdmGast() {
+  const tbody = $('adm-gast-tbody'); tbody.innerHTML='';
+  const keys = ['Tabela 1 - 15 a 50 pessoas','Tabela 2 - 15 a 50 pessoas','Tabela 3 - 15 a 50 pessoas'];
+  STATE.gast_items.forEach((it, idx) => {
+    const tr = document.createElement('tr');
+    const pInputs = keys.map((k,ki) =>
+      `<td class="r"><input type="number" value="${it.prices[k]??''}" step="0.01" style="width:75px;text-align:right;font-size:12px"
+        onchange="STATE.gast_items[${idx}].prices['${k}']=parseFloat(this.value)||0"></td>`
+    ).join('');
+    tr.innerHTML=`
+      <td><input type="text" value="${it.name}" style="width:100%;font-size:12px" onchange="STATE.gast_items[${idx}].name=this.value"></td>
+      <td><input type="text" value="${it.desc||''}" style="width:100%;font-size:12px" onchange="STATE.gast_items[${idx}].desc=this.value"></td>
+      ${pInputs}
+      <td><button class="x-btn" onclick="STATE.gast_items.splice(${idx},1);renderAdmGast()">×</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addAdmGast() {
+  const prices={'Tabela 1 - 15 a 50 pessoas':0,'Tabela 2 - 15 a 50 pessoas':0,'Tabela 3 - 15 a 50 pessoas':0};
+  STATE.gast_items.push({name:'Novo item',desc:'',prices});
+  renderAdmGast();
+}
+
+// ════════════════════════════════════════════
+// ADM: EQUIPAMENTOS
+// ════════════════════════════════════════════
+function renderAdmEquip() {
+  const tbody = $('adm-equip-tbody'); tbody.innerHTML='';
+  const keys = ['Tabela 1 - 15 a 50 pessoas','Tabela 2 - 15 a 50 pessoas','Tabela 3 - 15 a 50 pessoas'];
+  STATE.equip_items.forEach((it, idx) => {
+    const tr = document.createElement('tr');
+    const pInputs = keys.map(k =>
+      `<td class="r"><input type="number" value="${it.prices[k]??''}" step="0.01" style="width:75px;text-align:right;font-size:12px"
+        onchange="STATE.equip_items[${idx}].prices['${k}']=parseFloat(this.value)||0"></td>`
+    ).join('');
+    tr.innerHTML=`
+      <td><input type="text" value="${it.name}" style="width:100%;font-size:12px" onchange="STATE.equip_items[${idx}].name=this.value"></td>
+      ${pInputs}
+      <td><button class="x-btn" onclick="STATE.equip_items.splice(${idx},1);renderAdmEquip()">×</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function addAdmEquip() {
+  const prices={'Tabela 1 - 15 a 50 pessoas':0,'Tabela 2 - 15 a 50 pessoas':0,'Tabela 3 - 15 a 50 pessoas':0};
+  STATE.equip_items.push({name:'Novo item',prices});
+  renderAdmEquip();
+}
+
+// ════════════════════════════════════════════
+// ADM: LISTAS
+// ════════════════════════════════════════════
+function renderList(id, arr) {
+  const wrap = $('list-'+id); wrap.innerHTML='';
+  arr.forEach((v, i) => {
+    const chip=document.createElement('div'); chip.className='chip';
+    chip.innerHTML=`<input type="text" value="${v}" style="border:none;background:transparent;width:auto;min-width:80px;font-size:12px"
+      onchange="${id==='mont'?'STATE.montagem_opts':id==='dur'?'STATE.dur_opts':'STATE.cat_opts'}[${i}]=this.value">
+      <span class="rm" onclick="remove_list_item('${id}',${i})">×</span>`;
+    wrap.appendChild(chip);
+  });
+}
+
+function remove_list_item(id, i) {
+  if(id==='mont') STATE.montagem_opts.splice(i,1);
+  else if(id==='dur') STATE.dur_opts.splice(i,1);
+  else STATE.cat_opts.splice(i,1);
+  renderList(id, id==='mont'?STATE.montagem_opts:id==='dur'?STATE.dur_opts:STATE.cat_opts);
+}
+
+function addListItem(id) {
+  const val = prompt('Novo item:'); if(!val) return;
+  if(id==='mont') STATE.montagem_opts.push(val);
+  else if(id==='dur') STATE.dur_opts.push(val);
+  else STATE.cat_opts.push(val);
+  renderList(id, id==='mont'?STATE.montagem_opts:id==='dur'?STATE.dur_opts:STATE.cat_opts);
+}
+
+// ════════════════════════════════════════════
+// EXPORT PDF
+// ════════════════════════════════════════════
+function exportPDF() {
+  recalc();
+  const logoSrc = 'data:image/png;base64,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';
+  const today = new Date().toISOString().split('T')[0];
+
+  let espTotal=0, gastTotal=0, equipTotal=0;
+  const espacos=[], gastRows=[], equipRows=[];
+
+  document.querySelectorAll('#esp-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const sel=cells[0].querySelector('select');
+    const man=cells[0].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    const val=parseFloat(cells[3].querySelector('input')?.value)||0;
+    espTotal+=val;
+    espacos.push({nome, montagem:cells[1].querySelector('select')?.value||'', obs:cells[2].querySelector('input')?.value||'', val});
+  });
+
+  document.querySelectorAll('#gast-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const sel=cells[0].querySelector('select');
+    const man=cells[0].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    const qty=parseFloat(cells[3].querySelector('input')?.value)||0;
+    const unit=parseFloat(cells[4].querySelector('input')?.value)||0;
+    gastTotal+=qty*unit;
+    gastRows.push({nome, hor:cells[1].querySelector('input')?.value||'', obs:cells[2].querySelector('input')?.value||'', qty, unit, tot:qty*unit});
+  });
+
+  document.querySelectorAll('#equip-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const sel=cells[0].querySelector('select');
+    const man=cells[0].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    const qty=parseFloat(cells[1].querySelector('input')?.value)||0;
+    const unit=parseFloat(cells[3].querySelector('input')?.value)||0;
+    equipTotal+=qty*unit;
+    equipRows.push({nome, qty, obs:cells[2].querySelector('input')?.value||'', unit, tot:qty*unit});
+  });
+
+  const conds=[];
+  document.querySelectorAll('.cond-li textarea').forEach(ta => { if(ta.value.trim()) conds.push(ta.value.trim()); });
+
+  const sub=espTotal+gastTotal+equipTotal;
+  const desc=parseFloat(g('rs-desc'))||0;
+  const cred=parseFloat(g('rs-cred'))||0;
+  const ext=parseFloat(g('rs-ext'))||0;
+  const tot=Math.max(0,sub-desc-cred+ext);
+
+  const espHtml = espacos.length
+    ? espacos.map(e=>`<tr><td>${e.nome}</td><td>${e.montagem}</td><td>${e.obs}</td><td class="r"><strong>${fmt(e.val)}</strong></td></tr>`).join('')
+    : '<tr><td colspan="4" style="color:#999;font-style:italic">Nenhum espaço adicionado</td></tr>';
+
+  const gastHtml = gastRows.length
+    ? gastRows.map(r=>`<tr><td><strong>${r.nome}</strong></td><td>${r.hor}</td><td>${r.obs}</td><td class="r">${r.qty||'—'}</td><td class="r">${r.unit?fmt(r.unit):'—'}</td><td class="r"><strong>${r.tot?fmt(r.tot):'Consumo'}</strong></td></tr>`).join('')
+    : '<tr><td colspan="6" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
+
+  const equipHtml = equipRows.length
+    ? equipRows.map(r=>`<tr><td>${r.nome}</td><td class="r">${r.qty}</td><td>${r.obs||'—'}</td><td class="r">${fmt(r.unit)}</td><td class="r"><strong>${fmt(r.tot)}</strong></td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:#999;font-style:italic">Nenhum item adicionado</td></tr>';
+
+  const condsHtml = conds.map((c,i)=>`<tr><td style="color:#8B0000;font-weight:700;font-size:7.5px;white-space:nowrap;vertical-align:top;padding-right:5px">${i+1}.</td><td style="font-size:8px;color:#555;line-height:1.5">${c}</td></tr>`).join('');
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Proposta – ${g('ev-cliente')||'Espaço Vista'}</title>
+  <style>
+  @page{size:A4;margin:18mm 18mm 17mm}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#555;background:#fff}
+  .hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:.5px solid #E5E5E5}
+  .hdr img{height:38px}
+  .hdr-meta{text-align:right}
+  .hdr-meta .type{font-size:7.5px;color:#999}
+  .hdr-meta .date{font-size:8.5px;font-weight:700;color:#1A1A1A;margin-top:2px}
+  .sec{font-size:8.5px;font-weight:700;color:#8B0000;letter-spacing:.08em;text-transform:uppercase;margin:13px 0 3px}
+  hr{border:none;border-top:.5px solid #E5E5E5;margin-bottom:6px}
+  .info-wrap{display:flex;gap:12px}
+  .ib{flex:1;border:.3px solid #E5E5E5;border-radius:3px;overflow:hidden}
+  .ib table{width:100%;border-collapse:collapse}
+  .ib th{background:#F2EEEE;font-size:8px;font-weight:700;color:#1A1A1A;padding:5px 7px;text-align:left;border-bottom:.75px solid #8B0000}
+  .ib td.l{font-size:8px;font-weight:700;color:#1A1A1A;padding:5px 7px;width:40%;border-bottom:.3px solid #E5E5E5}
+  .ib td.v{font-size:8.5px;color:#555;padding:5px 7px;border-bottom:.3px solid #E5E5E5}
+  table.t{width:100%;border-collapse:collapse;font-size:8.5px}
+  table.t th{background:#F2EEEE;font-size:8px;font-weight:700;color:#1A1A1A;padding:5px 7px;text-align:left;border-bottom:.75px solid #8B0000}
+  table.t th.r{text-align:right}
+  table.t td{padding:5px 7px;border-bottom:.3px solid #E5E5E5;color:#555;vertical-align:top}
+  table.t td.r{text-align:right}
+  table.t tr:last-child td{border-bottom:none}
+  .sum-wrap{display:flex;justify-content:flex-end}
+  .sum{width:320px;border-collapse:collapse;font-size:9px}
+  .sum td{padding:4px 7px}
+  .sum .l{text-align:right;color:#555}
+  .sum .v{text-align:right;color:#1A1A1A;font-weight:500;min-width:100px}
+  .sum .sub td{font-weight:700;border-top:.75px solid #8B0000;border-bottom:.75px solid #8B0000;color:#1A1A1A}
+  .sum .disc td{color:#8B0000;font-weight:700}
+  .grand{background:#1A1A1A}
+  .grand td{color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px!important}
+  .pay{background:#F9F4F4;padding:6px 10px;font-size:8px;color:#555;margin-top:7px;border-radius:3px}
+  .footer{position:fixed;bottom:0;left:0;right:0;height:14mm;display:flex;align-items:center;justify-content:space-between;border-top:.5px solid #E5E5E5;font-size:7.2px;color:#999;padding:0 18mm;background:#fff}
+  </style></head><body>
+  <div class="footer">
+    <span>GVG Eventos e Alimentos Ltda · CNPJ: 11.309.019/0001-30</span>
+    <span>www.espacovista.com.br</span>
+  </div>
+  <div class="hdr">
+    <img src="${logoSrc}" alt="Espaço Vista">
+    <div class="hdr-meta">
+      <div class="type">Proposta Comercial · Evento Corporativo</div>
+      <div class="date">${fmtDate(today)}</div>
+    </div>
+  </div>
+  <div class="sec">Dados do Evento</div><hr>
+  <div class="info-wrap">
+    <div class="ib"><table>
+      <tr><th colspan="2">Identificação</th></tr>
+      <tr><td class="l">Cliente</td><td class="v"><strong>${g('ev-cliente')||'—'}</strong></td></tr>
+      <tr><td class="l">Data do evento</td><td class="v">${fmtDate(g('ev-data'))||'—'}</td></tr>
+      <tr><td class="l">Nº de convidados</td><td class="v">${g('ev-conv')||'—'} pessoas</td></tr>
+      <tr><td class="l">Validade</td><td class="v">${g('ev-validade')||'7 dias úteis'}</td></tr>
+    </table></div>
+    <div class="ib"><table>
+      <tr><th colspan="2">Horários</th></tr>
+      <tr><td class="l">Chegada do cliente</td><td class="v">${g('ev-chegada')||'—'}</td></tr>
+      <tr><td class="l">Início do evento</td><td class="v">${g('ev-inicio')||'—'}</td></tr>
+      <tr><td class="l">Término do evento</td><td class="v">${g('ev-termino')||'—'}</td></tr>
+      <tr><td class="l">Total contratado</td><td class="v"><strong>${g('ev-horas')||'—'}</strong></td></tr>
+    </table></div>
+  </div>
+  <div class="sec" style="margin-top:13px">Locação de Espaço</div><hr>
+  <table class="t"><thead><tr><th>Espaço</th><th>Montagem</th><th>Incluso / Observações</th><th class="r">Valor</th></tr></thead><tbody>${espHtml}</tbody></table>
+  <div class="sec">Gastronomia</div><hr>
+  <table class="t"><thead><tr><th>Item</th><th>Horário / Período</th><th>Descrição</th><th class="r">Qtd.</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${gastHtml}</tbody></table>
+  <div class="sec">Equipamentos e Serviços</div><hr>
+  <table class="t"><thead><tr><th>Item</th><th class="r">Qtd.</th><th>Observação</th><th class="r">Vlr. Unit.</th><th class="r">Subtotal</th></tr></thead><tbody>${equipHtml}</tbody></table>
+  <div class="sec">Resumo do Investimento</div><hr>
+  <div class="sum-wrap"><table class="sum">
+    <tr><td class="l">Valor do Espaço</td><td class="v">${fmt(espTotal)}</td></tr>
+    <tr><td class="l">Gastronomia</td><td class="v">${fmt(gastTotal)}</td></tr>
+    <tr><td class="l">Equipamentos e Serviços</td><td class="v">${fmt(equipTotal)}</td></tr>
+    <tr class="sub"><td class="l">Subtotal</td><td class="v">${fmt(sub)}</td></tr>
+    ${desc?`<tr class="disc"><td class="l">Desconto de Consumação</td><td class="v">− ${fmt(desc)}</td></tr>`:''}
+    ${cred?`<tr><td class="l">Crédito Disponível</td><td class="v">− ${fmt(cred)}</td></tr>`:''}
+    ${ext?`<tr><td class="l">Extras</td><td class="v">${fmt(ext)}</td></tr>`:''}
+    <tr class="grand"><td class="l">VALOR TOTAL DO INVESTIMENTO</td><td class="v">${fmt(tot)}</td></tr>
+  </table></div>
+  ${g('rs-pagto')?`<div class="pay"><strong>Forma de pagamento:</strong> ${g('rs-pagto')}</div>`:''}
+  <div class="sec">Condições Gerais</div><hr>
+  <table style="width:100%;border-collapse:collapse">${condsHtml}</table>
+  <script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+(function init() {
+  populateTableSelect();
+  populateMontagem();
+  calcHoras();
+  renderConds(DEFAULT_CONDS);
+  renderAdmTables();
+  renderAdmEspacos();
+  renderAdmGast();
+  renderAdmEquip();
+  renderList('mont', STATE.montagem_opts);
+  renderList('dur', STATE.dur_opts);
+  renderList('cat', STATE.cat_opts);
+  addMoment('Coffee Break Executivo','Tarde / 30 min.');
+})();
+</script>
+</body>
+</html>
