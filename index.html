@@ -124,6 +124,11 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
 /* ── toast ── */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--dk);color:#fff;padding:10px 18px;border-radius:5px;font-size:12px;opacity:0;transform:translateY(8px);transition:all .25s;z-index:999;border-left:4px solid var(--w)}
 .toast.on{opacity:1;transform:translateY(0)}
+.cli-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--ru);border-radius:5px;margin-bottom:8px;background:var(--wh);transition:border-color .15s}
+.cli-item:hover{border-color:var(--w)}
+.cli-name{font-weight:700;color:var(--dk);font-size:13px}
+.cli-meta{font-size:11px;color:var(--gr);margin-top:2px}
+.cli-acts{display:flex;gap:6px}
 </style>
 </head>
 <body>
@@ -135,6 +140,7 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
   <div class="sb-section">
     <div class="sb-label">Proposta</div>
     <div class="sb-link active" data-view="investimento"><span class="ic">📋</span>Investimento</div>
+    <div class="sb-link" data-view="clientes"><span class="ic">💼</span>Clientes</div>
     <div class="sb-link" data-view="cardapios"><span class="ic">🍽️</span>Cardápios</div>
     <div class="sb-link" data-view="condicoes"><span class="ic">📄</span>Condições Gerais</div>
   </div>
@@ -484,6 +490,23 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
     <div class="card">
       <div class="card-hdr"><span class="card-title">Categorias dos Cardápios</span><button class="btn btn-o btn-sm" onclick="addListItem('cat')">+ Adicionar</button></div>
       <div class="card-body"><div id="list-cat" class="chips" style="gap:6px"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CLIENTES ═══════════ -->
+  <div class="view" id="view-clientes">
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Propostas Salvas</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="cli-name" type="text" placeholder="Nome do cliente..." style="width:200px;padding:5px 9px;font-size:12px">
+          <button class="btn btn-w btn-sm" onclick="saveCliente()">💾 Salvar proposta atual</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:11px;color:var(--gr);margin-bottom:14px">Clique em uma proposta para carregar e editar. O armazenamento é local neste navegador — sem limite prático para o volume de propostas do dia a dia.</p>
+        <div id="cli-list"></div>
+      </div>
     </div>
   </div>
 
@@ -1278,14 +1301,21 @@ function exportPDF() {
   win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
   <title>Proposta – ${g('ev-cliente')||'Espaço Vista'}</title>
   <style>
-  @page{size:A4;margin:18mm 18mm 17mm}
+  @page{size:A4;margin:18mm 18mm 17mm;marks:none}
+  @page{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   *{box-sizing:border-box;margin:0;padding:0}
+  html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   body{font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#555;background:#fff}
+  /* suppress browser header/footer */
+  @media print{
+    @page{margin:18mm 18mm 17mm;size:A4}
+    head title{display:none}
+  }
+  .client-banner{text-align:center;font-family:Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;color:#8B0000;letter-spacing:.08em;text-transform:uppercase;padding-bottom:10px;border-bottom:.5px solid #F2EEEE;margin-bottom:12px}
   .hdr{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:.5px solid #E5E5E5}
   .hdr img{height:38px}
   .hdr-meta{text-align:right}
   .hdr-meta .type{font-size:7.5px;color:#999}
-  .hdr-meta .date{font-size:8.5px;font-weight:700;color:#1A1A1A;margin-top:2px}
   .sec{font-size:8.5px;font-weight:700;color:#8B0000;letter-spacing:.08em;text-transform:uppercase;margin:13px 0 3px}
   hr{border:none;border-top:.5px solid #E5E5E5;margin-bottom:6px}
   .info-wrap{display:flex;gap:12px}
@@ -1310,17 +1340,13 @@ function exportPDF() {
   .grand{background:#1A1A1A}
   .grand td{color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px!important}
   .pay{background:#F9F4F4;padding:6px 10px;font-size:8px;color:#555;margin-top:7px;border-radius:3px}
-  .footer{position:fixed;bottom:0;left:0;right:0;height:14mm;display:flex;align-items:center;justify-content:space-between;border-top:.5px solid #E5E5E5;font-size:7.2px;color:#999;padding:0 18mm;background:#fff}
+  .footer{position:fixed;bottom:0;left:0;right:0;border-top:.5px solid #E5E5E5;font-size:7.2px;color:#999;padding:5px 18mm;background:#fff;display:flex;justify-content:space-between;align-items:center}
   </style></head><body>
-  <div class="footer">
-    <span>GVG Eventos e Alimentos Ltda · CNPJ: 11.309.019/0001-30</span>
-    <span>www.espacovista.com.br</span>
-  </div>
+  <div class="client-banner">PROPOSTA COMERCIAL — ${g('ev-cliente')||'ESPAÇO VISTA'}</div>
   <div class="hdr">
     <img src="${logoSrc}" alt="Espaço Vista">
     <div class="hdr-meta">
       <div class="type">Proposta Comercial · Evento Corporativo</div>
-      <div class="date">${fmtDate(today)}</div>
     </div>
   </div>
   <div class="sec">Dados do Evento</div><hr>
@@ -1360,6 +1386,10 @@ function exportPDF() {
   ${g('rs-pagto')?`<div class="pay"><strong>Forma de pagamento:</strong> ${g('rs-pagto')}</div>`:''}
   <div class="sec">Condições Gerais</div><hr>
   <table style="width:100%;border-collapse:collapse">${condsHtml}</table>
+  <div class="footer" style="position:fixed;bottom:0;left:0;right:0;padding:4px 18mm;border-top:.5px solid #E5E5E5;font-size:7.2px;color:#999;display:flex;justify-content:space-between;background:#fff">
+    <span>GVG Eventos e Alimentos Ltda · CNPJ: 11.309.019/0001-30</span>
+    <span>www.espacovista.com.br</span>
+  </div>
   <script>window.onload=()=>setTimeout(()=>window.print(),400)<\/script>
   </body></html>`);
   win.document.close();
@@ -1368,6 +1398,198 @@ function exportPDF() {
 // ════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// CLIENTES — save / load
+// ════════════════════════════════════════════
+function collectPropostaData() {
+  const dates = getEventDates();
+  const espacos=[], gastRows=[], equipRows=[];
+
+  document.querySelectorAll('#esp-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    espacos.push({
+      date: dateSel?.value||'',
+      nome, montagem:cells[2].querySelector('select')?.value||'',
+      obs:cells[3].querySelector('input')?.value||'',
+      val:parseFloat(cells[4].querySelector('input')?.value)||0
+    });
+  });
+
+  document.querySelectorAll('#gast-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    gastRows.push({
+      date: dateSel?.value||'',
+      nome, hor:cells[2].querySelector('input')?.value||'',
+      obs:cells[3].querySelector('input')?.value||'',
+      qty:parseFloat(cells[4].querySelector('input')?.value)||0,
+      unit:parseFloat(cells[5].querySelector('input')?.value)||0
+    });
+  });
+
+  document.querySelectorAll('#equip-tbody tr').forEach(tr => {
+    const cells=tr.querySelectorAll('td');
+    const dateSel=cells[0].querySelector('select,input[type=date]');
+    const sel=cells[1].querySelector('select');
+    const man=cells[1].querySelector('input[type=text]');
+    const nome=(sel?.value==='__manual__'?man?.value:sel?.value)||'';
+    if(!nome) return;
+    equipRows.push({
+      date: dateSel?.value||'',
+      nome,
+      qty:parseFloat(cells[2].querySelector('input')?.value)||0,
+      obs:cells[3].querySelector('input')?.value||'',
+      unit:parseFloat(cells[4].querySelector('input')?.value)||0
+    });
+  });
+
+  const conds=[];
+  document.querySelectorAll('.cond-li textarea').forEach(ta => { if(ta.value.trim()) conds.push(ta.value.trim()); });
+
+  return {
+    tabela: g('tabela-global'),
+    cliente: g('ev-cliente'),
+    dates,
+    conv: g('ev-conv'),
+    chegada: g('ev-chegada'),
+    inicio: g('ev-inicio'),
+    termino: g('ev-termino'),
+    horas: g('ev-horas'),
+    validade: g('ev-validade'),
+    pagto: g('rs-pagto'),
+    desc: g('rs-desc'),
+    cred: g('rs-cred'),
+    ext: g('rs-ext'),
+    espacos, gastRows, equipRows, conds,
+    // Adm cadastro
+    cadastro: {
+      razao:g('a-razao'),fantasia:g('a-fantasia'),cnpj:g('a-cnpj'),ie:g('a-ie'),
+      iss:g('a-iss'),end:g('a-end'),bairro:g('a-bairro'),cep:g('a-cep'),
+      cid:g('a-cid'),tel:g('a-tel'),assNome:g('a-ass-nome'),assCpf:g('a-ass-cpf'),
+      respNome:g('a-resp-nome'),respTel:g('a-resp-tel')
+    }
+  };
+}
+
+function saveCliente() {
+  const nome = $('cli-name').value.trim() || g('ev-cliente') || 'Sem nome';
+  if (!nome) { toast('Informe o nome do cliente'); return; }
+  const key = 'ev_cliente_' + Date.now();
+  const data = { key, nome, savedAt: new Date().toISOString(), proposta: collectPropostaData() };
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    toast(`✓ Proposta de "${nome}" salva!`);
+    renderClientes();
+  } catch(e) {
+    toast('Erro ao salvar — localStorage cheio?');
+  }
+}
+
+function loadCliente(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return;
+  const data = JSON.parse(raw);
+  const p = data.proposta;
+
+  // Set tabela
+  $('tabela-global').value = p.tabela||''; onTableChange();
+
+  // Set evento fields
+  $('ev-cliente').value  = p.cliente||'';
+  $('ev-conv').value     = p.conv||'';
+  $('ev-chegada').value  = p.chegada||'';
+  $('ev-inicio').value   = p.inicio||'';
+  $('ev-termino').value  = p.termino||'';
+  $('ev-validade').value = p.validade||'7 dias úteis';
+  $('rs-pagto').value    = p.pagto||'';
+
+  // Restore dates
+  $('ev-dates-wrap').innerHTML=''; dateIdCounter=0;
+  (p.dates||[]).forEach(d => addEventDate(d));
+  if (!p.dates || p.dates.length===0) addEventDate();
+
+  // Restore espaços
+  $('esp-tbody').innerHTML='';
+  (p.espacos||[]).forEach(e => addEspaco(e.nome, e.montagem, e.obs, e.val, e.date));
+
+  // Restore gastronomia
+  $('gast-tbody').innerHTML='';
+  (p.gastRows||[]).forEach(r => addGast(r.nome, r.hor, r.obs, r.qty, r.unit, r.date));
+
+  // Restore equipamentos
+  $('equip-tbody').innerHTML='';
+  (p.equipRows||[]).forEach(r => addEquip(r.nome, r.qty, r.obs, r.unit, r.date));
+
+  // Restore cadastro
+  if (p.cadastro) {
+    const c = p.cadastro;
+    ['razao','fantasia','cnpj','ie','end','bairro','cep','cid','tel'].forEach(f => {
+      const el = $('a-'+f); if(el) el.value = c[f]||'';
+    });
+    const iss = $('a-iss'); if(iss) iss.value = c.iss||'Não';
+    const assNome=$('a-ass-nome'); if(assNome) assNome.value=c.assNome||'';
+    const assCpf=$('a-ass-cpf'); if(assCpf) assCpf.value=c.assCpf||'';
+    const rNome=$('a-resp-nome'); if(rNome) rNome.value=c.respNome||'';
+    const rTel=$('a-resp-tel'); if(rTel) rTel.value=c.respTel||'';
+  }
+
+  // Restore conditions
+  if (p.conds && p.conds.length) renderConds(p.conds);
+
+  recalc();
+  // Navigate to investimento
+  document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-view="investimento"]').classList.add('active');
+  $('view-investimento').classList.add('active');
+  $('topbar-title').textContent='Investimento';
+  toast(`✓ Proposta de "${data.nome}" carregada!`);
+}
+
+function deleteCliente(key) {
+  if (!confirm('Excluir esta proposta?')) return;
+  localStorage.removeItem(key);
+  renderClientes();
+  toast('Proposta excluída.');
+}
+
+function renderClientes() {
+  const wrap = $('cli-list');
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('ev_cliente_')).sort().reverse();
+  if (keys.length === 0) {
+    wrap.innerHTML = '<p style="color:var(--gr);font-size:12px;text-align:center;padding:20px">Nenhuma proposta salva ainda.</p>';
+    return;
+  }
+  wrap.innerHTML = '';
+  keys.forEach(key => {
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const d = new Date(data.savedAt);
+    const dateStr = d.toLocaleDateString('pt-BR') + ' às ' + d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const div = document.createElement('div'); div.className='cli-item';
+    div.innerHTML=`
+      <div>
+        <div class="cli-name">${data.nome}</div>
+        <div class="cli-meta">Salvo em ${dateStr}</div>
+      </div>
+      <div class="cli-acts">
+        <button class="btn btn-o btn-sm" onclick="loadCliente('${key}')">📂 Carregar</button>
+        <button class="btn btn-sm" style="background:#f5f5f5;border:1.5px solid var(--ru);color:var(--gr)" onclick="deleteCliente('${key}')">🗑 Excluir</button>
+      </div>`;
+    wrap.appendChild(div);
+  });
+}
+
 (function init() {
   populateTableSelect();
   calcHoras();
@@ -1380,6 +1602,8 @@ function exportPDF() {
   renderList('dur', STATE.dur_opts);
   renderList('cat', STATE.cat_opts);
   addMoment('Coffee Break Executivo','Tarde / 30 min.');
+  addEventDate(); // start with one date field
+  renderClientes();
 })();
 </script>
 </body>
