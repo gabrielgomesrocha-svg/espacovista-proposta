@@ -753,7 +753,7 @@ function onEspacoSelect(sel) {
   const tr = sel.closest('tr');
   const manInput = sel.nextElementSibling;
   const valInput = tr.querySelector('.esp-val');
-  const obsInput = tr.querySelectorAll('td')[2].querySelector('input');
+  const obsInput = tr.querySelectorAll('td')[3].querySelector('input');
   if (sel.value === '__manual__') { manInput.style.display='block'; return; }
   manInput.style.display = 'none';
   const sp = STATE.spaces.find(s => s.name === sel.value);
