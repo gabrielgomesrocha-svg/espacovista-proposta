@@ -170,7 +170,7 @@ table.et td input,table.et td select{padding:4px 6px;font-size:12px}
           <option value="">— Selecione a tabela —</option>
         </select>
       </div>
-      <button class="btn btn-o" onclick="toast('Dados salvos no navegador.')">💾 Salvar</button>
+      <button class="btn btn-o" onclick="salvarProposta()">💾 Salvar</button>
       <button class="btn btn-w" onclick="exportPDF()">⬇ Exportar PDF</button>
     </div>
   </div>
@@ -1492,6 +1492,12 @@ function saveCliente() {
   } catch(e) {
     toast('Erro ao salvar — localStorage cheio?');
   }
+}
+
+// Salva a proposta e leva direto para a aba Clientes (proposta recém-salva no topo da lista)
+function salvarProposta() {
+  saveCliente();
+  document.querySelector('[data-view="clientes"]').click();
 }
 
 function loadCliente(key) {
