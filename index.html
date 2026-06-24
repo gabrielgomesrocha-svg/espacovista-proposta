@@ -700,9 +700,12 @@ function refreshItemPrices(tbodyId, items, priceIdx) {
 // HOURS CALC
 // ════════════════════════════════════════════
 function calcHoras() {
-  const cheg = g('ev-chegada'), fim = g('ev-termino');
-  if (!cheg || !fim) return;
-  const [ih,im] = cheg.split(':').map(Number);
+  // Início do cálculo = Chegada do Cliente (se preenchida) senão Início do Evento.
+  // A Chegada sobrepõe o Início apenas no cálculo; os campos não são alterados.
+  const cheg = g('ev-chegada'), ini = g('ev-inicio'), fim = g('ev-termino');
+  const start = cheg || ini;
+  if (!start || !fim) { $('ev-horas').value = ''; return; }
+  const [ih,im] = start.split(':').map(Number);
   const [fh,fm] = fim.split(':').map(Number);
   let mins = (fh*60+fm) - (ih*60+im);
   if (mins < 0) mins += 1440;
