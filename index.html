@@ -906,7 +906,7 @@ function getConsumacaoTeto() {
     const sel = tr.querySelector('select.esp-sel');
     const nome = sel?.value;
     if (nome && CONSUMACAO_TETO[nome]) {
-      teto = Math.max(teto, CONSUMACAO_TETO[nome]);
+      teto += CONSUMACAO_TETO[nome];
     }
   });
   return teto;
@@ -947,6 +947,8 @@ function recalc() {
   document.querySelectorAll('#esp-tbody tr').forEach(tr => {
     esp += parseFloat(tr.querySelector('.esp-val')?.value)||0;
   });
+  // Consumação mínima entra no valor do Espaço (cliente paga aluguel + consumação inclusa)
+  esp += getConsumacaoTeto();
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const c = tr.querySelectorAll('td');
     const t = (parseFloat(c[4]?.querySelector('input')?.value)||0) * (parseFloat(c[5]?.querySelector('input')?.value)||0);
@@ -1246,6 +1248,8 @@ function exportPDF() {
     const fmtD = d => { if(!d) return ''; const [y,m,day]=d.split('-'); return `${day}/${m}/${y}`; };
     espacos.push({nome, montagem:cells[2].querySelector('select')?.value||'', obs:cells[3].querySelector('input')?.value||'', val, date:fmtD(dateVal)});
   });
+  // Consumação mínima soma no valor do Espaço do resumo (igual à tela)
+  espTotal += getConsumacaoTeto();
 
   document.querySelectorAll('#gast-tbody tr').forEach(tr => {
     const cells=tr.querySelectorAll('td');
@@ -1281,7 +1285,7 @@ function exportPDF() {
   document.querySelectorAll('.cond-li textarea').forEach(ta => { if(ta.value.trim()) conds.push(ta.value.trim()); });
 
   const sub=espTotal+gastTotal+equipTotal;
-  const desc=parseFloat(g('rs-desc'))||0;
+  const desc=calcConsumacao().desconto;
   const cred=parseFloat(g('rs-cred'))||0;
   const ext=parseFloat(g('rs-ext'))||0;
   const tot=Math.max(0,sub-desc-cred+ext);
