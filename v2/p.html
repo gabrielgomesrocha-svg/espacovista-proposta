@@ -54,6 +54,7 @@ header{position:sticky}.tabs{display:flex;gap:6px;background:#2a2525;padding:8px
 .orc-t{display:inline-block;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:4px;padding:2px 6px;margin-right:6px;vertical-align:1px}
 .dts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dts input{padding:6px 8px;font-size:12.5px;width:140px}.dt-chip{display:inline-flex;align-items:center;gap:6px;background:#FBF1F2;border:1px solid #E5C3C6;color:#7F2D34;border-radius:999px;padding:4px 6px 4px 11px;font-size:12.5px;font-weight:600}.dt-chip b{cursor:pointer;width:18px;height:18px;line-height:17px;text-align:center;border-radius:50%;background:#9B3A41;color:#fff;font-size:12px}
 .sim-day{align-self:center;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9B3A41;background:#FBF1F2;border:1px solid #E5C3C6;border-radius:999px;padding:5px 16px;margin:10px 0 2px}.sim-dh{margin:12px 0 2px;padding-top:8px;border-top:1px dashed #D9C3C5;font-size:11px;font-weight:800;color:#9B3A41;text-transform:uppercase;letter-spacing:.06em}
+.sim-chat{padding-bottom:120px}.sim-chat>*{scroll-margin-bottom:150px;scroll-margin-top:150px}.sim-rs{font-size:11.5px;color:#9B3A41;background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
 
 .sim-tab{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
 .sim-tab select,.sim-tab textarea{font:inherit;border:1.5px solid #ddd;border-radius:6px;padding:8px 10px;background:#fff}
@@ -202,7 +203,7 @@ function simRender(keepAnim){
   if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
   const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
   let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
-  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
+  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span><button class="sim-rs" onclick="I2.simRestart()">↺ Recomeçar conversa</button></div><div class="sim-wrap"><div class="sim-chat">';
   st.forEach((id,i)=>{ if(i>SIM.step) return; CD = simDayOf(i); const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
     if(id==='hor' && simNd()>1) h += '<div class="sim-day">'+simDayTag()+'</div>';
     h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
@@ -239,6 +240,7 @@ Object.assign(I2,{
   simNext(){ CD = simDayOf(SIM.step); if(simSteps()[SIM.step]==='hor' && (!SIM.data || !SIM.chegada || !SIM.termino)){ say(!SIM.data ? 'Informe a data' : 'Informe o horário de chegada e o de saída'); return; } if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
+  async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
   simSend(){ const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
@@ -273,6 +275,7 @@ Object.assign(I2,{
 }
 function show(j){
   var parts = (j.html||'').split('<!--VISTA-SPLIT-->'); H = parts.join('');
+  var INV = j.tipo === 'inv';
   var names = parts.length>1 ? ['Proposta do Espaço','Proposta de Buffet'] : ['']; if(j.sim) names = names.length>1 ? names.concat(['Monte sua proposta']) : ['Proposta do Espaço','Monte sua proposta'];
   document.title = j.titulo || 'Proposta — Espaço Vista';
   var tabs = names.length>1 ? '<div class="tabs">'+names.map(function(n,i){ return '<button data-i="'+i+'" class="'+(i?'':'on')+'">'+n+'</button>'; }).join('')+'</div>' : '';
@@ -281,14 +284,15 @@ function show(j){
   parts.forEach(function(p,i){ var f = document.createElement('iframe'); if(!i) f.id='f'; f.setAttribute('scrolling','no'); f.srcdoc = p; f.style.display = i ? 'none' : 'block'; wrap.appendChild(f); fr.push(f); });
   var cur = 0;
   function fit(){ var w = Math.max(320, wrap.clientWidth), k = w/1920, f = fr[cur];
+    if(INV){ var d = null; try{ d = f.contentDocument; }catch(e){} var hh = d && d.documentElement ? Math.max(d.documentElement.scrollHeight, d.body.scrollHeight) : 1123, kk = Math.min(1.6, w/794); f.style.width='794px'; f.style.height=hh+'px'; f.style.transform='scale('+kk+')'; f.style.left = Math.max(0,(w-794*kk)/2)+'px'; wrap.style.height = Math.round(hh*kk)+'px'; return; }
     var np = Math.max(1,(parts[cur].split('class="page').length-1));
     f.style.width='1920px'; f.style.height=(np*1080+(np-1)*40)+'px'; f.style.transform='scale('+k+')'; wrap.style.height = Math.round((np*1080+(np-1)*40)*k)+'px'; }
-  fit(); window.addEventListener('resize', fit);
+  fr.forEach(function(f){ f.onload = function(){ fit(); setTimeout(fit,300); }; }); fit(); window.addEventListener('resize', fit);
   Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.onclick = function(){ var ix = +b.dataset.i, isSim = !!j.sim && ix===parts.length; if(!isSim) cur = ix; fr.forEach(function(f,i){ f.style.display = (!isSim && i===cur)?'block':'none'; }); wrap.style.display = isSim?'none':'block'; var st = document.getElementById('simtab'); st.style.display = isSim?'block':'none'; if(isSim && !st.dataset.b){ st.dataset.b = 1; bootSim(j.sim, TK); } var pb = document.getElementById('pdf'); if(pb) pb.style.display = isSim?'none':''; Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.toggle('on', x===b); }); if(!isSim) fit(); window.scrollTo(0,0); }; });
   document.getElementById('pdf').onclick = function(){
     var w = window.open('','_blank'); if(!w){ alert('Libere os pop-ups deste site para baixar o PDF.'); return; }
     var doc = parts[0]; for(var i=1;i<parts.length;i++){ doc = doc.replace('</body></html>','') + parts[i].replace(/^[\s\S]*?<body>/,''); }
-    doc = doc.replace('</head>','<script>(function(){function z(){document.documentElement.style.zoom=Math.min(1,innerWidth/1920)}z();addEventListener("resize",z);addEventListener("beforeprint",function(){document.documentElement.style.zoom=1});addEventListener("afterprint",z)})()<\/script></head>');
+    if(!INV) doc = doc.replace('</head>','<script>(function(){function z(){document.documentElement.style.zoom=Math.min(1,innerWidth/1920)}z();addEventListener("resize",z);addEventListener("beforeprint",function(){document.documentElement.style.zoom=1});addEventListener("afterprint",z)})()<\/script></head>');
     w.document.open(); w.document.write(doc); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} },1200);
   };
 }

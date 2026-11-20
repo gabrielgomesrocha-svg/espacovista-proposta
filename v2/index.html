@@ -388,6 +388,7 @@ body.sb-off .main{margin-left:0}
 .orc-t{display:inline-block;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:4px;padding:2px 6px;margin-right:6px;vertical-align:1px}
 .dts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.dts input{padding:6px 8px;font-size:12.5px;width:140px}.dt-chip{display:inline-flex;align-items:center;gap:6px;background:#FBF1F2;border:1px solid #E5C3C6;color:#7F2D34;border-radius:999px;padding:4px 6px 4px 11px;font-size:12.5px;font-weight:600}.dt-chip b{cursor:pointer;width:18px;height:18px;line-height:17px;text-align:center;border-radius:50%;background:#9B3A41;color:#fff;font-size:12px}
 .sim-day{align-self:center;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9B3A41;background:#FBF1F2;border:1px solid #E5C3C6;border-radius:999px;padding:5px 16px;margin:10px 0 2px}.sim-dh{margin:12px 0 2px;padding-top:8px;border-top:1px dashed #D9C3C5;font-size:11px;font-weight:800;color:#9B3A41;text-transform:uppercase;letter-spacing:.06em}
+.sim-chat{padding-bottom:120px}.sim-chat>*{scroll-margin-bottom:150px;scroll-margin-top:150px}.sim-rs{font-size:11.5px;color:#9B3A41;background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
 
 </style>
 </head>
@@ -437,11 +438,12 @@ body.sb-off .main{margin-left:0}
         <button class="btn btn-o" onclick="I2.openList()">📂 Abrir</button>
         <button class="btn btn-o" onclick="I2.salvar()">💾 Salvar</button>
         <button class="btn btn-w" onclick="I2.pdf()">⬇ Exportar PDF</button>
+        <button class="btn btn-o" onclick="I2.gerarLink()" title="Gera o link da proposta final para o cliente (válido por 10 dias a partir do envio)">🔗 Gerar link</button>
       </div>
     </div></div>
     <div id="i2-body"></div>
     <div id="i2-warn" class="i2-warn" style="margin:14px 0 24px"></div>
-    <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.salvar()">💾 Salvar</button><button class="btn btn-w" onclick="I2.pdf()">⬇ Exportar PDF</button></div>
+    <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.salvar()">💾 Salvar</button><button class="btn btn-w" onclick="I2.pdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.gerarLink()">🔗 Gerar link</button></div>
   </div>
 
   <div class="i2-sug" id="i2-sug"></div>
@@ -1280,6 +1282,23 @@ const I2 = {
   async login(){ const e = $('i2-l-email').value.trim(), p = $('i2-l-pass').value; $('i2-l-err').textContent='';
     try{ await Store.login(e,p); $('i2-login').classList.remove('on'); LS.del('inv2_draft'); HHS = null; await boot(); sbUser(); I2.hhOpenNewIfEmpty && 0; }catch(x){ $('i2-l-err').textContent = x.message==='Failed to fetch' ? 'Sem conexão com o servidor.' : (/invalid/i.test(x.message) ? 'E-mail ou senha incorretos.' : x.message); } },
   async logout(){ if(dirty && !(await ask('Há alterações não salvas. Sair mesmo assim?','Sair'))) return; Store.saveSess(null); LS.del('inv2_draft'); HHS = null; sbUser(); showLogin(); },
+  async gerarLink(){
+    const R = calcAll();
+    if(!P.tabela){ say('Escolha a Tabela de preços antes de gerar o link'); return; }
+    if(!P.cliente.trim()){ say('Informe o cliente antes de gerar o link'); return; }
+    if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de gerar o link'); return; }
+    if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
+    if(I2._lkBusy) return; I2._lkBusy = true; lkBusy('gerarLink',true); say('Gerando o link… aguarde');
+    try{
+      const now = new Date().toISOString(), token = hhToken();
+      P.meta = P.meta || {}; P.meta.salvoEm = now; P.meta.por = Store.email(); if(!P.meta.criadoPor) P.meta.criadoPor = Store.email();
+      const html = buildPrint(P,R,false);
+      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:P.id, tipo:'inv', cliente:P.cliente, titulo:'Proposta — '+P.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
+      P.meta.links = (P.meta.links||[]).concat([{token:token, em:now}]); P.meta.enviadoEm = now;
+      await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); stateLabel();
+      LINK_CTX = 'inv'; hhShowLink(token, now);
+    }catch(e){ say('Erro ao gerar o link: '+e.message); }
+    I2._lkBusy = false; lkBusy('gerarLink',false); },
   async pdf(){
     const R = calcAll();
     if(!P.tabela){ say('Escolha a Tabela de preços antes de exportar'); return; }
@@ -1680,17 +1699,20 @@ function hhToken(){ const a = new Uint8Array(18); crypto.getRandomValues(a); ret
 async function hhSha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).slice(0,10).map(x=>('0'+x.toString(16)).slice(-2)).join(''); }
 function hhLinkUrl(t){ return /^https?:/.test(t||'') ? t : new URL('p.html?t='+encodeURIComponent(t), location.href).href; }
 /* fotos vão para o armazenamento (nome = hash do conteúdo): a versão enviada fica congelada mesmo se a foto do catálogo mudar */
+const PUB_CACHE = {};
 async function hhPublishMedia(){
   const out = {}, F = MIDIA.fotos||{};
-  for(const k of Object.keys(F)){ const d = F[k]; if(!d) continue; if(!/^data:/.test(d)){ out[k] = d; continue; }
+  await Promise.all(Object.keys(F).map(async k=>{ const d = F[k]; if(!d) return; if(!/^data:/.test(d)){ out[k] = d; return; }
+    const c = PUB_CACHE[k]; if(c && c.d === d){ out[k] = c.url; return; }
     const name = (await hhSha(d))+'.jpg', url = CFG.SUPABASE_URL+'/storage/v1/object/public/midia/'+name;
     let ok = false; try{ ok = (await fetch(url,{method:'HEAD'})).ok; }catch(e){}
     if(!ok){ const blob = await (await fetch(d)).blob(); const tk = await Store.tok();
       const r = await fetch(CFG.SUPABASE_URL+'/storage/v1/object/midia/'+name,{method:'POST',headers:{apikey:CFG.SUPABASE_ANON_KEY,Authorization:'Bearer '+tk,'Content-Type':'image/jpeg','x-upsert':'true'},body:blob});
       if(!r.ok) throw new Error('falha ao enviar a foto ('+k+')'); }
-    out[k] = url; }
+    out[k] = url; PUB_CACHE[k] = {d:d, url:url}; }));
   return out;
 }
+function lkBusy(name,on){ document.querySelectorAll('button[onclick*="'+name+'"]').forEach(b=>{ if(on){ b.dataset.t = b.textContent; b.textContent = '⏳ Gerando link…'; b.disabled = true; } else { b.textContent = b.dataset.t || b.textContent; b.disabled = false; } }); }
 function hhFmt(d){ return new Date(d).toLocaleDateString('pt-BR'); }
 function hhExp(em){ const d = new Date(em); d.setDate(d.getDate()+VALIDADE_DIAS); return d; }
 function hhShowLink(token,em){
@@ -1803,7 +1825,7 @@ Object.assign(I2,{
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     if(HHS.modo==='hh'){ say('O modelo Happy Hour ainda será criado'); return; }
     if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
-    if(HH_BUSY) return; HH_BUSY = true; say('Gerando o link…');
+    if(HH_BUSY) return; HH_BUSY = true; lkBusy('hhMarkSent',true); say('Gerando o link… aguarde');
     try{
       const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
       HHS.meta.enviadoEm = now; HHS.meta.token = token; HHS.meta.salvoEm = now;
@@ -1813,10 +1835,10 @@ Object.assign(I2,{
       await Store.save(HHS, hhCalc(HHS).opcoes[0]);
       hhSet(false); hhShowLink(token, now);
     }catch(e){ delete HHS.meta.token; say('Erro ao gerar o link: '+e.message); }
-    HH_BUSY = false; },
+    HH_BUSY = false; lkBusy('hhMarkSent',false); },
   hhCopy(t){ const url = hhLinkUrl(t || ($('hh-link-in')||{}).value); const done = ()=>say('Link copiado ✔');
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>{ prompt('Copie o link:',url); }); else { prompt('Copie o link:',url); } },
-  hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
+  hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='inv'){ LINK_CTX = 'hh'; return; } if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
@@ -2056,7 +2078,7 @@ const BUF_STYLE = `
 .bx2 .r span{flex:1}
 .bx2 .nt{font-size:15.5px;line-height:1.45;color:#555}
 .bx2 .nt li{list-style:none;padding:1px 0}
-.row2{display:grid;grid-template-columns:1fr 1.1fr;gap:26px;align-items:stretch}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:stretch}
 ul.nt{list-style:none;padding-left:0}
 .vc{display:inline-block;margin-top:10px;background:#fff;border:1.5px solid var(--w);color:var(--w);font:800 15px 'Montserrat',sans-serif;padding:7px 16px;border-radius:6px;text-decoration:none;letter-spacing:.03em}
 .phs{position:absolute;right:100px;top:56px;bottom:40px;width:520px;display:flex;flex-direction:column;gap:14px}
@@ -2265,7 +2287,7 @@ Object.assign(I2,{
     if(!(ESPS.datas&&ESPS.datas.length)){ say('Informe a data do evento (campo ao lado do nº de convidados)'); return; }
     if(!(num(ESPS.convidados)>0)){ say('Informe o nº de convidados'); return; }
     if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
-    if(ESP_BUSY) return; ESP_BUSY = true; say('Gerando o link…');
+    if(ESP_BUSY) return; ESP_BUSY = true; lkBusy('espMarkSent',true); say('Gerando o link… aguarde');
     try{
       const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
       ESPS.meta.enviadoEm = now; ESPS.meta.token = token; ESPS.meta.salvoEm = now;
@@ -2275,7 +2297,7 @@ Object.assign(I2,{
       await Store.save(ESPS, espTotal(ESPS));
       espSet(false); LINK_CTX = 'esp'; hhShowLink(token, now);
     }catch(e){ delete ESPS.meta.token; say('Erro ao gerar o link: '+e.message); }
-    ESP_BUSY = false; }
+    ESP_BUSY = false; lkBusy('espMarkSent',false); }
 });
 
 window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vistaGo!=='number') return; var f=[].slice.call(document.querySelectorAll('iframe')).find(function(x){return x.contentWindow===ev.source}); if(!f) return; var r=f.getBoundingClientRect(), k=r.width/(f.offsetWidth||1920); window.scrollTo({top:r.top+window.pageYOffset+ev.data.vistaGo*k-70,behavior:'smooth'}); });
@@ -2392,7 +2414,7 @@ function simRender(keepAnim){
   if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
   const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
   let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
-  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
+  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span><button class="sim-rs" onclick="I2.simRestart()">↺ Recomeçar conversa</button></div><div class="sim-wrap"><div class="sim-chat">';
   st.forEach((id,i)=>{ if(i>SIM.step) return; CD = simDayOf(i); const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
     if(id==='hor' && simNd()>1) h += '<div class="sim-day">'+simDayTag()+'</div>';
     h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
@@ -2429,6 +2451,7 @@ Object.assign(I2,{
   simNext(){ CD = simDayOf(SIM.step); if(simSteps()[SIM.step]==='hor' && (!SIM.data || !SIM.chegada || !SIM.termino)){ say(!SIM.data ? 'Informe a data' : 'Informe o horário de chegada e o de saída'); return; } if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
+  async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
   simSend(){ const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
