@@ -283,6 +283,15 @@ body.sb-off .main{margin-left:0}
 .i2-gate-msg{background:#fff8e6;border:1px dashed #E0A800;border-radius:6px;padding:14px 16px;font-size:13px;color:#6b5200;margin-bottom:16px}
 .i2-ct3 th.c51,.i2-ct3 td.c51{background:#f8eeeb}.i2-ct3 th.c51{color:var(--w)}.i2-ct3 th.c51s,.i2-ct3 td.c51s{border-left:2px solid #e3c9c3}.i2-ct3 td.c51 input{background:#fffdfc}.i2-ct3 tbody tr:hover td{background:#fbf7f6}.i2-ct3 tbody tr:hover td.c51{background:#f4e4e0}
 .i2-tsel{display:flex;align-items:center;gap:4px}.i2-tsel select{width:auto;min-width:64px;padding-left:8px;padding-right:4px}.i2-tsel span{font-weight:700;color:#888}
+
+.i2-csg{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+.i2-csg .i2-cs{display:grid;grid-template-columns:minmax(300px,1fr) minmax(420px,1.25fr);gap:18px;align-items:start;margin-bottom:0}
+.i2-csg .i2-ct2{margin-top:0;max-width:none}
+.i2-csg .i2-cs textarea{min-height:48px}
+@media (max-width:1100px){.i2-csg .i2-cs{grid-template-columns:1fr}}
+.i2-det{margin-top:18px;border:1px solid var(--ru);border-radius:8px;background:#fff;padding:0 14px}
+.i2-det>summary{cursor:pointer;padding:12px 0;font-weight:700;font-size:13px;color:var(--dk)}.i2-det>summary small{font-weight:400;color:var(--gr);margin-left:6px}
+.i2-det[open]>summary{border-bottom:1px solid var(--ru);margin-bottom:10px}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -575,28 +584,30 @@ let CAT = null, catTab = 'sp', catDirty = false;
 function catSet(d){ catDirty = d; const b = $('cat-save'); if(b){ b.disabled = !d; b.textContent = d ? '💾 Salvar alterações' : '✔ Salvo'; } const h = $('cat-hint'); if(h) h.textContent = d ? 'Há alterações não salvas.' : ''; }
 function numIn(v,onch){ return '<input type="number" step="0.01" min="0" value="'+(v||0)+'" style="text-align:right" onchange="'+onch+'">'; }
 function catTabsHtml(){
-  const tabs = [['sp','🏛️ Espaços'],['gast','🍴 Gastronomia'],['eq','🎙️ Equipamentos e serviços'],['tb','💲 Tabelas de preços'],['hhp','🍸 Preços HH / Confraternização'],['md','🖼️ Mídia e links']];
+  const tabs = [['sp','🏛️ Espaços'],['gast','🍴 Gastronomia'],['eq','🎙️ Equipamentos e serviços'],['hhp','🍸 Preços HH / Confraternização'],['md','🖼️ Mídia e links']];
   return tabs.map(t=>'<div class="adm-tab '+(catTab===t[0]?'active':'')+'" data-ct="'+t[0]+'" onclick="I2.catTab(\''+t[0]+'\')">'+t[1]+'</div>').join('');
 }
 function renderCatalogo(){
   if(!CAT) CAT = catFromData();
   let h = '<div class="adm-tabs">' + catTabsHtml() + '</div>';
-  if(catTab==='sp') h += catSpaces(); else if(catTab==='gast') h += catGast(); else if(catTab==='md') h += renderMidia(); else if(catTab==='hhp') h += renderHhp(); else if(catTab==='tb') h += '<p class="i2-cnote">As tabelas <b>personalizadas</b> (ex.: 20k, 25k, 30k) são criadas e editadas aqui. Elas são salvas na hora — não dependem do botão Salvar do Catálogo. Na proposta, escolha a tabela na barra do topo.</p><div id="i2-tabs-body"></div>'; else h += catEquip();
+  if(catTab==='sp') h += catSpaces(); else if(catTab==='gast') h += catGast(); else if(catTab==='md') h += renderMidia(); else if(catTab==='hhp') h += renderHhp(); else h += catEquip();
   $('cat-body').innerHTML = h; catSet(catDirty);
-  if(catTab==='tb') I2.renderTabs();
+  if(catTab==='sp') I2.renderTabs();
 }
 function catSpaces(){
-  let h = '<p class="i2-cnote">O valor do espaço exibido na proposta = <b>valor da tabela + retorno de consumação</b>. Cada tabela (1, 2 e 3) vale para as duas faixas de pessoas.</p>';
+  let h = '<p class="i2-cnote">O valor do espaço exibido na proposta = <b>valor da tabela + retorno de consumação</b>. Cada tabela (1, 2 e 3) vale para as duas faixas de pessoas.</p><div class="i2-csg">';
   CAT.spaces.forEach((x,i)=>{
-    h += '<div class="i2-cs"><div class="i2-cs-h"><div class="fg" style="flex:1"><label class="fl">Nome do espaço</label><input value="'+esc(x.name)+'" onchange="I2.catF(\'spaces\','+i+',\'name\',this.value)"></div>'
-      + '<div class="fg" style="width:150px"><label class="fl">Hora extra (R$/h)</label>'+numIn(x.hora,'I2.catF(\'spaces\','+i+',\'hora\',this.value)')+'</div>'
+    h += '<div class="i2-cs"><div class="i2-cs-l"><div class="i2-cs-h"><div class="fg" style="flex:1"><label class="fl">Nome do espaço</label><input value="'+esc(x.name)+'" onchange="I2.catF(\'spaces\','+i+',\'name\',this.value)"></div>'
+      + '<div class="fg" style="width:120px"><label class="fl">Hora extra (R$/h)</label>'+numIn(x.hora,'I2.catF(\'spaces\','+i+',\'hora\',this.value)')+'</div>'
       + '<button class="x-btn" title="Excluir espaço" onclick="I2.catDel(\'spaces\','+i+')">×</button></div>'
-      + '<div class="fg"><label class="fl">Incluso / Observações (texto padrão)</label><textarea rows="2" onchange="I2.catF(\'spaces\','+i+',\'desc\',this.value)">'+esc(x.desc)+'</textarea></div>'
-      + '<table class="i2-ct2"><thead><tr><th></th><th>Valor da tabela</th><th>Retorno de consumação</th><th>Valor exibido</th></tr></thead><tbody>'
+      + '<div class="fg"><label class="fl">Incluso / Observações (texto padrão)</label><textarea rows="2" onchange="I2.catF(\'spaces\','+i+',\'desc\',this.value)">'+esc(x.desc)+'</textarea></div></div>'
+      + '<div class="i2-cs-r"><table class="i2-ct2"><thead><tr><th></th><th>Valor da tabela</th><th>Retorno de consumação</th><th>Valor exibido</th></tr></thead><tbody>'
       + TN.map(n=>'<tr><td><b>Tabela '+n+'</b></td><td>'+numIn(x.t[n].base,'I2.catT('+i+','+n+',\'base\',this.value)')+'</td><td>'+numIn(x.t[n].teto,'I2.catT('+i+','+n+',\'teto\',this.value)')+'</td><td class="r" id="cs-'+i+'-'+n+'">'+money(num(x.t[n].base)+num(x.t[n].teto))+'</td></tr>').join('')
-      + '</tbody></table></div>';
+      + '</tbody></table></div></div>';
   });
-  return h + '<button class="btn btn-o" onclick="I2.catAdd(\'spaces\')">＋ Novo espaço</button>';
+  h += '</div><button class="btn btn-o" onclick="I2.catAdd(\'spaces\')">＋ Novo espaço</button>';
+  h += '<details class="i2-det"><summary>💲 Tabelas de preços personalizadas <small>(ex.: 20k, 25k, 30k) — clique para abrir</small></summary><p class="i2-cnote">São criadas e editadas aqui e salvas na hora — não dependem do botão Salvar do Catálogo. Na proposta, escolha a tabela na barra do topo.</p><div id="i2-tabs-body"></div></details>';
+  return h;
 }
 function catGast(){
   const q = norm((($('cat-q')||{}).value)||'');
@@ -1586,14 +1597,16 @@ let MIDIA = {fotos:{},links:{},aj:{}};
 const VALIDADE_DIAS = 10;
 function hhTier(prod,tab,n){
   const rows = (HH_PRECOS[prod]||{})[String(tab)]||[]; if(!rows.length) return null;
-  let best = null; rows.forEach(r=>{ if(r[0] <= n) best = r; });
-  return best ? {row:best, below:false} : {row:rows[0], below:true};
+  // arredonda para CIMA: usa a primeira faixa igual ou imediatamente acima do nº de convidados (44 → 45, 77 → 80)
+  let best = null; for(let i=0;i<rows.length;i++){ if(rows[i][0] >= n){ best = rows[i]; break; } }
+  if(best) return {row:best, below:n<rows[0][0]};
+  return {row:rows[rows.length-1], below:false, above:true};
 }
 function hhCalc(h){
   const n = Math.floor(num(h.convidados)); if(!(n>0) || !h.tabela) return null; const t = hhTier('coq',h.tabela,n); if(!t) return null;
   const r = t.row, conf = h.modo==='conf';
   const base = conf ? [r[4],r[5],r[6]] : [r[1],r[2],r[3]];
-  return {faixa:r[0], below:t.below, n:n, opcoes:base.map(v=>r2(v)), jantar:[r[7],r[8],r[9]].map(v=>r2(v))};
+  return {faixa:r[0], below:t.below, above:!!t.above, n:n, opcoes:base.map(v=>r2(v)), jantar:[r[7],r[8],r[9]].map(v=>r2(v))};
 }
 function hhValidade(h){
   const env = h.meta && h.meta.enviadoEm; if(!env) return VALIDADE_DIAS+' dias a partir do envio';
@@ -1677,7 +1690,7 @@ function hhRender(){
   document.querySelectorAll('#hh-modo button').forEach(b=>b.classList.toggle('on', b.dataset.m===h.modo));
   let info = '';
   if(c){
-    info = '<div class="hh-sum"><div><small>Faixa aplicada</small><b>'+c.faixa+' pessoas</b>'+(c.n!==c.faixa?'<em>'+c.n+' convidados → tabela de '+c.faixa+'</em>':'')+(c.below?'<em style="color:var(--w)">abaixo do mínimo da tabela</em>':'')+'</div>'
+    info = '<div class="hh-sum"><div><small>Faixa aplicada</small><b>'+c.faixa+' pessoas</b>'+(c.n!==c.faixa?'<em>'+c.n+' convidados → tabela de '+c.faixa+'</em>':'')+(c.below?'<em style="color:var(--w)">abaixo do mínimo da tabela</em>':'')+(c.above?'<em style="color:var(--w)">acima da última faixa da tabela</em>':'')+'</div>'
       + c.opcoes.map((v,i)=>'<div><small>Opção '+(i+1)+'</small><b>'+money(v)+'</b></div>').join('')+'</div>'
       + '<div class="hh-jan">Jantar opcional (separado): '+c.jantar.map((v,i)=>'Sugestão '+(i+1)+' '+money(v)).join(' · ')+'</div>';
   }
@@ -1756,12 +1769,12 @@ const HHP_COLS = {coq:['Pessoas','HH · Op.1','HH · Op.2','HH · Op.3','Conf ·
 function renderHhp(){
   const rows = HH_PRECOS[hhpProd][String(hhpTab)], coq = hhpProd==='coq';
   const fmt = v => Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  const cols = coq ? [['Pessoas',null],['Happy Hour','Op. 1'],['','Op. 2'],['','Op. 3'],['Confraternização','Op. 1'],['','Op. 2'],['','Op. 3'],['Jantar (opcional)','Sug. 1'],['','Sug. 2'],['','Sug. 3']] : [['Pessoas',null],['Happy Hour','Op. 1'],['','Op. 2'],['','Op. 3'],['Confraternização','Op. 1'],['','Op. 2'],['','Op. 3']];
+  const cols = coq ? [['Pessoas',null],['Happy Hour','Opção 1'],['','Opção 2'],['','Opção 3'],['Confraternização','Opção 1'],['','Opção 2'],['','Opção 3'],['Jantar (opcional)','Sugestão 1'],['','Sugestão 2'],['','Sugestão 3']] : [['Pessoas',null],['Happy Hour','Opção 1'],['','Opção 2'],['','Opção 3'],['Confraternização','Opção 1'],['','Opção 2'],['','Opção 3']];
   const grp = coq ? [['',1],['Happy Hour',3],['Confraternização',3],['Jantar opcional',3]] : [['',1],['Happy Hour',3],['Confraternização',3]];
   let h = '<div class="hhp-tabs"><div class="hhp-prod">'
    + [['coq','🍸 Coquetel'],['but','🍖 Comida de Buteco']].map(p=>'<button class="'+(hhpProd===p[0]?'on':'')+'" onclick="I2.hhpSel(\'p\',\''+p[0]+'\')">'+p[1]+'</button>').join('')+'</div>'
    + '<div class="hhp-tab">'+[1,2,3].map(n=>'<button class="'+(hhpTab===n?'on':'')+'" onclick="I2.hhpSel(\'t\','+n+')">Tabela '+n+'</button>').join('')+'</div></div>'
-   + '<div class="hhp-bar"><span class="hhp-n">'+rows.length+' faixas de pessoas · valores por proposta, com tudo incluso. O sistema usa a faixa igual ou imediatamente abaixo do número de convidados.'+(coq?'':' <i>Comida de Buteco não tem jantar.</i>')+'</span>'
+   + '<div class="hhp-bar"><span class="hhp-n">'+rows.length+' faixas de pessoas · valores por proposta, com tudo incluso. O sistema arredonda o nº de convidados para cima: usa a faixa igual ou imediatamente acima (ex.: 44 → 45, 77 → 80).'+(coq?'':' <i>Comida de Buteco não tem jantar.</i>')+'</span>'
    + '<label>Bebida Premium (R$/pessoa) <input type="number" step="any" value="'+num(HH_PRECOS.premium)+'" onchange="I2.hhpPremium(this.value)"></label>'
    + '<button class="btn btn-o btn-sm" onclick="I2.hhpAdd()">＋ Nova faixa</button><button class="btn btn-o btn-sm" onclick="I2.hhpReset()">Restaurar original</button><button id="hhp-save" class="btn '+(hhpDirty?'btn-w':'btn-o')+'" onclick="I2.hhpSave()">'+(hhpDirty?'💾 Salvar tabelas':'✔ Salvo')+'</button></div>'
    + '<div class="hhp-wrap"><table class="hhp-t"><thead><tr>'+grp.map((g,i)=>'<th colspan="'+g[1]+'" class="g g'+i+'">'+g[0]+'</th>').join('')+'<th></th></tr><tr>'+cols.map((c,i)=>'<th class="'+(i===0?'p':'')+'">'+(c[1]||'Pessoas')+'</th>').join('')+'<th></th></tr></thead><tbody>'
