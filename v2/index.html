@@ -307,6 +307,13 @@ body.sb-off .main{margin-left:0}
 .hhp-t td input:hover{border-color:#ddd}.hhp-t td input:focus{border-color:var(--w,#8B0000);background:#fff;outline:0}
 .hhp-t tr:hover td{background:#FAF7F7}
 
+.sb-user{margin-top:auto;padding:12px 16px;border-top:1px solid #2a2a2a}
+.sb-user:empty{display:none}
+.sbu-mail{font-size:11px;color:#aaa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px}
+.sbu-out{width:100%;background:transparent;border:1px solid #444;color:#ddd;border-radius:6px;padding:8px;font-size:12px;cursor:pointer}
+.sbu-out:hover{background:#2a2a2a;color:#fff;border-color:#8B0000}
+.sb-user:not(:empty)+.sb-foot{margin-top:0}
+
 </style>
 </head>
 <body>
@@ -326,6 +333,8 @@ body.sb-off .main{margin-left:0}
     <div class="sb-label">Administração</div>
     <div class="sb-link" data-view="catalogo"><span class="ic">📚</span>Catálogo</div>
   </div>
+
+  <div id="sb-user" class="sb-user"></div>
 
   <div class="sb-foot">GVG Eventos e Alimentos Ltda<br>CNPJ: 11.309.019/0001-30</div>
 </aside>
@@ -713,9 +722,10 @@ function stateLabel(){
   const el = $('i2-state'); if(!el) return;
   el.innerHTML = dirty ? '<span class="dirty">● não salvo</span>' : (P.meta&&P.meta.salvoEm ? '✔ salvo' : '');
   const u = $('i2-user');
-  if(u) u.innerHTML = CLOUD ? ('👤 '+esc(Store.email())+' · <a href="#" onclick="I2.logout();return false" style="color:var(--w)">Sair</a>') : '<span title="Configure o Supabase para salvar na nuvem e compartilhar entre computadores">⚠ modo local (este navegador)</span>';
+  sbUser(); if(u) u.innerHTML = CLOUD ? '' : '<span title="Configure o Supabase para salvar na nuvem e compartilhar entre computadores">⚠ modo local (este navegador)</span>';
 }
 
+function sbUser(){ const el = $('sb-user'); if(!el) return; el.innerHTML = CLOUD && Store.sess ? '<div class="sbu-mail" title="'+esc(Store.email())+'">👤 '+esc(Store.email())+'</div><button class="sbu-out" onclick="I2.logout()">⎋ Sair</button>' : ''; }
 /* ───────── render ───────── */
 const eyeSvg = off => off
   ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.9 17.9A10.9 10.9 0 0112 20c-7 0-11-8-11-8a18.5 18.5 0 015.1-5.9M9.9 4.2A9.1 9.1 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.2 3.2M1 1l22 22"/></svg>'
@@ -1037,7 +1047,7 @@ const I2 = {
     if(!P.cliente.trim()){ say('Informe o nome do cliente para salvar'); const i = $('i2-cliente'); if(i) i.focus(); return false; }
     const R = calcAll(); P.meta = P.meta || {}; P.meta.salvoEm = new Date().toISOString(); P.meta.por = Store.email();
     if(!P.meta.criadoPor) P.meta.criadoPor = Store.email();
-    try{ await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); stateLabel(); say('Proposta salva ✔ — aparece em Clientes'); return true; }
+    try{ await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); P = newProposal(); renderTabelaSelect(); renderBody(); stateLabel(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); return true; }
     catch(e){ say('Erro ao salvar: '+e.message); return false; }
   },
   async openList(){ $('i2-modal-list').classList.add('on'); $('i2-q').value=''; $('i2-plist').innerHTML='<p style="color:var(--gr)">Carregando…</p>'; try{ I2._list = await Store.list(); }catch(e){ $('i2-plist').innerHTML='<p style="color:var(--w)">'+esc(e.message)+'</p>'; return; } I2.renderList(); },
@@ -1105,8 +1115,8 @@ const I2 = {
 
   /* login */
   async login(){ const e = $('i2-l-email').value.trim(), p = $('i2-l-pass').value; $('i2-l-err').textContent='';
-    try{ await Store.login(e,p); $('i2-login').classList.remove('on'); await boot(); }catch(x){ $('i2-l-err').textContent = x.message==='Failed to fetch' ? 'Sem conexão com o servidor.' : (/invalid/i.test(x.message) ? 'E-mail ou senha incorretos.' : x.message); } },
-  async logout(){ if(dirty && !(await ask('Há alterações não salvas. Sair mesmo assim?','Sair'))) return; Store.saveSess(null); LS.del('inv2_draft'); showLogin(); },
+    try{ await Store.login(e,p); $('i2-login').classList.remove('on'); LS.del('inv2_draft'); HHS = null; await boot(); sbUser(); I2.hhOpenNewIfEmpty && 0; }catch(x){ $('i2-l-err').textContent = x.message==='Failed to fetch' ? 'Sem conexão com o servidor.' : (/invalid/i.test(x.message) ? 'E-mail ou senha incorretos.' : x.message); } },
+  async logout(){ if(dirty && !(await ask('Há alterações não salvas. Sair mesmo assim?','Sair'))) return; Store.saveSess(null); LS.del('inv2_draft'); HHS = null; sbUser(); showLogin(); },
   pdf(){
     const R = calcAll();
     if(!P.tabela){ say('Escolha a Tabela de preços antes de exportar'); return; }
@@ -1540,7 +1550,7 @@ Object.assign(I2,{
   async hhSave(){
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     const c = hhCalc(HHS); HHS.meta.salvoEm = new Date().toISOString();
-    try{ await Store.save(HHS, c?c.opcoes[0]:0); hhSet(false); say('Proposta salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } },
+    try{ await Store.save(HHS, c?c.opcoes[0]:0); HHS = hhNew(); hhSet(false); hhRender(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); }catch(e){ say('Erro ao salvar: '+e.message); } },
   hhPdf(){
     if(HHS.modo==='hh'){ say('O modelo Happy Hour ainda será criado'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
@@ -1597,7 +1607,7 @@ window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.ret
 window.addEventListener('scroll',e=>{ if(!sug.inp || e.target===sugBox()) return; const r = sug.inp.getBoundingClientRect(), b = sugBox(); b.style.left = r.left+'px'; b.style.top = (r.bottom+2)+'px'; b.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 20)+'px'; },true);
 try{ if(LS.get('sb_off')==='1') document.body.classList.add('sb-off'); }catch(e){}
 (async function start(){
-  Store.loadSess();
+  Store.loadSess(); sbUser();
   custom = JSON.parse(JSON.stringify(SEED_CUSTOM));
   if(CLOUD && !Store.sess){ showLogin(); P = newProposal(); renderTabelaSelect(); renderBody(); return; }
   if(CLOUD){ try{ if(Date.now() > Store.sess.exp) await Store.refresh(); }catch(e){ Store.saveSess(null); showLogin(); P = newProposal(); renderTabelaSelect(); renderBody(); return; } }
