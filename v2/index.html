@@ -1336,6 +1336,8 @@ const I2 = {
     const R = calcAll();
     if(!P.tabela){ say('Escolha a Tabela de preços antes de gerar o link'); return; }
     if(!P.cliente.trim()){ say('Informe o cliente antes de gerar o link'); return; }
+    if(!(num(P.convidados)>0)){ say('Informe o nº de convidados antes de gerar o link'); return; }
+    if(!P.dias.every(d=>d.data)){ say('Informe a data de cada dia do evento antes de gerar o link'); return; }
     if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de gerar o link'); return; }
     if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
     if(I2._lkBusy) return; I2._lkBusy = true; lkBusy('gerarLink',true); say('Gerando o link… aguarde');
@@ -1353,6 +1355,8 @@ const I2 = {
     const R = calcAll();
     if(!P.tabela){ say('Escolha a Tabela de preços antes de exportar'); return; }
     if(!P.cliente.trim()){ say('Informe o cliente antes de exportar'); return; }
+    if(!(num(P.convidados)>0)){ say('Informe o nº de convidados antes de exportar'); return; }
+    if(!P.dias.every(d=>d.data)){ say('Informe a data de cada dia do evento antes de exportar'); return; }
     if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de exportar'); return; }
     const html = buildPrint(P,R,true);
     const w = window.open('','_blank'); if(!w){ say('O navegador bloqueou a janela do PDF — permita pop-ups para este site.'); return; }
@@ -2392,7 +2396,7 @@ function simItems(id){
 }
 const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
 const SIM_ONE = /estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
-const SIM_EXCL = [/^Estacionamento/i];
+const SIM_EXCL = [/^Estacionamento/i,/^Gerador/i,/^Link dedicado/i];
 const SIM_MAX = [[/^Totem/i,2],[/^Passador de slide/i,3],[/^Quadro branco/i,2],[/^Ribalta/i,10]];
 function simMax(n){ if(SIM_ONE.test(n)) return 1; const m = SIM_MAX.find(x=>x[0].test(n)); return m ? m[1] : 999; }
 const SIM_GRP = {sala:'gast', coffee:'gast', almoco:'gast', hh:'gast', sobremesa:'gast', equip:'equip', serv:'serv'};
