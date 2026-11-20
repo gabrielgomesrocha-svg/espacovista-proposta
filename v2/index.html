@@ -342,6 +342,7 @@ body.sb-off .main{margin-left:0}
   <div class="sb-section">
     <div class="sb-label">Proposta</div>
     <div class="sb-link active" data-view="inv2"><span class="ic">📋</span>Investimento</div>
+    <div class="sb-link" data-view="esp"><span class="ic">🏛️</span>Espaço</div>
     <div class="sb-link" data-view="hh"><span class="ic">🍸</span>Coquetel</div>
     <div class="sb-link" data-view="clientes"><span class="ic">💼</span>Clientes</div>
   </div>
@@ -413,6 +414,19 @@ body.sb-off .main{margin-left:0}
     </div></div>
     <div id="hh-wait" style="display:none" class="card"><div class="card-body" style="text-align:center;padding:30px;color:var(--gr)">O modelo de <b>Happy Hour</b> será o próximo a ser criado.</div></div>
     <div id="hh-prev"><iframe id="hh-frame" title="Pré-visualização"></iframe></div>
+  </div>
+
+  <div class="view" id="view-esp">
+    <div class="card"><div class="card-body">
+      <div class="hh-top">
+        <div class="fg" style="flex:1;min-width:200px"><label class="fl">Cliente</label><input id="esp-cli" placeholder="Nome do cliente / empresa" oninput="I2.espField('cliente',this.value)"></div>
+        <div class="fg" style="width:200px"><label class="fl">Tabela de preços</label><select id="esp-tab" onchange="I2.espField('tabela',this.value)"></select></div>
+        <div class="fg" style="flex:2;min-width:320px"><label class="fl">Salas que aparecem na proposta</label><div id="esp-salas" class="hh-sw" style="flex-wrap:wrap"></div></div>
+      </div>
+      <div class="hh-acts"><button id="esp-save" class="btn btn-w" onclick="I2.espSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.espPdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.espMarkSent()" title="Registra a data do envio: a proposta vale por 10 dias a partir dela">🔗 Gerar link (marcar como enviada)</button><button class="btn btn-o" onclick="I2.espOpenNew()">＋ Nova proposta</button></div>
+      <div id="esp-info"></div><div id="esp-links"></div>
+    </div></div>
+    <div id="esp-prev"><iframe id="esp-frame" title="Pré-visualização"></iframe></div>
   </div>
 
   <div class="view" id="view-clientes">
@@ -528,6 +542,7 @@ function patchCat(cat){
   const cm = g('Coffee Break: Categoria Master'); if(cm && num(cm.p['3a'])===49.3){ cm.p['3a'] = 48.3; ch = true; }
   const pf = g('Serviço de sala: petit four'); if(pf) ['1a','2a','3a'].forEach(k=>{ if(num(pf.p[k])===8){ pf.p[k] = 0; ch = true; } });
   if(!g('Red Bull (unidade)')){ const i = cat.gast.findIndex(x=>x.name==='Serviço de sala: petit four'); cat.gast.splice(i>=0?i+1:cat.gast.length,0,{name:'Red Bull (unidade)',desc:'',p:{'1a':13,'2a':14.5,'3a':16,'1m':13,'2m':14.5,'3m':16}}); ch = true; }
+  if(!cat.serv.find(x=>x.name==='Diária de montagem / desmontagem')){ cat.serv.push({name:'Diária de montagem / desmontagem',desc:'',p:{1:8970,2:8970,3:8970}}); ch = true; }
   const mp = cat.equip.find(x=>x.name==='Monitor de palco 28 polegadas'); if(mp){ mp.name = 'Monitor de palco 27 polegadas'; ch = true; }
   return ch;
 }
@@ -1094,6 +1109,7 @@ const I2 = {
   async open(id,asCopy){
     if(dirty && !(await ask('Há alterações não salvas. Abrir outra proposta mesmo assim?','Abrir mesmo assim'))) return;
     try{ const p = await Store.get(id); if(!p){ say('Proposta não encontrada'); return; }
+      if(p.tipo==='esp'){ I2.closeModal('i2-modal-list'); const l = document.querySelector('.sb-link[data-view=esp]'); if(l) l.click(); if(asCopy){ p.id = uid(); p.cliente += ' (cópia)'; p.meta = {criado:new Date().toISOString()}; } I2.espLoad(p); if(asCopy) espSet(true); return; }
       if(p.tipo==='coq'){ I2.closeModal('i2-modal-list'); const l = document.querySelector('.sb-link[data-view=hh]'); if(l) l.click(); if(asCopy){ p.id = uid(); p.cliente += ' (cópia)'; p.meta = {criado:new Date().toISOString()}; } I2.hhLoad(p); if(asCopy) hhSet(true); return; }
       P = p; normalize(P); if(asCopy){ P.id = uid(); P.cliente += ' (cópia)'; P.meta = {}; }
       dirty = !!asCopy; if(asCopy) LS.set('inv2_draft',JSON.stringify(P)); else LS.del('inv2_draft'); I2.closeModal('i2-modal-list'); renderTabelaSelect(); renderBody(); }
@@ -1286,7 +1302,7 @@ function showLogin(){ $('i2-login').classList.add('on'); }
 async function boot(){
   try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
-  try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); } }catch(e){ CAT = catFromData(); }
+  try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); if(patchCat(CAT)) applyCat(CAT); } }catch(e){ CAT = catFromData(); }
   try{ await hhLoadCfg(); }catch(e){}
   try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{},aj:m.aj||{}}; }catch(e){}
   Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; });
@@ -1542,7 +1558,7 @@ function hhValidade(h){
   return 'até '+d.toLocaleDateString('pt-BR')+' ('+VALIDADE_DIAS+' dias a partir do envio)';
 }
 
-let HH_BUSY = false;
+let HH_BUSY = false, LINK_CTX = 'hh';
 function hhToken(){ const a = new Uint8Array(18); crypto.getRandomValues(a); return btoa(String.fromCharCode.apply(null,a)).replace(/\+/g,'-').replace(/\//g,'_'); }
 async function hhSha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).slice(0,10).map(x=>('0'+x.toString(16)).slice(-2)).join(''); }
 function hhLinkUrl(t){ return /^https?:/.test(t||'') ? t : new URL('p.html?t='+encodeURIComponent(t), location.href).href; }
@@ -1674,7 +1690,7 @@ Object.assign(I2,{
     HH_BUSY = false; },
   hhCopy(t){ const url = hhLinkUrl(t || ($('hh-link-in')||{}).value); const done = ()=>say('Link copiado ✔');
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>{ prompt('Copie o link:',url); }); else { prompt('Copie o link:',url); } },
-  hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); HHS = hhNew(); hhSet(false); hhRender(); window.scrollTo(0,0); },
+  hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
@@ -1715,6 +1731,291 @@ Object.assign(I2,{
   async hhpSave(){ try{ await Store.setSetting('precos_hh',{coq:HH_PRECOS.coq,but:HH_PRECOS.but,premium:HH_PRECOS.premium}); hhpSet(false); say('Tabelas salvas ✔'); if(HHS) hhRender(); }catch(e){ say('Erro ao salvar: '+e.message); } }
 });
 function hhpSet(d){ hhpDirty = d; const b = $('hhp-save'); if(b){ b.textContent = d?'💾 Salvar tabelas':'✔ Salvo'; b.className = 'btn '+(d?'btn-w':'btn-o'); } }
+/* ═════════ PROPOSTA DO ESPAÇO — modelo (8 páginas, 1920×1080) ═════════ */
+const ESP_STYLE = `
+:root{--w:#8B0000;--wd:#5C0000;--k:#141414;--g1:#F3F1F1;--g2:#DCD8D8;--g3:#8A8585}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#777;margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--k)}
+.page{width:1920px;height:1080px;position:relative;overflow:hidden;background:#fff;margin:0 auto 40px}
+.ph{position:relative;overflow:hidden;background:linear-gradient(135deg,#cfc9c9,#a9a2a2)}
+.ph::after{content:attr(data-l);position:absolute;left:14px;bottom:10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.ph.f{background:none}.ph.f::after{display:none}
+.ph img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+.bg{position:absolute;inset:0;overflow:hidden;background:#1d1a1a}
+.bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.bg::after{content:'';position:absolute;inset:0;background:var(--sh,rgba(12,10,10,.78))}
+.bg.light::after{background:rgba(255,255,255,.90)}
+.bg.light img{filter:grayscale(1)}
+.z{position:relative;z-index:2}
+.logo{display:block}
+.tag{position:absolute;left:14px;bottom:14px;background:var(--w);color:#fff;font:600 21px 'Montserrat',sans-serif;padding:7px 15px 8px;border-radius:6px;letter-spacing:.01em;z-index:3}
+.tag b{font-weight:800}
+h2.t{font:300 56px/1.04 'Montserrat',sans-serif;letter-spacing:-.02em}
+h2.t b{font-weight:800;color:var(--w)}
+.dk h2.t b{color:#fff}
+/* P1 capa */
+.p1 .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center}
+.p1 .logo{width:520px;margin-bottom:56px}
+.p1 h1{font:300 40px 'Montserrat',sans-serif;letter-spacing:.34em;text-transform:uppercase}
+.p1 h1 b{font-weight:800}
+.p1 .cl{margin-top:44px;font:700 30px 'Montserrat',sans-serif;letter-spacing:.02em;border-top:1px solid rgba(255,255,255,.35);padding-top:30px;min-width:560px}
+.p1 .dt{margin-top:10px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+/* P2 */
+.p2{color:#fff}
+.p2 .l{position:absolute;left:150px;top:150px;width:700px}
+.p2 .l p{font-size:21px;line-height:1.55;color:#E8E3E3;margin-top:26px}
+.p2 .r{position:absolute;left:960px;right:150px;top:150px}
+.p2 .gr{display:grid;grid-template-columns:1fr 1fr;gap:34px 44px;margin-top:34px}
+.p2 .gr h3{display:inline-block;background:var(--w);font:800 17px 'Montserrat',sans-serif;letter-spacing:.04em;text-transform:uppercase;padding:6px 12px;border-radius:4px}
+.p2 .gr p{font-size:17.5px;line-height:1.5;color:#DDD7D7;margin-top:12px}
+.p2 .sp{position:absolute;left:150px;right:150px;bottom:92px}
+.p2 .sp h2{margin-bottom:26px}
+.p2 .chips{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
+.p2 .chips span{background:#fff;color:var(--wd);font:800 19px 'Montserrat',sans-serif;text-transform:uppercase;text-align:center;padding:17px 6px;border-radius:9px;letter-spacing:.01em}
+/* páginas claras */
+.pg .in{position:absolute;left:100px;right:100px;top:64px;bottom:50px}
+.hd{display:flex;gap:56px;align-items:flex-start;margin-bottom:26px}
+.hd h2{flex:none}
+.hd p{font-size:17.5px;line-height:1.5;color:#444;padding-top:6px}
+.sc{display:flex;background:#fff;border:1.5px solid #D9D2D2;border-radius:10px;overflow:hidden}
+.sc .ph{flex:none}
+.sc .tx{padding:24px 30px;flex:1;min-width:0}
+.sc h4{font:800 14.5px 'Montserrat',sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--k);margin-bottom:14px}
+.sc ul{list-style:none}
+.sc li{font-size:16.5px;line-height:1.38;color:#333;padding:2px 0 2px 16px;position:relative}
+.sc li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;background:var(--w);border-radius:50%}
+.cols2{display:grid;grid-template-columns:1.15fr 1fr;gap:34px}
+.fmt div{display:flex;justify-content:space-between;font-size:16.5px;padding:4px 0;border-bottom:1px dotted #cfc7c7;color:#333}
+.fmt div b{font-weight:700;color:var(--k)}
+.fmt small{display:block;font-size:14.5px;color:#777;margin-top:14px;line-height:1.4}
+.pb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:34px;align-items:stretch}
+.pb section{text-align:center}
+.pb h5{font:800 30px 'Montserrat',sans-serif;color:var(--w);padding:12px 0 14px;background:#fff;border-radius:10px 10px 0 0;border-bottom:3px solid var(--w)}
+.pb .cond h5{background:var(--w);color:#fff;border-radius:10px 10px 0 0;border-bottom:0}
+.pb .bx{border:1.5px solid #bdb5b5;border-radius:0 0 10px 10px;padding:18px 24px;font-size:19px;line-height:1.5;color:#222;background:#fff;min-height:104px;display:flex;align-items:center;justify-content:center;text-align:center}
+.pb .cond .bx{border:2px solid #1F8A4C;background:#F4FBF6}
+.pb .bx b{font-weight:800}.pb .bx .pr{font:800 27px 'Montserrat',sans-serif}
+.pb small{display:block;font-size:14px;color:#777;margin-top:9px;text-align:center}
+.pb .bx.sm{font-size:16px;line-height:1.45}
+/* P6 */
+.sec{display:flex;gap:40px;align-items:flex-start}
+.sec .tt{flex:none;width:300px}
+.sec .tt h2{font-size:42px}
+.sec .tt p{font-size:15.5px;line-height:1.45;color:#555;margin-top:10px}
+.pr-l{background:#fff;border:1.5px solid #D9D2D2;border-radius:10px;padding:16px 26px}
+.pr-l .r{display:flex;align-items:baseline;font-size:16.5px;padding:4px 0;color:#333}
+.pr-l .r::after{content:'';order:2;flex:1;border-bottom:1.5px dotted #c9c3c3;margin:0 8px}
+.pr-l .r span:last-child{order:3;font-weight:700;color:var(--k)}
+.pr-l .r span:first-child{order:1}
+.mid{display:grid;grid-template-columns:1fr 1.5fr;gap:24px;align-items:stretch;flex:1}
+.mid .imgs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;height:190px}
+.eq3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1}
+.pie{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+/* P7 */
+.p7 .l{position:absolute;left:100px;top:86px;width:860px}
+.p7 .l h2{margin-bottom:28px}
+.reg{list-style:none}
+.reg li{font-size:17.5px;line-height:1.46;color:#333;padding:9px 0 9px 26px;border-bottom:1px solid #e3dddd;position:relative}
+.reg li::before{content:'';position:absolute;left:0;top:19px;width:7px;height:7px;background:var(--w);border-radius:50%}
+.p7 .r{position:absolute;left:1030px;right:100px;top:86px}
+.p7 .btns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0}
+.btn{border:1.5px solid var(--k);border-radius:6px;padding:22px 8px;text-align:center;font:700 13.5px 'Montserrat',sans-serif;letter-spacing:.1em;text-transform:uppercase;background:#fff}
+.btn b{display:block;margin-bottom:10px;color:var(--w);line-height:0}.btn b svg{width:46px;height:46px;display:inline-block}
+a.btn{color:inherit;text-decoration:none;display:block}
+.map{height:430px;border-radius:8px;border:3px solid var(--w);display:block;position:relative;overflow:hidden}
+.addr{margin-top:16px;font-size:18px;color:#333;text-align:center}
+/* P8 */
+.p8{color:#fff}
+.p8 .c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.p8 h2{font:300 54px 'Montserrat',sans-serif;margin-bottom:36px}.p8 h2 b{font-weight:800}
+.p8 p{font-size:24px;line-height:1.9;color:#EEE}
+.p8 .logo{width:280px;margin-top:50px;opacity:.9}
+.p8 .btns{display:flex;gap:14px;margin-top:36px}
+.p8 .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.55);padding:18px 26px}
+.p8 .btn b{color:#fff;margin:0 0 6px}
+@page{size:1920px 1080px;margin:0}
+@media print{body{background:#fff}.page{margin:0;page-break-after:always;break-after:page}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+`;
+const ESP_SALAS = {
+  vista:{pg:3, label:'Salão Vista · Salão Real · Serra do Curral', sp:0},
+  ouro:{pg:4, label:'Sala Ouro Preto · Sala Mariana', sp:1},
+  tira:{pg:4, label:'Sala Tiradentes', sp:2},
+  excl:{pg:5, label:'Espaço Vista Exclusivo (todos os ambientes)', sp:3}
+};
+function espPages(c){
+  const li = a => '<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const bg = (k,cls) => '<div class="bg '+(cls||'')+'">'+(c.F[k] ? '<img src="'+c.F[k]+'" style="'+c.st(k)+'" alt="">' : '')+'</div>';
+  const price = k => c.box(k);
+  const pages = [];
+  // 1 capa
+  pages.push(`<section class="page p1">${bg('esp_capa')}<div class="c z"><img class="logo" src="${c.logo}" alt="Espaço Vista" style="filter:brightness(0) invert(1)"><h1><b>Proposta</b> comercial</h1>${c.cliente?'<div class="cl">'+c.cliente+'</div>':''}<div class="dt">${c.data}</div></div></section>`);
+  // 2 apresentação
+  pages.push(`<section class="page p2 dk">${bg('esp_capa')}
+  <div class="l z"><h2 class="t">Experiência única para o seu <b>evento empresarial</b></h2>
+   <p>Com uma vista panorâmica deslumbrante da Serra do Curral, o principal cartão postal de Belo Horizonte, o Espaço Vista destaca-se como um local exclusivo para eventos empresariais.</p>
+   <p>Dispõe de uma estrutura diferenciada, incluindo pé direito duplo e uma área externa acolhedora, proporcionando uma experiência única aos participantes.</p>
+   <p>Com uma equipe altamente qualificada com expertise no mercado B2B desde 2012, o Espaço Vista oferece soluções completas para convenções, treinamentos e confraternizações nos mais variados formatos.</p></div>
+  <div class="r z"><h2 class="t">Nossos <b>diferenciais</b></h2><div class="gr">
+   <div><h3>Painel de LED</h3><p>Painel de led de 200 polegadas. Full HD com dimensões de 4,50m de largura por 2,60m de altura incluso no valor da locação.</p></div>
+   <div><h3>Localização privilegiada</h3><p>Localizado entre duas importantes avenidas de Belo Horizonte, o Espaço Vista se encontra em uma localização de fácil acesso.</p></div>
+   <div><h3>Buffet exclusivo</h3><p>O Buffet Vista é especializado na realização de eventos empresariais e oferece soluções gastronômicas personalizadas.</p></div>
+   <div><h3>Sem taxas e impostos</h3><p>O Espaço Vista oferece uma proposta facilitada e diferenciada, sem cobrança de impostos ou taxas adicionais.</p></div>
+   <div><h3>Equipamentos inclusos</h3><p>Painel de led, microfone Sennheiser, sonorização TurboSound, mesa digital e mobiliário ergonômico.</p></div>
+   <div><h3>Estacionamento próprio</h3><p>Estacionamento interno e amplo com a capacidade de até 30 carros com serviço de manobrista.</p></div></div></div>
+  <div class="sp z"><h2 class="t">Conheça <b>nossos espaços</b></h2><div class="chips"><span>Salão Vista</span><span>Salão Real</span><span>Serra do Curral</span><span>Sala Ouro Preto</span><span>Sala Mariana</span><span>Sala Tiradentes</span></div></div></section>`);
+  // 3 salões
+  if(c.show.vista) pages.push(`<section class="page pg">${bg('esp_fundo','light')}<div class="in z">
+   <div class="hd" style="margin-bottom:20px"><h2 class="t">Salão <b>Vista</b> • Salão <b>Real</b><br>Espaço <b>Serra do Curral</b></h2><p>O espaço destaca-se pela vista panorâmica da cidade e arquitetura planejada para proporcionar conforto e privacidade em diversos tipos de eventos. Equipado com tecnologia de ponta, como painel de LED de 200 polegadas, mesa digital, sonorização, microfones e mobiliário, já inclusos no valor da locação. Inclui também o Salão Real e o Espaço Serra do Curral.</p></div>
+   <div class="sc" style="height:350px">${c.foto('esp_vista','Salão Vista',640,350)}<div class="tx"><div class="cols2"><div><h4>Características e itens inclusos</h4>${li(['Área: 160m²','Pé direito duplo: 4,80m','Painel de Led Full HD (4,50m x 2,60m)','1 Microfone sem fio (Sennheiser)','Sonorização (2 caixas Turbosound)','Mobiliário ergonômico','Wi-fi banda larga','Climatizado','Coffee point para serviço de sala','Vista panorâmica'])}</div>
+    <div class="fmt"><h4>Formatos e capacidades</h4><div><span>Auditório</span><b>200 pessoas</b></div><div><span>Escolar</span><b>102 pessoas</b></div><div><span>"U" cadeiras</span><b>48 pessoas</b></div><div><span>"U" mesas e cadeiras</span><b>38 pessoas</b></div><div><span>Mesas redondas</span><b>90 pessoas</b></div><div><span>Coquetel</span><b>250 pessoas</b></div><small>A capacidade da plenária pode aumentar quando integrada ao Salão Real.</small></div></div></div></div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px"><div class="sc" style="height:250px">${c.foto('esp_real','Salão Real',330,250)}<div class="tx" style="padding:18px 24px"><h4>Características</h4>${li(['Área: 100m²','Pé direito duplo: 5,70m','Ativação de mídia','Jardim vertical','Mobiliário completo','Climatizado','Vista panorâmica'])}</div></div>
+    <div class="sc" style="height:250px">${c.foto('esp_serra','Espaço Serra do Curral',330,250)}<div class="tx" style="padding:18px 24px"><h4>Características</h4>${li(['Área: 200m²','Área coberta e descoberta','Ativação de mídia','Jardim vertical: 30m²','Mobiliário completo','Vista panorâmica'])}</div></div></div>
+   <div class="pb" style="margin-top:22px">${price('vista')}</div></div></section>`);
+  // 4 salas
+  if(c.show.ouro || c.show.tira){
+    let h = `<section class="page pg">${bg('esp_fundo','light')}<div class="in z">`;
+    if(c.show.ouro) h += `<div class="hd" style="margin-bottom:18px"><h2 class="t" style="font-size:46px">Sala <b>Ouro Preto</b> • Sala <b>Mariana</b></h2><p>A Sala Ouro Preto impressiona com sua arquitetura sofisticada e funcional, ideal para reuniões de médio e pequeno porte, proporcionando uma experiência imersiva. Equipamentos modernos e mobiliário estão inclusos na locação. A Sala Mariana serve como sala de apoio e foyer, complementando o espaço.</p></div>
+    <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:22px"><div class="sc" style="height:290px">${c.foto('esp_ouro','Sala Ouro Preto',360,290)}<div class="tx" style="padding:18px 24px"><div class="cols2" style="grid-template-columns:1.2fr 1fr;gap:20px"><div><h4>Características e itens inclusos</h4>${li(['Área: 80m²','Pé direito: 2,70m','Projetor a laser de 4.000 lumens','Telão de 110 polegadas','1 microfone sem fio / Sonorização','Coffee Point','Wi-fi banda larga','Climatizado','Mobiliário executivo'])}</div><div class="fmt"><h4>Formatos</h4><div><span>"U" mesas e cadeiras</span><b>23</b></div><div><span>Escolar</span><b>20</b></div><div><span>Outros formatos</span><b style="font-weight:500">Sob consulta</b></div></div></div></div></div>
+     <div class="sc" style="height:290px">${c.foto('esp_mariana','Sala Mariana',230,290)}<div class="tx" style="padding:18px 22px"><h4>Características</h4>${li(['Área: 45m²','Pé direito: 2,50m','Mobiliário','Wi-fi banda larga','Climatizado'])}<p style="font-size:14.5px;color:#666;margin-top:12px">Sala integrada à Sala Ouro Preto</p></div></div></div>
+    <div class="pb" style="margin:22px 0 ${c.show.tira?'34px':'0'}">${price('ouro')}</div>`;
+    if(c.show.tira) h += `<div class="hd" style="margin-bottom:16px"><h2 class="t" style="font-size:46px">Sala <b>Tiradentes</b></h2><p>Uma sala multifuncional equipada com TV, mobiliário, Wi-Fi e coffee point, ideal para reuniões, sala de apoio, camarim ou armazenamento de materiais.</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1.5fr;gap:22px;align-items:start"><div class="sc" style="height:230px">${c.foto('esp_tira','Sala Tiradentes',300,230)}<div class="tx" style="padding:16px 22px"><h4>Características</h4>${li(['Área: 16m²','TV 4K 55 polegadas','Mobiliário executivo','Wi-fi banda larga','Climatizado','Coffee point'])}</div></div><div class="pb" style="grid-template-columns:1fr 1fr;gap:26px">${price('tira')}</div></div>`;
+    pages.push(h+'</div></section>');
+  }
+  // 5 exclusivo + buffet
+  if(c.show.excl) pages.push(`<section class="page pg">${bg('esp_fundo','light')}<div class="in z">
+   <div class="hd"><h2 class="t">Espaço Vista <b>Exclusivo</b><br><span style="font-size:34px">Todos os ambientes</span></h2><p>Garanta a exclusividade do Espaço Vista para o seu evento. Perfeito para atividades simultâneas em diferentes ambientes e para eventos que exigem total privacidade. Os seis espaços estão incluídos, assim como os respectivos equipamentos e mobiliário.</p></div>
+   <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;height:260px">${[['esp_vista','Salão Vista'],['esp_real','Salão Real'],['esp_serra','Serra do Curral'],['esp_ouro','Sala Ouro Preto'],['esp_mariana','Sala Mariana'],['esp_tira','Sala Tiradentes']].map(a=>c.foto(a[0],a[1],'100%',260)).join('')}</div>
+   <div class="pb" style="margin:28px 0 40px">${price('excl')}</div>
+   <div class="sc" style="height:300px"><div class="tx" style="max-width:520px"><h2 class="t" style="font-size:44px">Buffet <b>Vista</b></h2><p style="font-size:16.5px;line-height:1.55;color:#444;margin-top:12px">O Buffet Vista assina a gastronomia do Espaço Vista e é exclusivo na execução do evento. Atua desde 2009 com foco no mercado corporativo, com mais de cinco mil eventos realizados, e tem a expertise e o compromisso para entregar o melhor resultado. Faz parte do Grupo Vista, que inclui o Espaço Vista, Vista Delivery, Vista Burger e Restaurante Vista.</p></div>
+    <div class="tx" style="flex:none;width:300px;background:#F7F3F3"><ul style="margin-top:6px">${['Serviço de sala','Coffee break','Almoço','Happy hour','Brunch','Jantar','Coquetel','Coquetel temático: comida de buteco / festa junina'].map(x=>'<li style="font-weight:700;text-transform:uppercase;font-size:14.5px">'+x+'</li>').join('')}</ul></div>
+    ${c.foto('esp_buf1','Buffet',250,300)}${c.foto('esp_buf2','Buffet',250,300)}${c.foto('esp_buf3','Buffet','auto',300).replace('flex:none','flex:1')}</div></div></section>`);
+  // 6 mídia / equipamentos / serviços
+  pages.push(`<section class="page pg">${bg('esp_fundo','light')}<div class="in z">
+   <div class="sec"><div class="tt"><h2 class="t">Ativação <b>de Mídia</b></h2><p>Diversas opções de ativação de mídia para personalizar e enriquecer o seu evento. Na entrada, um impressionante jardim vertical com mais de 30m² e três TVs embutidas.</p></div>
+    <div class="mid" style="grid-template-columns:1fr 1.35fr"><div class="pr-l">${c.rows('mid')}</div><div class="imgs">${[1,2,3,4].map(i=>c.foto('esp_mid'+i,'Mídia','100%',190)).join('')}</div></div></div>
+   <div class="sec" style="margin-top:44px"><div class="tt"><h2 class="t">Equipamentos <b>Extras</b></h2><p>Além dos equipamentos já inclusos no valor da locação, disponibilizamos uma ampla variedade de opções adicionais. Equipamentos fora da lista serão cobrados por item, 50% do valor da tabela. Outros aparelhos externos devem ser previamente comunicados para análise.</p></div>
+    <div class="eq3"><div class="pr-l">${c.rows('eq1')}</div><div class="pr-l">${c.rows('eq2')}</div><div class="pr-l">${c.rows('eq3')}</div></div></div>
+   <div class="pie" style="margin-top:50px"><div class="sec"><div class="tt" style="width:230px"><h2 class="t" style="font-size:38px">Serviços <b>Extras</b></h2><p>Equipe capacitada para melhor atendê-lo.</p></div><div class="pr-l" style="flex:1">${c.rows('srv')}</div></div>
+    <div class="sec"><div class="tt" style="width:270px"><h2 class="t" style="font-size:32px">Estacionamento <b>com manobrista</b></h2><p>Capacidade para até 30 carros. Manobrista obrigatório e já incluso; sem cobrança individual no dia do evento.</p></div><div class="pr-l" style="flex:1;align-self:stretch;display:flex;flex-direction:column;justify-content:center">${c.rows('park')}</div></div></div></div></section>`);
+  // 7 informações gerais
+  pages.push(`<section class="page pg p7">${bg('esp_fundo','light')}<div class="l z"><h2 class="t">Informações <b>Gerais</b></h2><ul class="reg">
+   <li>A confirmação do evento e reserva da data só será efetivada após a assinatura do contrato.</li>
+   <li>Duração do evento: até 10 horas. Para horas adicionais, será cobrado um valor proporcional ao preço da locação do espaço.</li>
+   <li>Para a condição especial, o crédito de consumação deve ser utilizado dentro do escopo da proposta até a assinatura do contrato, e não se aplica para extras no dia do evento.</li>
+   <li>A mudança do número de participantes pode alterar o valor por pessoa cobrado pelo buffet. Após a assinatura do contrato, há a possibilidade de aumentar o quantitativo e não há a possibilidade de diminuir.</li>
+   <li>As opções do cardápio deverão ser enviadas em até 7 dias úteis antes da realização do evento. Caso contrário, as escolhas serão realizadas pelo chef de cozinha de acordo com a categoria contratada.</li>
+   <li>O cronograma do evento, a configuração da sala e todas as demais contratações deverão ser definidas em até 10 dias úteis antes da realização do evento.</li>
+   <li>Para alterações do horário de início e término do evento é necessário solicitar uma nova proposta.</li>
+   <li>Locação da diária para montagem e desmontagem, valor: ${c.mont}.</li>
+   <li>Forma de pagamento padrão: 50% na assinatura do contrato e 50% até 3 dias úteis antes do evento. Para eventos faturados: pagamento via boleto bancário (sujeito à aprovação de cadastro e alteração de valor).</li>
+   <li>Para eventos com equipamentos específicos, verificar a carga máxima de energia permitida.</li>
+   <li>A projeção é compatível para equipamentos com entrada HDMI.</li>
+   <li>Os valores da proposta são referentes à diária.</li>
+   <li>Esta proposta é válida por ${c.validade}.</li></ul></div>
+   <div class="r z"><h2 class="t">Localização <b>Privilegiada</b></h2><div class="btns">${c.btn('whatsapp','whatsapp','WhatsApp')}${c.btn('instagram','instagram','Instagram')}${c.btn('video','video','Vídeo institucional')}${c.btn('tour','tour','Tour virtual')}</div>${c.mapa()}<div class="addr">Rua Juiz Achilles Veloso, 385 · Estoril · Belo Horizonte/MG</div></div></section>`);
+  // 8 contato
+  pages.push(`<section class="page p8 dk">${bg('esp_contato')}<div class="c z"><h2>Contato <b>Comercial</b></h2><p>E-mail: contato@espacovista.com.br<br>Telefone / WhatsApp: (31) 3643-8566<br>www.espacovista.com.br<br>@ovistabh</p><img class="logo" src="${c.logo}" alt="" style="filter:brightness(0) invert(1)"></div></section>`);
+  return pages.join('\n');
+}
+/* ═════════ PROPOSTA DO ESPAÇO — lógica (valores sempre do Catálogo) ═════════ */
+let ESPS = null, ESP_DIRTY = false, ESP_BUSY = false;
+const ESP_MIDIA_KEYS = [['esp_capa','Espaço · Capa e fundo escuro (foto do salão)'],['esp_fundo','Espaço · Fundo das páginas claras (vira cinza claro)'],['esp_contato','Espaço · Última página (fundo escuro)'],['esp_vista','Salão Vista'],['esp_real','Salão Real'],['esp_serra','Espaço Serra do Curral'],['esp_ouro','Sala Ouro Preto'],['esp_mariana','Sala Mariana'],['esp_tira','Sala Tiradentes'],['esp_buf1','Buffet · foto 1'],['esp_buf2','Buffet · foto 2'],['esp_buf3','Buffet · foto 3'],['esp_mid1','Mídia · foto 1 (jardim vertical)'],['esp_mid2','Mídia · foto 2'],['esp_mid3','Mídia · foto 3'],['esp_mid4','Mídia · foto 4']];
+ESP_MIDIA_KEYS.forEach(k=>HH_MIDIA_KEYS.push(k));
+const ESP_FALLBACK = {esp_capa:'foto2', esp_fundo:'foto1', esp_contato:'foto1', esp_vista:'foto1', esp_buf1:'foto3', esp_buf2:'foto3', esp_buf3:'foto3'};
+const ESP_ROWS = {
+  mid:[['equip','Pacote de 6 Tvs - Entrada + Salão Real','Pacote 6 TVs · 3 na Entrada (Jardim Vertical) + 3 no Salão Real'],['equip','Pacote 3 TVs - Jardim Vertical','Pacote 3 TVs · Entrada (Jardim Vertical)'],['equip','Pacote 3 TV´s - Salão Real','Pacote 3 TVs · Salão Real (Foyer)'],['equip','Totem com TV 4K 49"','TV 4K 49" com pedestal'],['equip','Porta banner','Porta banner']],
+  eq1:[['equip','Link dedicado 50 MB','Internet link dedicado (50 Mb)'],['equip','Link dedicado 100mb','Internet link dedicado (100 Mb)'],['equip','Microfone adicional sem fio','Microfone adicional sem fio'],['equip','Notebook','Notebook'],['equip','Púlpito','Púlpito'],['equip','Palco 5m x 2m','Palco 5m x 2m (h: 25 cm)'],['equip','Palco 7m x 2m','Palco 7m x 2m (h: 25 cm)'],['equip','Monitor de palco 27 polegadas','Monitor de retorno 27"'],['equip','Passador de slide','Passador de slide']],
+  eq2:[['equip','Parled','Iluminação Par Led (unid.)'],['serv','Gerador de energia 110 kVa (stand by -10h)','Gerador 110 kVa (stand by)'],['serv','Gerador de energia 110 kVa (em uso -10h)','Gerador 110 kVa (em uso)'],['equip','Kit flipchart com 5 folhas e 1 pincel','Flipchart com 5 folhas e 1 pincel'],['equip','Quadro branco','Quadro branco'],['equip','Papel para flipchart (5 folhas)','Papel para flipchart (5 folhas)'],['equip','Pincel atômico (3 pincéis)','Pincel marcador (3 unid.)'],['equip','Caneta bic','Caneta bic (unid.)'],['equip','Impressão a laser preto e branco','Impressão (unid.)']],
+  eq3:[['equip','Ribalta','Ribalta'],['equip','Toalhas p/ mesa escolar ou redonda','Toalhas (escolar ou redonda, p/ todas as mesas)'],['equip','Ponto de energia para notebook (cada)','Ponto de energia extra'],['equip','Rádio Comunicação Motorola','Rádio comunicação Motorola'],['equip','Combo 1: Palco 5x2m + Monitor de retorno + Púlpito','Combo 1: Palco 5m x 2m + Monitor de retorno + Púlpito'],['equip','Combo 2: Palco 5x2m + Monitor de retorno + Microfone','Combo 2: Palco 5m x 2m + Monitor de retorno + Microfone'],['equip','Combo 3: Palco 5x2m + 4 Parleds','Combo 3: Palco 5m x 2m + 4 Par Leds']],
+  srv:[['serv','Técnico de áudio e vídeo','Técnico de áudio e vídeo'],['serv','Garçom extra','Garçom extra (à parte, p/ servir bebidas não contratadas no buffet)'],['serv','Recepcionista','Recepcionista'],['serv','Segurança','Segurança']],
+  park:[['serv','Estacionamento - até 20 carros','Até 20 carros'],['serv','Estacionamento - até 30 carros','Até 30 carros']]
+};
+const ESP_MONT = 'Diária de montagem / desmontagem';
+function espNew(){ return {id:uid(), tipo:'esp', cliente:'', tabela:'', salas:{vista:true,ouro:true,tira:true,excl:true}, meta:{criado:new Date().toISOString()}}; }
+function espSp(e,k){ const info = tableInfo(e.tabela); const sp = DATA.spaces[ESP_SALAS[k].sp]; if(!info || !sp) return null; const v = info.esp(sp.name); return {total:v.total, teto:v.teto, base:r2(v.total - v.teto)}; }
+function espTotal(e){ const k = ['vista','ouro','tira','excl'].find(x=>e.salas[x]); const v = k && espSp(e,k); return v ? v.total : 0; }
+function espBox(e,k){
+  const v = espSp(e,k); if(!v) return '';
+  const inv = '<section><h5>Investimento</h5><div class="bx">Valor do espaço:&nbsp;<span class="pr">'+money(v.total)+'</span></div><small>O valor da proposta é referente a 1 diária com duração de até 10 horas.</small></section>';
+  const cond = v.teto>0 ? '<section class="cond"><h5>Condição Especial</h5><div class="bx sm"><span><b>De:</b> '+money(v.total)+' <b>Por:</b> '+money(v.base)+',<br>sendo <b>'+money(v.base)+'</b> referentes ao valor do espaço e <b>'+money(v.teto)+'</b> revertidos em crédito para consumo.</span></div><small>Condição válida por tempo determinado.</small></section>' : '';
+  const obs = k==='tira' ? 'A locação desta sala está vinculada à contratação das demais salas disponíveis.' : (v.teto>0 ? 'O crédito de consumo pode ser usado para todos os itens de buffet, ativações de mídia e equipamentos extras, exceto o gerador de energia.' : 'O valor se refere ao uso do espaço, sem crédito de consumação.');
+  return inv + cond + '<section><h5>Observações</h5><div class="bx sm">'+obs+'</div></section>';
+}
+function espPrice(e,r){ const t = e.tabela; const p = itemPrice(r[0], r[1], t); return p; }
+function espRows(e,k){
+  return ESP_ROWS[k].map(r=>{ const it = (DATA[r[0]]||[]).find(i=>i.name===r[1]); if(!it) return ''; return '<div class="r"><span>'+esc(r[2])+'</span><span>'+money(espPrice(e,r))+'</span></div>'; }).join('');
+}
+function espMont(e){ const it = DATA.serv.find(i=>i.name===ESP_MONT); const p = it ? itemPrice('serv',ESP_MONT,e.tabela) : 8970; return money(p); }
+function espValidade(e){ return hhValidade(e); }
+function espHtml(e,fotos){
+  const F0 = fotos || MIDIA.fotos || {}, L = MIDIA.links || {};
+  const F = new Proxy({}, {get:(o,k)=> F0[k] || (ESP_FALLBACK[k] ? F0[ESP_FALLBACK[k]] : undefined)});
+  const sh = {}; ['vista','ouro','tira','excl'].forEach(k=>sh[k] = !!e.salas[k]);
+  const dt = new Date((e.meta&&e.meta.enviadoEm)||Date.now()).toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
+  const key = k => ESP_FALLBACK[k] && !F0[k] ? ESP_FALLBACK[k] : k;
+  const c = {
+    logo:DATA.logo, cliente:esc(e.cliente||''), data:dt, show:sh, F:F, validade:espValidade(e), mont:espMont(e),
+    st:k=>hhImgStyle(key(k)),
+    box:k=>espBox(e,k), rows:k=>espRows(e,k),
+    foto:(k,l,w,h)=>{ const st = 'width:'+(typeof w==='number'?w+'px':w)+';height:'+(typeof h==='number'?h+'px':h)+';flex:none';
+      return F[k] ? '<div class="ph f" style="'+st+'"><img src="'+F[k]+'" style="'+hhImgStyle(key(k))+'" alt=""><span class="tag">'+l.replace(/^(\S+) (.*)$/,'$1 <b>$2</b>')+'</span></div>' : '<div class="ph" style="'+st+'"><span class="tag">'+l.replace(/^(\S+) (.*)$/,'$1 <b>$2</b>')+'</span></div>'; },
+    mapa:()=> F0.mapa ? (L.mapa ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:block;color:inherit">' : '')+'<div class="map ph f"><img src="'+F0.mapa+'" style="'+hhImgStyle('mapa')+'" alt=""></div>'+(L.mapa ? '</a>' : '') : '<div class="ph map" data-l="mapa · localização"></div>',
+    btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</a>' : '<div class="btn"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</div>'
+  };
+  return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(e.cliente||'Eventos')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet"><style>'+ESP_STYLE+'</style></head><body>'+espPages(c)+'</body></html>';
+}
+function espSet(d){ ESP_DIRTY = d; const b = $('esp-save'); if(b){ b.textContent = d ? '💾 Salvar' : '✔ Salvo'; b.className = 'btn '+(d?'btn-w':'btn-o'); } }
+function espReady(e){ return !!e.tabela && ['vista','ouro','tira','excl'].some(k=>e.salas[k]); }
+function espRender(){
+  if(!ESPS) return; const e = ESPS;
+  $('esp-cli').value = e.cliente;
+  let h = '<option value="">Escolher tabela…</option><optgroup label="Padrão">'+DATA.tables.filter(n=>/a partir/.test(n)).map(n=>'<option '+(n===e.tabela?'selected':'')+' value="'+esc(n)+'">'+esc(n.replace(/ - .*/,''))+'</option>').join('')+'</optgroup>';
+  if(custom.length) h += '<optgroup label="★ Personalizadas">'+custom.map(c=>'<option '+(c.name===e.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('')+'</optgroup>';
+  $('esp-tab').innerHTML = h;
+  $('esp-salas').innerHTML = Object.keys(ESP_SALAS).map(k=>'<button class="'+(e.salas[k]?'on':'')+'" onclick="I2.espSala(\''+k+'\')">'+(e.salas[k]?'✔ ':'')+ESP_SALAS[k].label+'</button>').join('');
+  if($('esp-links')) $('esp-links').innerHTML = hhLinksHtml(e);
+  const fr = $('esp-frame'), wrap = $('esp-prev');
+  if(!espReady(e)){ $('esp-info').innerHTML = '<div class="hh-jan">Escolha a <b>tabela de preços</b> para montar a proposta. Os valores vêm do Catálogo.</div>'; fr.style.display='none'; wrap.style.height='0px'; return; }
+  const sp = k => { const v = espSp(e,k); return v ? '<div><small>'+ESP_SALAS[k].label.split(' (')[0]+'</small><b>'+money(v.total)+'</b>'+(v.teto>0?'<em>por '+money(v.base)+' + '+money(v.teto)+' em crédito</em>':'')+'</div>' : ''; };
+  $('esp-info').innerHTML = '<div class="hh-sum">'+Object.keys(ESP_SALAS).filter(k=>e.salas[k]).map(sp).join('')+'</div>';
+  const np = espHtml(e).split('class="page').length - 1;
+  const w = Math.max(320, wrap.clientWidth), k = w/1920;
+  fr.setAttribute('scrolling','no'); fr.style.cssText = 'display:block;width:1920px;height:'+(np*1080+(np-1)*40)+'px;border:0;pointer-events:none;transform:scale('+k+');transform-origin:0 0';
+  wrap.style.height = Math.round((np*1080+(np-1)*40)*k)+'px';
+  fr.srcdoc = espHtml(e);
+}
+Object.assign(I2,{
+  espOpenNew(){ ESPS = espNew(); espSet(false); espRender(); },
+  espOpenNewIfEmpty(){ if(!ESPS) I2.espOpenNew(); else espRender(); },
+  espField(k,v){ ESPS[k] = v; espSet(true); espRender(); },
+  espSala(k){ ESPS.salas[k] = !ESPS.salas[k]; espSet(true); espRender(); },
+  espLoad(p){ ESPS = p; ESPS.meta = ESPS.meta||{}; ESPS.salas = Object.assign({vista:true,ouro:true,tira:true,excl:true}, ESPS.salas||{}); espSet(false); espRender(); },
+  async espSave(){
+    if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
+    if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
+    ESPS.meta.salvoEm = new Date().toISOString();
+    try{ await Store.save(ESPS, espTotal(ESPS)); ESPS = espNew(); espSet(false); espRender(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); }catch(e){ say('Erro ao salvar: '+e.message); } },
+  espPdf(){
+    if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
+    const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
+    w.document.open(); w.document.write(espHtml(ESPS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },1200); },
+  async espMarkSent(){
+    if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
+    if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
+    if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
+    if(ESP_BUSY) return; ESP_BUSY = true; say('Gerando o link…');
+    try{
+      const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
+      ESPS.meta.enviadoEm = now; ESPS.meta.token = token; ESPS.meta.salvoEm = now;
+      const html = espHtml(ESPS, fotos);
+      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:ESPS.id, tipo:'esp', cliente:ESPS.cliente, titulo:'Proposta — '+ESPS.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
+      ESPS.meta.links = (ESPS.meta.links||[]).concat([{token:token, em:now}]);
+      await Store.save(ESPS, espTotal(ESPS));
+      espSet(false); LINK_CTX = 'esp'; hhShowLink(token, now);
+    }catch(e){ delete ESPS.meta.token; say('Erro ao gerar o link: '+e.message); }
+    ESP_BUSY = false; }
+});
 
 window.I2 = I2;
 window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
@@ -1723,7 +2024,7 @@ document.querySelectorAll('.sb-link').forEach(el=>el.addEventListener('click',()
   document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   el.classList.add('active'); $('view-'+v).classList.add('active'); $('topbar-title').textContent = Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
   document.body.classList.toggle('inv2-on', v==='inv2');
-  if(v==='inv2') refresh(); if(v==='clientes') I2.renderClientes(); if(v==='catalogo') renderCatalogo(); if(v==='hh') I2.hhOpenNewIfEmpty();
+  if(v==='inv2') refresh(); if(v==='clientes') I2.renderClientes(); if(v==='catalogo') renderCatalogo(); if(v==='hh') I2.hhOpenNewIfEmpty(); if(v==='esp') I2.espOpenNewIfEmpty();
 }));
 window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
 window.addEventListener('scroll',e=>{ if(!sug.inp || e.target===sugBox()) return; const r = sug.inp.getBoundingClientRect(), b = sugBox(); b.style.left = r.left+'px'; b.style.top = (r.bottom+2)+'px'; b.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 20)+'px'; },true);

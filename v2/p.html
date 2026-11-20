@@ -42,7 +42,7 @@ function show(j){
   H = j.html; document.title = j.titulo || 'Proposta — Espaço Vista';
   app.innerHTML = '<header><div class="t">Espaço Vista<small>'+(j.cliente?('Proposta para '+j.cliente.replace(/</g,'&lt;')):'Proposta comercial')+'</small></div><div class="v">Válida até '+fmt(j.expira_em)+'</div><button id="pdf">⬇ Baixar PDF</button></header><div class="hint">Dica: use o gesto de pinça para ampliar, ou gire o celular.</div><div id="wrap"><iframe id="f" title="Proposta" scrolling="no"></iframe></div>';
   var f = document.getElementById('f'), wrap = document.getElementById('wrap');
-  function fit(){ var w = Math.max(320, wrap.clientWidth), k = w/1920; f.style.width='1920px'; f.style.height='4520px'; f.style.transform='scale('+k+')'; wrap.style.height = Math.round((4*1080+3*40)*k)+'px'; }
+  function fit(){ var w = Math.max(320, wrap.clientWidth), k = w/1920; f.style.width='1920px'; var np = Math.max(1,(H.split('class="page').length-1)); f.style.height=(np*1080+(np-1)*40)+'px'; f.style.transform='scale('+k+')'; wrap.style.height = Math.round((np*1080+(np-1)*40)*k)+'px'; }
   f.srcdoc = H; fit(); window.addEventListener('resize', fit);
   document.getElementById('pdf').onclick = function(){
     var w = window.open('','_blank'); if(!w){ alert('Libere os pop-ups deste site para baixar o PDF.'); return; }
