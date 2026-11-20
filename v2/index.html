@@ -2279,13 +2279,14 @@ function simItems(id){
   return [];
 }
 const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
+const SIM_ONE = /estacionamento|gerador|palco|jardim vertical/i;
 const SIM_GRP = {sala:'gast', coffee:'gast', almoco:'gast', hh:'gast', sobremesa:'gast', equip:'equip', serv:'serv'};
 function simLabel(id,n){
   if(id==='sala' && SIM_SALA[n]) return SIM_SALA[n];
   if(id==='hh') return (/^Butiquim/.test(n)?'Comida de Buteco':'Coquetel')+' · '+n.replace(/^[^:]+:\s*/,'');
   return n.replace(/^[^:]+:\s*/,'').replace(/^(.)/,c=>c.toUpperCase());
 }
-function simSteps(){ return ['hello','hor','espaco','sala','coffee','almoco','hh','sobremesa','equip','serv','obs','resumo']; }
+function simSteps(){ return ['hello','hor','espaco','sala','coffee','almoco','sobremesa','hh','equip','serv','obs','resumo']; }
 const SIM_Q = {
   hello:()=>'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar o seu evento de <b>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})+'</b> para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.',
   hor:()=>'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>',
@@ -2333,8 +2334,8 @@ function simControls(id){
   }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
-  const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast';
-  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.simTog(\''+grp+'\',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+'</span>'+(qty&&on?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
+  const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast', one1 = id==='almoco'||id==='hh';
+  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.'+(one1?'simOne(\''+id+'\'':'simTog(\''+grp+'\'')+',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+'</span>'+(qty&&on&&!SIM_ONE.test(n)?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
   const any = its.some(n=>SIM[grp][n]);
   return '<div class="sim-chips">'+chips+'</div>'+next(any?'Continuar':'Pular');
 }
@@ -2343,7 +2344,7 @@ function simSummary(){
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
   const sal = Object.keys(SIM.salas).map(esc).join('<br>');
   return '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+'<br>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR')+' · '+SIM.n+' convidados')+row('Horário','Chegada '+SIM.chegada+' · Saída '+SIM.termino)+row('Espaço',sal)
-    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns('coffee') : '')+row('Almoço',nm('almoco'))+row('Happy hour',nm('hh'))+row('Sobremesas',nm('sobremesa'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
+    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns('coffee') : '')+row('Almoço',nm('almoco'))+row('Sobremesas',nm('sobremesa'))+row('Happy hour',nm('hh'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
 }
 function simRender(keepAnim){
   if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
@@ -2369,6 +2370,7 @@ function simRecv(){
 Object.assign(I2,{
   simRender, simTm(f,span){ const s = span.querySelectorAll('select'); SIM[f] = s[0].value ? s[0].value+':'+s[1].value : ''; if(f==='chegada' && !SIM.inicio) SIM.inicio = SIM.chegada; },
   simTog(g,n){ if(SIM[g][n]) delete SIM[g][n]; else SIM[g][n] = g==='equip'||g==='serv' ? 1 : true; simRender(true); },
+  simOne(id,n){ const g='gast', was=!!SIM[g][n]; simItems(id).forEach(x=>delete SIM[g][x]); if(!was){ SIM[g][n]=true; SIM.step=Math.min(simSteps().length-1,SIM.step+1); } simRender(); },
   simQty(g,n,d){ SIM[g][n] = Math.max(1,(SIM[g][n]||1)+d); simRender(true); },
   simObs(v){ SIM.obs = v; },
   simPick(n){ SIM.salas = n ? {[n]:true} : {}; SIM.step++; simRender(); },
