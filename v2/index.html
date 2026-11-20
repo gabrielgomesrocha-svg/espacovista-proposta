@@ -310,6 +310,8 @@ body.sb-off .main{margin-left:0}
 .i2-sumwrap .i2-sum{max-width:none;margin:0}.i2-sumwrap.multi .i2-sum{border:1px solid var(--ru);border-radius:8px;padding:10px 12px;background:#fcfafa;position:sticky;top:120px}
 .i2-sum-h{display:none;font-size:11px;font-weight:800;color:var(--w);text-transform:uppercase;letter-spacing:.07em;padding:2px 10px 8px}.i2-sumwrap.multi .i2-sum-h{display:block}
 @media(max-width:1000px){.i2-sumwrap.multi{grid-template-columns:1fr}.i2-sumwrap.multi .i2-sum{position:static}}
+
+.top-grid.top4{grid-template-columns:minmax(220px,1fr) 170px minmax(260px,auto) 120px}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -491,17 +493,14 @@ body.sb-off .main{margin-left:0}
       </div>
     </div></div>
     <div class="card"><div class="card-hdr"><span class="card-title">Cliente e evento</span></div><div class="card-body">
-      <div class="top-grid">
+      <div class="top-grid top4">
         <div class="fg"><label class="fl">Cliente</label><input id="hh-cli" placeholder="Nome do cliente / empresa" oninput="I2.hhField('cliente',this.value)"></div>
         <div class="fg"><label class="fl">Nº de convidados</label><input id="hh-n" type="number" min="0" step="1" oninput="I2.hhField('convidados',this.value)"></div>
         <div class="fg"><label class="fl">Data(s) do evento</label><div class="dts" id="hh-dts"></div></div>
+        <div class="fg" style="width:110px"><label class="fl">Duração (horas)</label><input id="hh-h" type="number" min="1" max="12" step="0.5" oninput="I2.hhField('horas',this.value)"></div>
       </div>
     </div></div>
-    <div class="card"><div class="card-hdr"><span class="card-title">Modelo do coquetel</span></div><div class="card-body">
-      <div class="opt-row"><div class="opt-l">Modalidade<small>tipo de evento</small></div><div class="hh-sw" id="hh-modo"><button data-m="hh" onclick="I2.hhModo('hh')">Happy Hour</button><button data-m="conf" onclick="I2.hhModo('conf')">Confraternização</button></div></div>
-      <div class="opt-row"><div class="opt-l">Duração<small>em horas</small></div><div class="fg" style="width:110px"><input id="hh-h" type="number" min="1" max="12" step="0.5" oninput="I2.hhField('horas',this.value)"></div></div>
-      <div id="hh-info"></div><div id="hh-links"></div>
-    </div></div>
+    <div id="hh-info"></div><div id="hh-links"></div>
     <div id="hh-wait" style="display:none" class="card"><div class="card-body" style="text-align:center;padding:30px;color:var(--gr)">O modelo de <b>Happy Hour</b> será o próximo a ser criado.</div></div>
     <div id="hh-prev"><iframe id="hh-frame" title="Pré-visualização"></iframe></div>
       <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.hhSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.hhPdf()">⬇ Exportar PDF</button><button class="btn btn-w" onclick="I2.hhMarkSent()">🔗 Gerar link</button></div>
@@ -804,6 +803,7 @@ function calcAll(p){
   R.totalPdf = r2(R.evento - R.desconto + (p.hide.extras ? 0 : R.extras));
   return R;
 }
+function faltaDoc(){ const f = []; if(!P.tabela) f.push('a Tabela de preços'); if(!String(P.cliente||'').trim()) f.push('o cliente'); if(!(num(P.convidados)>0)) f.push('o nº de convidados'); if(!P.dias.every(d=>d.data)) f.push('a data de cada dia'); if(!P.dias.some(d=>d.espacos.some(e=>e.nome))) f.push('o espaço'); return f; }
 function warnings(){
   const w = [];
   if(!P.tabela) w.push('escolha a Tabela de preços');
@@ -1334,11 +1334,7 @@ const I2 = {
   async logout(){ if(dirty && !(await ask('Há alterações não salvas. Sair mesmo assim?','Sair'))) return; Store.saveSess(null); LS.del('inv2_draft'); HHS = null; sbUser(); showLogin(); },
   async gerarLink(){
     const R = calcAll();
-    if(!P.tabela){ say('Escolha a Tabela de preços antes de gerar o link'); return; }
-    if(!P.cliente.trim()){ say('Informe o cliente antes de gerar o link'); return; }
-    if(!(num(P.convidados)>0)){ say('Informe o nº de convidados antes de gerar o link'); return; }
-    if(!P.dias.every(d=>d.data)){ say('Informe a data de cada dia do evento antes de gerar o link'); return; }
-    if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de gerar o link'); return; }
+    { const f = faltaDoc(); if(f.length){ say('Antes de gerar o link, informe: '+f.join(', ')+'.'); return; } }
     if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
     if(I2._lkBusy) return; I2._lkBusy = true; lkBusy('gerarLink',true); say('Gerando o link… aguarde');
     try{
@@ -1353,11 +1349,7 @@ const I2 = {
     I2._lkBusy = false; lkBusy('gerarLink',false); },
   async pdf(){
     const R = calcAll();
-    if(!P.tabela){ say('Escolha a Tabela de preços antes de exportar'); return; }
-    if(!P.cliente.trim()){ say('Informe o cliente antes de exportar'); return; }
-    if(!(num(P.convidados)>0)){ say('Informe o nº de convidados antes de exportar'); return; }
-    if(!P.dias.every(d=>d.data)){ say('Informe a data de cada dia do evento antes de exportar'); return; }
-    if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de exportar'); return; }
+    { const f = faltaDoc(); if(f.length){ say('Antes de exportar, informe: '+f.join(', ')+'.'); return; } }
     const html = buildPrint(P,R,true);
     const w = window.open('','_blank'); if(!w){ say('O navegador bloqueou a janela do PDF — permita pop-ups para este site.'); return; }
     let ok = true;
@@ -1496,6 +1488,8 @@ function normalize(p){
     d.espacos.forEach(e=>{ if(!e.id) e.id=uid(); e.he = e.he || {on:false,qtd:'',vh:0,vhMan:false}; }); });
 }
 function showLogin(){ $('i2-login').classList.add('on'); }
+if(window.__AUDIT){ I2._a = { get:()=>({DATA:JSON.parse(JSON.stringify(DATA)), P:JSON.parse(JSON.stringify(P)), R:calcAll(), HH:HH_PRECOS, HHS:HHS?JSON.parse(JSON.stringify(HHS)):null}),
+  mut:f=>{ f(P); touch(); renderBody(); }, clean:()=>{ dirty = false; }, hh:()=>hhCalc(HHS), print:()=>buildPrint(P,calcAll(),false), money:money }; }
 async function boot(){
   try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
@@ -1832,12 +1826,11 @@ function hhHtml(h,fotos){
   return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(h.cliente||'Confraternização')+'</title><style>'+HH_COQ_STYLE+'</style></head><body>'+hhCoqPages(ctx)+'</body></html>';
 }
 function hhSet(d){ HH_DIRTY = d; const b = $('hh-save'); if(b){ b.textContent = d ? '💾 Salvar' : '✔ Salvo'; b.className = 'btn '+(d?'btn-w':'btn-o'); } }
-function hhRender(){
+function hhRender(){ if(HHS) HHS.modo = 'conf';
   syncCat();
   if(!HHS) return;
   const c = hhCalc(HHS); const h = HHS;
   if(!h.datas) h.datas = []; $('hh-dts').innerHTML = dtsHtml(h.datas,'hhDtAdd','hhDtDel'); $('hh-cli').value = h.cliente; $('hh-h').value = (h.horas==null?5:h.horas); $('hh-n').value = h.convidados; $('hh-tab').value = h.tabela;
-  document.querySelectorAll('#hh-modo button').forEach(b=>b.classList.toggle('on', b.dataset.m===h.modo));
   let info = '';
   if(c){
     info = '<div class="hh-sum"><div><small>Faixa aplicada</small><b>'+c.faixa+' pessoas</b>'+(c.n!==c.faixa?'<em>'+c.n+' convidados → tabela de '+c.faixa+'</em>':'')+(c.below?'<em style="color:var(--w)">abaixo do mínimo da tabela</em>':'')+(c.above?'<em style="color:var(--w)">acima da última faixa da tabela</em>':'')+'</div>'
@@ -2474,7 +2467,7 @@ function simHasAny(id){ const g = SIM_GRP[id]; if(id==='coffee') return SIM.coff
 function simControls(id){
   const next = lbl => '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">'+(lbl||'Continuar')+' →</button></div>';
   if(id==='igual') return '<div class="sim-chips"><div class="sim-chip" onclick="I2.simIgual(1)"><span>Sim, igual — duplicar tudo</span></div><div class="sim-chip" onclick="I2.simIgual(0)"><span>Não, vou escolher dia a dia</span></div></div>';
-  if(id==='dias'){ const mx = Math.min(7, Math.max(3,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
+  if(id==='dias'){ const mx = Math.min(7, Math.max(5,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
   const keep = CD; let h = '';
@@ -2557,7 +2550,7 @@ Object.assign(I2,{
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
     const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
-      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp());
+      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
       grp(/^Serviço de sala:|^Red Bull/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
       (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
