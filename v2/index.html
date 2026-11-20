@@ -293,7 +293,7 @@ body.sb-off .main{margin-left:0}
 #hh-prev{margin-top:14px;overflow:hidden;position:relative;width:100%;contain:layout;border-radius:6px;background:#777}
 .hh-mid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
 .hh-ph{border:1px solid #e3dede;border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
-.hh-ph .th{height:120px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;overflow:hidden}
+.hh-ph .th{aspect-ratio:1.15;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;overflow:hidden}
 .hh-ph .th img{width:100%;height:100%;object-fit:cover}
 #hh-prev iframe{position:absolute;left:0;top:0}
 
@@ -325,6 +325,8 @@ body.sb-off .main{margin-left:0}
 .sbu-out{width:100%;background:transparent;border:1px solid #444;color:#ddd;border-radius:6px;padding:8px;font-size:12px;cursor:pointer}
 .sbu-out:hover{background:#2a2a2a;color:#fff;border-color:#8B0000}
 .sb-user:not(:empty)+.sb-foot{margin-top:0}
+.hh-sls{display:flex;flex-direction:column;gap:2px}.hh-sl{display:flex;align-items:center;gap:8px;font-size:11px;color:#666}.hh-sl span{width:96px;flex:none}.hh-sl input{flex:1;padding:0}
+.hh-ph .th{position:relative}
 
 </style>
 </head>
@@ -1276,7 +1278,7 @@ async function boot(){
   custom.forEach(migCustom);
   try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); } }catch(e){ CAT = catFromData(); }
   try{ await hhLoadCfg(); }catch(e){}
-  try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{}}; }catch(e){}
+  try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{},aj:m.aj||{}}; }catch(e){}
   Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; });
   try{ const o = await Store.getSetting('espaco_obs_padrao'); if(o && typeof o==='object') espObsPadrao = o; }catch(e){}
   try{ const c = await Store.getSetting('condicoes_inv2'); if(Array.isArray(c) && c.length) conds = c; }catch(e){}
@@ -1405,7 +1407,7 @@ body{background:#777;margin:0;font-family:'Inter',sans-serif;color:var(--k)}
 .p4 .band{position:absolute;left:0;right:0;bottom:0;height:70px;background:#E3DCDC;color:#4a2a2a;display:flex;align-items:center;justify-content:space-between;padding:0 80px;font-size:16px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
 .p4 .band .logo{height:34px}
 
-.ph img,.strip img,.map img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{overflow:hidden}.ph img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
 .ph.f{background:none}.ph.f::after{display:none}
 a.btn{color:inherit;text-decoration:none;display:block}
 .map{display:block;overflow:hidden}
@@ -1511,7 +1513,7 @@ const HH_LINKS = [['whatsapp','WhatsApp'],['instagram','Instagram'],['video','V�
 let HHS = null;          // proposta aberta
 let HH_DIRTY = false;
 const HH_LINKS_DEF = {whatsapp:'https://wa.me/553136438566', instagram:'https://www.instagram.com/ovistabh/', video:'https://www.youtube.com/watch?v=5AcGcGPCFOI', tour:'https://my360.com.br/3d-model/espaco-vista-formato-empresarial/fullscreen/', mapa:'https://www.google.com.br/maps/place/Espa%C3%A7o+Vista/@-19.9623506,-43.9634134,17z/data=!3m1!4b1!4m6!3m5!1s0xa697eaf9e9bc05:0x7b635f90c5f7be2a!8m2!3d-19.9623557!4d-43.9608385!16s%2Fg%2F12ml2l58r'};
-let MIDIA = {fotos:{},links:{}};
+let MIDIA = {fotos:{},links:{},aj:{}};
 const VALIDADE_DIAS = 10;
 function hhTier(prod,tab,n){
   const rows = (HH_PRECOS[prod]||{})[String(tab)]||[]; if(!rows.length) return null;
@@ -1535,8 +1537,8 @@ function hhHtml(h){
   const F = MIDIA.fotos||{}, L = MIDIA.links||{};
   const ctx = {
     logo:DATA.logo, n:h.convidados, horas:(num(h.horas)||5), premium:money(num(HH_PRECOS.premium)), p:c.opcoes.map(money), j:c.jantar.map(money), validade:hhValidade(h),
-    foto:(i,l)=> F['foto'+(i+1)] ? '<div class="ph f"><img src="'+F['foto'+(i+1)]+'" alt=""></div>' : '<div class="ph" data-l="'+l+'"></div>',
-    mapa:()=> F.mapa ? '<div class="map ph f"><img src="'+F.mapa+'" alt=""></div>' : '<div class="ph map" data-l="mapa · localização"></div>',
+    foto:(i,l)=> F['foto'+(i+1)] ? '<div class="ph f"><img src="'+F['foto'+(i+1)]+'" style="'+hhImgStyle('foto'+(i+1))+'" alt=""></div>' : '<div class="ph" data-l="'+l+'"></div>',
+    mapa:()=> F.mapa ? (L.mapa ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:block;color:inherit">' : '')+'<div class="map ph f"><img src="'+F.mapa+'" style="'+hhImgStyle('mapa')+'" alt=""></div>'+(L.mapa ? '</a>' : '') : '<div class="ph map" data-l="mapa · localização"></div>',
     btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+ic+'</b>'+l+'</a>' : '<div class="btn"><b>'+ic+'</b>'+l+'</div>'
   };
   return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(h.cliente||'Confraternização')+'</title><style>'+HH_COQ_STYLE+'</style></head><body>'+hhCoqPages(ctx)+'</body></html>';
@@ -1563,12 +1565,15 @@ function hhRender(){
   wrap.style.height = Math.round((4*1080+3*40)*k)+'px';
   fr.srcdoc = hhHtml(h);
 }
+function hhAj(k){ const a = (MIDIA.aj||{})[k]||{}; return {z:Math.max(1,Math.min(3,num(a.z)||1)), x:(a.x==null?50:num(a.x)), y:(a.y==null?50:num(a.y))}; }
+function hhImgStyle(k){ const a = hhAj(k); return 'object-position:'+a.x+'% '+a.y+'%;'+(a.z>1?'transform:scale('+a.z+');transform-origin:'+a.x+'% '+a.y+'%;':''); }
 function hhFile(file,max){
   return new Promise((ok,no)=>{ const fr = new FileReader(); fr.onload = ()=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1,max/Math.max(im.width,im.height)); const cv = document.createElement('canvas'); cv.width = Math.round(im.width*k); cv.height = Math.round(im.height*k); cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height); ok(cv.toDataURL('image/jpeg',0.85)); }; im.onerror = no; im.src = fr.result; }; fr.onerror = no; fr.readAsDataURL(file); });
 }
 function renderMidia(){
-  let h = '<p class="i2-cnote">Suba as fotos e cadastre os links uma única vez: todas as propostas (Coquetel, Buteco…) usam este material. Os botões do PDF e do link ficam clicáveis.</p><div class="hh-mid">';
-  HH_MIDIA_KEYS.forEach(k=>{ const v = MIDIA.fotos[k[0]]; h += '<div class="hh-ph"><div class="th">'+(v?'<img src="'+v+'">':'<span>sem foto</span>')+'</div><b>'+k[1]+'</b><label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'</div>'; });
+  let h = '<p class="i2-cnote">Suba as fotos e cadastre os links uma única vez: todas as propostas (Coquetel, Buteco…) usam este material. Os botões do PDF e do link ficam clicáveis. Use os controles de <b>Zoom</b> e <b>posição</b> para enquadrar cada foto. <b>Mapa:</b> o Google não gera a imagem a partir do link — suba um print do mapa e cadastre o link do Google Maps abaixo; no PDF e no link da proposta a imagem do mapa vira clicável e abre o Google Maps.</p><div class="hh-mid">';
+  HH_MIDIA_KEYS.forEach(k=>{ const v = MIDIA.fotos[k[0]]; const ai = hhAj(k[0]); const sl = (lbl,f,mn,mx,st,val)=>'<label class="hh-sl"><span>'+lbl+'</span><input type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+val+'" oninput="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,false)" onchange="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,true)"></label>';
+    h += '<div class="hh-ph"><div class="th" id="th-'+k[0]+'">'+(v?'<img src="'+v+'" style="'+hhImgStyle(k[0])+'">':'<span>sem foto</span>')+'</div>'+(v?'<div class="hh-sls">'+sl('Zoom','z',1,3,0.05,ai.z)+sl('← Horizontal →','x',0,100,1,ai.x)+sl('↑ Vertical ↓','y',0,100,1,ai.y)+'<button class="btn btn-o btn-sm" onclick="I2.midiaAjReset(\''+k[0]+'\')">Centralizar</button></div>':'')+'<b>'+k[1]+'</b><label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'</div>'; });
   h += '</div><div class="i2-cs" style="margin-top:14px"><div class="i2-cs-h"><b>Links</b></div>'+HH_LINKS.map(k=>'<div class="fg"><label class="fl">'+k[1]+'</label><input value="'+esc(MIDIA.links[k[0]]||'')+'" placeholder="https://…" onchange="I2.midiaLink(\''+k[0]+'\',this.value)"></div>').join('')+'</div>';
   return h;
 }
@@ -1590,6 +1595,9 @@ Object.assign(I2,{
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
+  midiaAj(k,f,v,save){ MIDIA.aj = MIDIA.aj||{}; const a = MIDIA.aj[k] = Object.assign({z:1,x:50,y:50}, MIDIA.aj[k]); a[f] = +v;
+    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); if(save) midiaSave(); },
+  async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   async midiaLink(k,v){ MIDIA.links[k] = v.trim(); await midiaSave(); }
 });
 Object.assign(I2,{ hhOpenNewIfEmpty(){ if(!HHS) I2.hhOpenNew(); else hhRender(); } });
@@ -1626,7 +1634,7 @@ Object.assign(I2,{
 function hhpSet(d){ hhpDirty = d; const b = $('hhp-save'); if(b){ b.textContent = d?'💾 Salvar tabelas':'✔ Salvo'; b.className = 'btn '+(d?'btn-w':'btn-o'); } }
 
 window.I2 = I2;
-window.I2._t = { calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
+window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
 document.querySelectorAll('.sb-link').forEach(el=>el.addEventListener('click',()=>{
   const v = el.dataset.view;
   document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
