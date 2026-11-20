@@ -268,6 +268,17 @@ body.sb-off .main{margin-left:0}
 .i2-cat-top{position:sticky;top:52px;z-index:40;background:#F0F0F0;padding:8px 0 10px}
 .i2-cat-top-in{background:#fff;border:1px solid var(--ru);border-radius:6px;padding:8px 12px;display:flex;align-items:center;gap:12px}
 #cat-hint{font-size:11.5px;color:var(--w);font-weight:700}
+
+.tb-sec{margin-bottom:18px}
+.tb-h{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:12px;font-weight:700;color:var(--dk);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.tb-h small{font-weight:400;text-transform:none;letter-spacing:0;color:var(--gr);margin-right:auto}
+.tb-chips{display:flex;flex-wrap:wrap;gap:6px}
+.tb-chip{background:#f3f1ee;border:1px solid var(--ru);border-radius:20px;padding:4px 11px;font-size:11.5px;color:var(--dk)}
+.tb-card{display:flex;align-items:center;gap:12px;border:1px solid var(--ru);border-left:4px solid var(--w);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:#fff}
+.tb-main{flex:1;min-width:0}.tb-n{font-weight:700;color:var(--dk);font-size:13.5px}.tb-m{font-size:11px;color:var(--gr);margin-top:1px}.tb-v{font-size:11.5px;color:var(--dk);margin-top:4px}
+.tb-act{display:flex;align-items:center;gap:6px}
+.tb-empty{border:1px dashed var(--ru);border-radius:6px;padding:14px;text-align:center;font-size:12px;color:var(--gr)}
+.tb-ed{border:2px solid var(--w);border-radius:8px;padding:14px;background:var(--wp)}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -349,9 +360,9 @@ body.sb-off .main{margin-left:0}
   <!-- ═══════════ INVESTIMENTO 2 ═══════════ -->
   <div class="view active" id="view-inv2">
     <div class="i2-top"><div class="i2-top-in">
-      <div class="i2-tab"><label>⚡ Tabela de preços</label>
+      <div class="i2-tab"><label>Tabela de preços</label>
         <select id="i2-tabela" class="empty" onchange="I2.setTabela(this.value)"></select>
-        <button class="btn btn-o btn-sm" onclick="I2.openTabs()" title="Criar, editar e excluir tabelas personalizadas">⚙ Tabelas de preços</button>
+        <button class="btn btn-o btn-sm" onclick="I2.openTabs()" title="Ver, criar, editar e excluir tabelas">⚙ Gerenciar tabelas</button>
       </div>
       <div class="i2-ind"><span id="i2-state"></span><span id="i2-user"></span></div>
       <div class="i2-live"><small>Total do investimento</small><b id="i2-live">R$ 0,00</b></div>
@@ -473,7 +484,7 @@ let espObsPadrao = {};   // texto padrão 'Incluso / Observações' salvo por es
 let custom = [];     // tabelas personalizadas
 let conds = DATA.conds.slice();
 function horaPadrao(nome){ const sp = DATA.spaces.find(x=>x.name===nome); return sp ? num(sp.hora) : 0; }
-function obsPadrao(nome){ if(espObsPadrao[nome] != null) return espObsPadrao[nome]; const sp = DATA.spaces.find(x=>x.name===nome); return sp ? sp.desc : ''; }
+function obsPadrao(nome){ const sp = DATA.spaces.find(x=>x.name===nome); return sp ? sp.desc : ''; }
 function allTables(){ return DATA.tables.map(n=>({name:n,custom:false})).concat(custom.map(c=>({name:c.name,custom:true}))); }
 function tableInfo(name){
   if(DATA.tables.indexOf(name) >= 0) return { key:name, esp: sp => { const t = num(DATA.teto[name][sp]); return {total: r2(num(DATA.base[name][sp]) + t), teto: t}; } };
@@ -733,9 +744,9 @@ const eyeSvg = off => off
 
 function renderTabelaSelect(){
   const s = $('i2-tabela'); if(!s) return;
-  let h = '<option value="">— Selecione a tabela —</option>';
-  h += '<optgroup label="Tabelas padrão (fixas)">' + DATA.tables.map(n=>'<option '+(n===P.tabela?'selected':'')+' value="'+esc(n)+'">'+esc(n)+'</option>').join('') + '</optgroup>';
-  if(custom.length) h += '<optgroup label="Personalizadas">' + custom.map(c=>'<option '+(c.name===P.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('') + '</optgroup>';
+  let h = '<option value="">Escolher tabela…</option>';
+  h += '<optgroup label="Padrão">' + DATA.tables.map(n=>'<option '+(n===P.tabela?'selected':'')+' value="'+esc(n)+'">'+esc(n)+'</option>').join('') + '</optgroup>';
+  if(custom.length) h += '<optgroup label="★ Personalizadas">' + custom.map(c=>'<option '+(c.name===P.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('') + '</optgroup>';
   s.innerHTML = h; s.className = P.tabela ? '' : 'empty';
 }
 const COLS = '<colgroup><col><col style="width:17%"><col style="width:74px"><col style="width:118px"><col style="width:108px"><col style="width:28px"></colgroup>';
@@ -798,7 +809,7 @@ function espBlock(d,e,k){
       <div class="fg"><label class="fl">Retorno de consumação</label><input type="number" step="any" min="0" data-esp="teto" data-e="${e.id}" value="${e.teto}" style="${e.manTeto?manS:''}" oninput="I2.esp('${d.id}','${e.id}','teto',this.value)"></div>
       ${multi?`<button class="x-btn" style="margin-bottom:6px" title="Remover este espaço" onclick="I2.delEsp('${d.id}','${e.id}')">×</button>`:'<span></span>'}
     </div>
-    <div class="fg" style="margin-top:8px"><label class="fl">Incluso / observações do espaço <a href="#" class="i2-lnk" onclick="I2.saveEspDefault('${d.id}','${e.id}');return false" title="Usa este texto sempre que este espaço for escolhido">💾 salvar como padrão deste espaço</a></label><textarea rows="2" style="min-height:44px" oninput="I2.esp('${d.id}','${e.id}','obs',this.value)">${esc(e.obs)}</textarea></div>
+    <div class="fg" style="margin-top:8px"><label class="fl">Incluso / observações do espaço <a href="#" class="i2-lnk" onclick="I2.restoreObs('${d.id}','${e.id}');return false" title="Volta ao texto cadastrado em Catálogo → Espaços">↻ restaurar do Catálogo</a></label><textarea rows="2" style="min-height:44px" oninput="I2.esp('${d.id}','${e.id}','obs',this.value)">${esc(e.obs)}</textarea></div>
     ${heRow}
   </div>`;
 }
@@ -1013,9 +1024,7 @@ const I2 = {
   delEsp(dId,eId){ const d = dayOf(dId); if(!d || d.espacos.length<2) return; d.espacos = d.espacos.filter(e=>e.id!==eId); touch(); renderDay(dId); },
   he(dId,eId,k,v){ const e = espOf(dId,eId); if(!e) return; e.he[k] = (k==='qtd') ? v : num(v); if(k==='vh') e.he.vhMan = true; if(k==='qtd') e.he.qtdMan = true; setIf('he-'+eId, money(heValor(e))); touch(); },
   heEye(dId,eId){ const e = espOf(dId,eId); if(!e) return; e.he.on = !e.he.on; e.he.auto = false; e.he.manual = true; if(e.he.on && !e.he.vhMan) e.he.vh = horaPadrao(e.nome); touch(); renderDay(dId); },
-  async saveEspDefault(dId,eId){ const e = espOf(dId,eId); if(!e || !e.nome){ say('Escolha o espaço primeiro'); return; }
-    espObsPadrao[e.nome] = e.obs;
-    try{ await Store.setSetting('espaco_obs_padrao',espObsPadrao); say('Texto padrão salvo para este espaço ✔'); }catch(x){ say('Erro ao salvar o padrão: '+x.message); } },
+  restoreObs(dId,eId){ const e = espOf(dId,eId); if(!e || !e.nome){ say('Escolha o espaço primeiro'); return; } e.obs = obsPadrao(e.nome); touch(); renderDay(dId); say('Texto do Catálogo aplicado'); },
   newBlank(dId,cat){ const d = dayOf(dId); if(!d) return; const l = newLine(cat,{manual:true,name:''}); d[cat].push(l); touch(); renderDay(dId); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   newBlankEx(){ const l = newLine('extras',{manual:true,name:''}); P.extras.push(l); touch(); renderExtras(); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   ln(dId,cat,id,k,v){ const l = lineOf(dId,cat,id); if(!l) return;
@@ -1079,24 +1088,33 @@ const I2 = {
   /* tabelas personalizadas */
   openTabs(){ I2.renderTabs(); $('i2-modal-tabs').classList.add('on'); },
   renderTabs(){
-    const spaces = DATA.spaces, fl = c => 'Tabela '+c.t+' · '+(c.faixa==='ate' ? 'até 50 pessoas' : 'a partir de 51 pessoas');
-    const list = custom.map((c,i)=>`<div class="i2-pl" style="cursor:default"><div><div class="n">★ ${esc(c.name)}</div><div class="m">Itens: ${esc(fl(c))} · espaço ${money((c.esp[spaces[0].name]||{}).total)} (Salão Vista)</div></div><div class="t"></div><button class="btn btn-o btn-sm" onclick="I2.editTab(${i})">Editar</button><button class="x-btn" title="Excluir" onclick="I2.delTab(${i})">×</button></div>`).join('') || '<p style="color:var(--gr);margin-bottom:10px">Nenhuma tabela personalizada ainda.</p>';
-    $('i2-tabs-body').innerHTML = `<p style="font-size:11px;color:var(--gr);margin-bottom:10px">As 6 tabelas padrão (Tabela 1, 2 e 3 × até 50 / a partir de 51 pessoas) são fixas. Aqui você cria e edita as personalizadas.</p>`
-      + `<div class="card-title" style="margin-bottom:8px">Personalizadas</div>` + list + `<hr style="border:none;border-top:1px solid var(--ru);margin:14px 0">
-      <div class="card-title" style="margin-bottom:10px" id="ct-title">Nova tabela personalizada</div>
+    const spaces = DATA.spaces, S0 = spaces[0] ? spaces[0].name : '';
+    const fl = c => 'Itens da Tabela '+c.t+' · '+(c.faixa==='ate' ? 'até 50 pessoas' : 'a partir de 51');
+    const std = DATA.tables.map(n=>'<span class="tb-chip">'+esc(n.replace(' - ',' · '))+'</span>').join('');
+    const list = custom.map((c,i)=>{ const e = (c.esp||{})[S0]||{};
+      return `<div class="tb-card"><div class="tb-main"><div class="tb-n">★ ${esc(c.name)}</div><div class="tb-m">${esc(fl(c))}</div><div class="tb-v">Salão Vista: espaço <b>${money(e.total)}</b> · retorno de consumação <b>${money(e.teto)}</b></div></div><div class="tb-act"><button class="btn btn-o btn-sm" onclick="I2.editTab(${i})">Editar</button><button class="btn btn-o btn-sm" onclick="I2.dupTab(${i})">Duplicar</button><button class="x-btn" title="Excluir" onclick="I2.delTab(${i})">×</button></div></div>`; }).join('') || '<div class="tb-empty">Nenhuma tabela personalizada ainda. Clique em <b>＋ Nova tabela</b>.</div>';
+    $('i2-tabs-body').innerHTML = `<div class="tb-sec"><div class="tb-h">Tabelas padrão <small>fixas — vêm do Catálogo</small></div><div class="tb-chips">${std}</div></div>
+      <div class="tb-sec"><div class="tb-h">Suas tabelas personalizadas <button class="btn btn-w btn-sm" onclick="I2.newTab()">＋ Nova tabela</button></div>${list}</div>
+      <div id="i2-tab-editor"></div>`;
+  },
+  tabEditor(title){
+    const spaces = DATA.spaces;
+    $('i2-tab-editor').innerHTML = `<div class="tb-ed"><div class="tb-h" id="ct-title">${esc(title)}</div>
       <input type="hidden" id="ct-idx" value="-1">
-      <div class="frow f3"><div class="fg"><label class="fl">Nome da tabela</label><input id="ct-name" placeholder="Ex.: Banco Inter 2026"></div>
-        <div class="fg"><label class="fl">Preços dos itens: Tabela</label><select id="ct-t" onchange="I2.ctPrefill()"><option value="1">Tabela 1</option><option value="2">Tabela 2</option><option value="3">Tabela 3</option></select></div>
+      <div class="frow f3"><div class="fg"><label class="fl">Nome da tabela</label><input id="ct-name" placeholder="Ex.: Dezembro 20k"></div>
+        <div class="fg"><label class="fl">Preços dos itens (gastronomia etc.)</label><select id="ct-t" onchange="I2.ctPrefill()"><option value="1">Tabela 1</option><option value="2">Tabela 2</option><option value="3">Tabela 3</option></select></div>
         <div class="fg"><label class="fl">Faixa de pessoas</label><select id="ct-f" onchange="I2.ctPrefill()"><option value="ate">Até 50 pessoas</option><option value="mais">A partir de 51 pessoas</option></select></div></div>
       <div class="i2-ct"><span class="h">Espaço</span><span class="h">Valor do espaço (com consumação)</span><span class="h">Retorno de consumação</span></div>
       ${spaces.map((s,i)=>`<div class="i2-ct"><span style="font-size:12px">${esc(s.name)}</span><input type="number" step="any" min="0" id="ct-t-${i}"><input type="number" step="any" min="0" id="ct-r-${i}"></div>`).join('')}
-      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-w" onclick="I2.saveTab()">Salvar tabela</button><button class="btn btn-o" onclick="I2.renderTabs()">Nova / limpar</button></div>`;
-    I2.ctPrefill();
+      <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-w" onclick="I2.saveTab()">Salvar tabela</button><button class="btn btn-o" onclick="$('i2-tab-editor').innerHTML=''">Cancelar</button></div></div>`;
   },
-  ctPrefill(){ if($('ct-idx').value !== '-1') return; const info = tableInfo(baseKey($('ct-t').value,$('ct-f').value));
+  newTab(){ I2.tabEditor('Nova tabela personalizada'); I2.ctPrefill(); $('ct-name').focus(); $('i2-tab-editor').scrollIntoView({block:'nearest',behavior:'smooth'}); },
+  dupTab(i){ const c = custom[i]; I2.tabEditor('Nova tabela (cópia de '+c.name+')'); $('ct-t').value = c.t; $('ct-f').value = c.faixa; $('ct-name').value = c.name+' (cópia)';
+    DATA.spaces.forEach((s,k)=>{ const e = (c.esp||{})[s.name]||{}; $('ct-t-'+k).value = e.total; $('ct-r-'+k).value = e.teto; }); $('ct-name').focus(); $('i2-tab-editor').scrollIntoView({block:'nearest',behavior:'smooth'}); },
+  ctPrefill(){ if(!$('ct-idx') || $('ct-idx').value !== '-1') return; const info = tableInfo(baseKey($('ct-t').value,$('ct-f').value));
     DATA.spaces.forEach((s,i)=>{ const e = info.esp(s.name); $('ct-t-'+i).value = e.total; $('ct-r-'+i).value = e.teto; }); },
-  editTab(i){ const c = custom[i]; $('ct-idx').value = i; $('ct-title').textContent = 'Editando: '+c.name; $('ct-name').value = c.name; $('ct-t').value = c.t; $('ct-f').value = c.faixa;
-    DATA.spaces.forEach((s,k)=>{ const e = (c.esp||{})[s.name]||{}; $('ct-t-'+k).value = e.total; $('ct-r-'+k).value = e.teto; }); $('ct-name').scrollIntoView({block:'center'}); },
+  editTab(i){ const c = custom[i]; I2.tabEditor('Editando: '+c.name); $('ct-idx').value = i; $('ct-name').value = c.name; $('ct-t').value = c.t; $('ct-f').value = c.faixa;
+    DATA.spaces.forEach((s,k)=>{ const e = (c.esp||{})[s.name]||{}; $('ct-t-'+k).value = e.total; $('ct-r-'+k).value = e.teto; }); $('i2-tab-editor').scrollIntoView({block:'nearest',behavior:'smooth'}); },
   async saveTab(){
     const name = $('ct-name').value.trim(), idx = +$('ct-idx').value;
     if(!name){ say('Dê um nome à tabela'); return; }
@@ -1253,6 +1271,7 @@ async function boot(){
   try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); } }catch(e){ CAT = catFromData(); }
   try{ await hhLoadCfg(); }catch(e){}
   try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{}}; }catch(e){}
+  Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; });
   try{ const o = await Store.getSetting('espaco_obs_padrao'); if(o && typeof o==='object') espObsPadrao = o; }catch(e){}
   try{ const c = await Store.getSetting('condicoes_inv2'); if(Array.isArray(c) && c.length) conds = c; }catch(e){}
   let draft = null; try{ draft = JSON.parse(LS.get('inv2_draft')||'null'); }catch(e){}
@@ -1287,7 +1306,10 @@ Object.assign(I2, {
       await Store.setSetting('catalogo', CAT);
       if(Object.keys(ren).length){ custom.forEach(c=>{ const e = {}; Object.keys(c.esp||{}).forEach(k=>{ e[ren[k]||k] = c.esp[k]; }); c.esp = e; }); await Store.setSetting('tabelas_personalizadas', custom); }
     }catch(e){ say('Erro ao salvar o catálogo: '+e.message); return; }
-    CAT.spaces.forEach(x=>{ x._o = x.name; }); applyCat(CAT); catSet(false); renderTabelaSelect(); if(P) renderBody(); say('Catálogo salvo ✔'); },
+    const oldD = {}; DATA.spaces.forEach(x=>{ oldD[x.name] = x.desc; });
+    CAT.spaces.forEach(x=>{ x._o = x.name; }); applyCat(CAT);
+    if(P) (P.dias||[]).forEach(d=>(d.espacos||[]).forEach(e=>{ const nn = ren[e.nome]||e.nome; if(e.nome && (!e.obs || e.obs===oldD[e.nome])){ e.nome = nn; e.obs = obsPadrao(nn); } }));
+    catSet(false); renderTabelaSelect(); if(P) renderBody(); say('Catálogo salvo ✔'); },
   async catDiscard(){ if(catDirty && !(await ask('Descartar as alterações não salvas do catálogo?','Descartar'))) return; CAT = catFromData(); catSet(false); renderCatalogo(); }
 });
 const HH_COQ_STYLE=`
@@ -1482,6 +1504,7 @@ const HH_MIDIA_KEYS = [['foto1','Foto 1 — salão'],['foto2','Foto 2 — vista'
 const HH_LINKS = [['whatsapp','WhatsApp'],['instagram','Instagram'],['video','Vídeo institucional'],['tour','Tour virtual'],['mapa','Localização (Google Maps)']];
 let HHS = null;          // proposta aberta
 let HH_DIRTY = false;
+const HH_LINKS_DEF = {whatsapp:'https://wa.me/553136438566', instagram:'https://www.instagram.com/ovistabh/', video:'https://www.youtube.com/watch?v=5AcGcGPCFOI', tour:'https://my360.com.br/3d-model/espaco-vista-formato-empresarial/fullscreen/', mapa:'https://www.google.com.br/maps/place/Espa%C3%A7o+Vista/@-19.9623506,-43.9634134,17z/data=!3m1!4b1!4m6!3m5!1s0xa697eaf9e9bc05:0x7b635f90c5f7be2a!8m2!3d-19.9623557!4d-43.9608385!16s%2Fg%2F12ml2l58r'};
 let MIDIA = {fotos:{},links:{}};
 const VALIDADE_DIAS = 10;
 function hhTier(prod,tab,n){
