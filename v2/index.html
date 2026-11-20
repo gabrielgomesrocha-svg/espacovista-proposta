@@ -292,6 +292,10 @@ body.sb-off .main{margin-left:0}
 .i2-det{margin-top:18px;border:1px solid var(--ru);border-radius:8px;background:#fff;padding:0 14px}
 .i2-det>summary{cursor:pointer;padding:12px 0;font-weight:700;font-size:13px;color:var(--dk)}.i2-det>summary small{font-weight:400;color:var(--gr);margin-left:6px}
 .i2-det[open]>summary{border-bottom:1px solid var(--ru);margin-bottom:10px}
+
+.i2-bulk{display:flex;align-items:center;gap:14px;padding:6px 4px 10px;font-size:12px;color:#666}.i2-bulk label{display:flex;gap:7px;align-items:center;cursor:pointer}.i2-bulk .n{font-weight:700;color:var(--dk)}
+.i2-bulk-del{background:#9B3A41;color:#fff;border:0}.i2-bulk-del:hover{filter:brightness(1.1)}
+.i2-pl .i2-ck{width:17px;height:17px;flex:none;margin-right:12px;cursor:pointer}.i2-pl.sel{background:#F6E9EA;border-color:#E3C4C7}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -352,23 +356,32 @@ body.sb-off .main{margin-left:0}
 #hh-prev{background:#e8e5e5}
 #view-esp,#view-hh{min-width:0;max-width:100%}
 .sim-note{background:#FFF8E1;border:1px solid #F0DFA0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#6a5a1a;margin-bottom:14px}
-.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}@media(max-width:1000px){.sim-grid{grid-template-columns:1fr}}
-.sim-col{display:flex;flex-direction:column;gap:12px}
-.sim-c{border:1px solid var(--ru,#e6e1e1);border-radius:8px;background:#fff}
-.sim-h{padding:9px 14px;border-bottom:1px solid var(--ru,#e6e1e1);display:flex;gap:8px;align-items:baseline;font-size:13px}.sim-h small{color:#888;font-size:11px}
-.sim-b{padding:10px 14px;display:flex;flex-direction:column;gap:4px}
-.sim-row{display:flex;gap:12px;flex-wrap:wrap}.sim-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#777;flex:1;min-width:130px}.sim-row input[readonly]{background:#f5f2f2}
-.sim-tm{display:flex;align-items:center;gap:4px}.sim-tm select{padding:5px 6px}
-.sim-hint{font-size:11px;color:#888;margin:4px 0 0}
-.sim-it{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:6px;font-size:13px;cursor:pointer;border:1px solid transparent}.sim-it:hover{background:#faf6f6}
-.sim-it.on{background:#F6E9EA;border-color:#E3C4C7}.sim-it span{flex:1}
-.sim-q{width:60px;padding:3px 6px;text-align:right}
-.sim-send{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--ru,#e6e1e1);border-radius:8px;padding:12px 14px;font-size:12px;color:#777;position:sticky;bottom:8px}
-.sim-it input[type=checkbox]{width:16px;height:16px;flex:none;margin:0;padding:0}
-.sim-it span{text-align:left;line-height:1.3}
-.sim-it{margin:0;width:auto}
-.sim-b{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px 10px}
-.sim-b .sim-row,.sim-b .sim-hint,.sim-b textarea{grid-column:1/-1}
+.sim-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:12px;color:#888}.sim-prog{flex:1;height:6px;border-radius:6px;background:#eee;overflow:hidden}.sim-prog i{display:block;height:100%;background:#9B3A41;transition:width .4s}
+.sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start}@media(max-width:1000px){.sim-wrap{grid-template-columns:1fr}.sim-side{display:none}}
+.sim-chat{display:flex;flex-direction:column;gap:12px;max-width:820px}
+.sim-b{display:flex;gap:10px;align-items:flex-end}.sim-b.u{justify-content:flex-end}
+.sim-b .av{width:32px;height:32px;border-radius:50%;background:#9B3A41;color:#fff;font:800 14px Montserrat,sans-serif;display:flex;align-items:center;justify-content:center;flex:none}
+.sim-b .bb{padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.5;max-width:86%}
+.sim-b.a .bb{background:#F4EFEF;color:#2a2525;border-bottom-left-radius:4px}.sim-b.u .bb{background:#9B3A41;color:#fff;border-bottom-right-radius:4px}
+.sim-b.u .bb a{color:#F3D3D6;margin-left:10px;font-size:11px;text-decoration:underline;cursor:pointer}
+@keyframes simIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sim-b.new,.sim-ctl.new{animation:simIn .45s ease both}.sim-ctl.new{animation-delay:.35s}
+.sim-ctl{margin-left:42px;background:#fff;border:1px solid #E6E1E1;border-radius:14px;padding:14px}
+.sim-act{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.sim-row{display:flex;gap:14px;flex-wrap:wrap}.sim-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#777}
+.sim-tm{display:flex;align-items:center;gap:4px}.sim-tm select{padding:7px 8px;font-size:14px}
+.sim-hint{font-size:11px;color:#888;margin:8px 0 0}
+.sim-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sim-card{border:1.5px solid #E6E1E1;border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:.15s}.sim-card:hover{border-color:#C98C91;transform:translateY(-1px)}
+.sim-card b{font-size:13.5px;line-height:1.3}.sim-card small{font-size:11.5px;color:#777;line-height:1.4}.sim-card i{font-style:normal;font-size:11px;font-weight:700;color:#9B3A41;margin-top:auto}
+.sim-card.on{border-color:#9B3A41;background:#FBF1F2}
+.sim-chips{display:flex;flex-wrap:wrap;gap:8px}
+.sim-chip{display:flex;align-items:center;gap:8px;border:1.5px solid #E0DADA;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;background:#fff;transition:.15s}.sim-chip:hover{border-color:#C98C91}
+.sim-chip.on{border-color:#9B3A41;background:#FBF1F2;color:#7F2D34;font-weight:600}
+.sim-chip em{font-style:normal;display:flex;align-items:center;gap:6px;font-size:13px}.sim-chip em button{width:22px;height:22px;border-radius:50%;border:1px solid #C98C91;background:#fff;color:#9B3A41;cursor:pointer;line-height:1;padding:0}
+.sim-ctl textarea{width:100%}
+.sim-side{position:sticky;top:12px}.sim-sum{border:1px solid #E6E1E1;border-radius:12px;padding:14px;background:#fff;font-size:12.5px;display:flex;flex-direction:column;gap:9px}
+.sim-sum>b{font-size:13px}.sim-s small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:2px}
 
 </style>
 </head>
@@ -1177,10 +1190,19 @@ const I2 = {
     const el = $('i2-cli-list'); if(!el) return; el.innerHTML = '<p style="color:var(--gr);font-size:12px">Carregando…</p>';
     let l = []; try{ l = await Store.list(); }catch(e){ el.innerHTML = '<p style="color:var(--w);font-size:12px">'+esc(e.message)+'</p>'; return; }
     I2._list = l; const q = norm(($('i2-cli-q')||{}).value||''); l = l.filter(x=>!q || norm(x.cliente).indexOf(q)>=0);
-    el.innerHTML = l.length ? l.map(x=>`<div class="i2-pl" onclick="I2.openFromClientes('${esc(x.id)}')"><div><div class="n">${esc(x.cliente||'(sem nome)')}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
-      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`).join('') : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhuma proposta do Investimento 2 salva ainda.</p>';
+    I2._sel = I2._sel || new Set(); const ids = new Set(l.map(x=>x.id)); I2._sel.forEach(i=>{ if(!ids.has(i)) I2._sel.delete(i); });
+    const nSel = I2._sel.size, all = l.length>0 && nSel===l.length;
+    const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"> Selecionar todos (${l.length})</label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
+    el.innerHTML = bar + (l.length ? l.map(x=>`<div class="i2-pl${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1"><div class="n">${esc(x.cliente||'(sem nome)')}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
+      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`).join('') : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhuma proposta do Investimento 2 salva ainda.</p>');
   },
   async openFromClientes(id,copy){ const l = document.querySelector('.sb-link[data-view=inv2]'); if(l) l.click(); await I2.open(id,copy); },
+  cliSel(id,on){ I2._sel = I2._sel || new Set(); on ? I2._sel.add(id) : I2._sel.delete(id); I2.renderClientes(); },
+  cliSelAll(on){ I2._sel = new Set(on ? (I2._list||[]).filter(x=>!norm(($('i2-cli-q')||{}).value||'') || norm(x.cliente).indexOf(norm($('i2-cli-q').value))>=0).map(x=>x.id) : []); I2.renderClientes(); },
+  async cliDelSel(){ const ids = Array.from(I2._sel||[]); if(!ids.length) return;
+    if(!(await ask('Excluir definitivamente '+ids.length+' proposta(s) selecionada(s)? Esta ação não pode ser desfeita.','Excluir '+ids.length))) return;
+    let ok = 0, err = ''; for(const id of ids){ try{ await Store.remove(id); ok++; I2._sel.delete(id); }catch(e){ err = e.message; } }
+    say(ok+' proposta(s) excluída(s)'+(err?' — erro em alguma: '+err:'')); I2.renderClientes(); },
   async delFromClientes(id){ if(!(await ask('Excluir esta proposta definitivamente?','Excluir'))) return; try{ await Store.remove(id); say('Proposta excluída'); I2.renderClientes(); }catch(e){ say('Erro: '+e.message); } },
   async open(id,asCopy){
     if(dirty && !(await ask('Há alterações não salvas. Abrir outra proposta mesmo assim?','Abrir mesmo assim'))) return;
@@ -2230,16 +2252,57 @@ Object.assign(I2,{
 });
 
 window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vistaGo!=='number') return; var f=[].slice.call(document.querySelectorAll('iframe')).find(function(x){return x.contentWindow===ev.source}); if(!f) return; var r=f.getBoundingClientRect(), k=r.width/(f.offsetWidth||1920); window.scrollTo({top:r.top+window.pageYOffset+ev.data.vistaGo*k-70,behavior:'smooth'}); });
-/* ═════════ SIMULADOR DO CLIENTE (protótipo de teste) ═════════
-   Visão do cliente: só marca o que quer (sem preços). Visão do Espaço Vista: "Orçamentos recebidos" → abre no Investimento. */
+/* ═════════ SIMULADOR DO CLIENTE — conversa guiada (protótipo de teste) ═════════
+   Será a 3ª aba do link do cliente ("Monte sua proposta"). O cliente responde passo a passo, SEM ver preços.
+   O envio cai em "Orçamentos recebidos" e abre no Investimento. */
 const SIM_KEY = 'sim_recebidos_teste';
 let SIM = null;
-function simNew(){ const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', salas:{}, gast:{}, equip:{}, serv:{}, obs:''}; }
+function simNew(){ const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', buffet:null, salas:{}, gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
 function simList(){ try{ return JSON.parse(localStorage.getItem(SIM_KEY)||'[]'); }catch(e){ return []; } }
 function simSave(l){ try{ localStorage.setItem(SIM_KEY, JSON.stringify(l)); }catch(e){} }
-function simGroups(){
-  const g = {}; DATA.gast.forEach(i=>{ const m = /^([^:]+):/.exec(i.name); const k = m ? m[1] : 'Sobremesas e outros'; (g[k] = g[k]||[]).push(i.name); });
-  return g;
+const SIM_NOSUG = n => !/sugest/i.test(n);
+function simItems(id){
+  const g = DATA.gast.map(i=>i.name);
+  if(id==='sala') return g.filter(n=>/^Serviço de sala:/.test(n) || n==='Red Bull (unidade)');
+  if(id==='coffee') return g.filter(n=>/^Coffee Break:/.test(n) && SIM_NOSUG(n));
+  if(id==='almoco') return g.filter(n=>/^Almoço:/.test(n) && SIM_NOSUG(n));
+  if(id==='hh') return g.filter(n=>/^(Butiquim Vista|Coquetel Vista):/.test(n));
+  if(id==='sobremesa') return BUF_SOB.map(s=>s[0]).filter(n=>g.indexOf(n)>=0);
+  if(id==='equip') return DATA.equip.map(i=>i.name);
+  if(id==='serv') return DATA.serv.map(i=>i.name);
+  return [];
+}
+const SIM_GRP = {sala:'gast', coffee:'gast', almoco:'gast', hh:'gast', sobremesa:'gast', equip:'equip', serv:'serv'};
+function simLabel(id,n){
+  if(id==='hh') return (/^Butiquim/.test(n)?'Comida de Buteco':'Coquetel')+' · '+n.replace(/^[^:]+:\s*/,'');
+  return n.replace(/^[^:]+:\s*/,'').replace(/^(.)/,c=>c.toUpperCase());
+}
+function simSteps(){ return ['hello','hor','espaco','buffet'].concat(SIM.buffet ? ['sala','coffee','almoco','hh','sobremesa'] : [], ['equip','serv','obs','resumo']); }
+const SIM_Q = {
+  hello:()=>'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar o seu evento de <b>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})+'</b> para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.',
+  hor:()=>'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas o evento termina?</b>',
+  espaco:()=>'Qual <b>espaço</b> combina com o seu evento? Pode marcar mais de um.',
+  buffet:()=>'Vai querer <b>buffet</b> no seu evento? 🍽️',
+  sala:()=>'Vamos ao <b>serviço de sala</b>. O que você quer deixar à disposição dos convidados?',
+  coffee:()=>'Quer <b>coffee break</b>? Escolha a categoria (ou pule).',
+  almoco:()=>'E <b>almoço</b>? Escolha a categoria (ou pule).',
+  hh:()=>'Que tal um <b>happy hour</b> para fechar o dia? Escolha o formato.',
+  sobremesa:()=>'Alguma <b>sobremesa</b>?',
+  equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
+  serv:()=>'E algum <b>serviço</b> extra?',
+  obs:()=>'Quase lá! Quer nos contar mais alguma coisa (cardápio, montagem da sala, horários…)?',
+  resumo:()=>'Pronto! 🎉 Veja o resumo do que você escolheu. Se estiver tudo certo, é só enviar — nossa equipe monta a proposta final com você.'
+};
+function simAns(id){
+  const t = k => { const x = Object.keys(SIM[SIM_GRP[k]||k]||{}); return x; };
+  if(id==='hello') return 'Vamos lá!';
+  if(id==='hor') return 'Chegada às <b>'+SIM.chegada+'</b>, saída às <b>'+SIM.termino+'</b>';
+  if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(esc).join(' + ') : 'Ainda não sei — quero ajuda'; }
+  if(id==='buffet') return SIM.buffet ? 'Sim, quero buffet' : 'Só o espaço, por enquanto';
+  if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
+  if(id==='resumo') return 'Enviar para o Espaço Vista';
+  const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
+  return names.length ? names.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join(', ') : 'Pular';
 }
 function simTime(f){
   const v = SIM[f]||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = '';
@@ -2247,45 +2310,59 @@ function simTime(f){
   for(let i=0;i<60;i+=5){ const s = String(i).padStart(2,'0'); mo += '<option'+(s===m?' selected':'')+'>'+s+'</option>'; }
   return '<span class="sim-tm"><select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+ho+'</select>:<select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+mo+'</select></span>';
 }
-function simChk(grp,name,qty){
-  const on = !!SIM[grp][name], id = grp+'|'+name;
-  return '<label class="sim-it'+(on?' on':'')+'"><input type="checkbox" '+(on?'checked ':'')+'onchange="I2.simTog(\''+grp+'\',this.dataset.n,this.checked)" data-n="'+esc(name)+'"><span>'+esc(name.replace(/^[^:]+:\s*/,''))+'</span>'
-    + (qty && on ? '<input class="sim-q" type="number" min="1" value="'+SIM[grp][name]+'" onclick="event.stopPropagation()" onchange="I2.simQty(\''+grp+'\',this.parentNode.querySelector(\'input[data-n]\').dataset.n,this.value)">' : '')+'</label>';
+function simControls(id){
+  const next = lbl => '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">'+(lbl||'Continuar')+' →</button></div>';
+  if(id==='hello') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">Vamos lá →</button></div>';
+  if(id==='hor') return '<div class="sim-row"><label>Chegada'+simTime('chegada')+'</label><label>Início'+simTime('inicio')+'</label><label>Saída'+simTime('termino')+'</label></div><p class="sim-hint">Horas além do previsto são combinadas com o Espaço Vista.</p>'+next();
+  if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(s=>{ const on = !!SIM.salas[s.name]; return '<div class="sim-card'+(on?' on':'')+'" onclick="I2.simTog(\'salas\',this.dataset.n)" data-n="'+esc(s.name)+'"><b>'+esc(s.name)+'</b><small>'+esc((s.desc||'').replace(/^Incluso:\s*/,'Inclui: '))+'</small><i>'+(on?'✔ Escolhido':'Escolher')+'</i></div>'; }).join('')+'</div>'+next(Object.keys(SIM.salas).length?'Continuar':'Quero ajuda para escolher');
+  if(id==='buffet') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simBuf(true)">Sim, quero buffet</button><button class="btn btn-o" onclick="I2.simBuf(false)">Só o espaço, por enquanto</button></div>';
+  if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
+  if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
+  const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast';
+  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.simTog(\''+grp+'\',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+'</span>'+(qty&&on?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
+  const any = its.some(n=>SIM[grp][n]);
+  return '<div class="sim-chips">'+chips+'</div>'+next(any?'Continuar':'Pular');
 }
-function simCard(t,sub,body){ return '<div class="sim-c"><div class="sim-h"><b>'+t+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div><div class="sim-b">'+body+'</div></div>'; }
-function simRender(){
+function simSummary(){
+  const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
+  const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
+  const sal = Object.keys(SIM.salas).map(esc).join('<br>');
+  return '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+'<br>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR')+' · '+SIM.n+' convidados')+row('Horário',SIM.chegada+' → '+SIM.termino)+row('Espaço',sal)
+    +(SIM.buffet ? row('Serviço de sala',nm('sala'))+row('Coffee break',nm('coffee'))+row('Almoço',nm('almoco'))+row('Happy hour',nm('hh'))+row('Sobremesas',nm('sobremesa')) : '')+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
+}
+function simRender(keepAnim){
   if(!SIM) SIM = simNew(); const el = $('sim-body'); if(!el) return;
-  const grs = simGroups();
-  let h = '<div class="sim-note"><b>Protótipo de teste.</b> Esta é a tela que o cliente veria no 3º link ("Monte sua proposta"). Ele marca só o que quer — <b>sem ver preços</b>. Nome, data e convidados já vêm preenchidos pelo Espaço Vista.</div><div class="sim-grid"><div class="sim-col">';
-  h += simCard('Dados do evento','já preenchidos por nós',
-    '<div class="sim-row"><label>Cliente<input value="'+esc(SIM.cli)+'" readonly></label><label>Data<input type="date" value="'+SIM.data+'" readonly></label><label>Convidados<input value="'+SIM.n+'" readonly></label></div>'
-    + '<div class="sim-row"><label>Horário de chegada'+simTime('chegada')+'</label><label>Início do evento'+simTime('inicio')+'</label><label>Horário de saída'+simTime('termino')+'</label></div>'
-    + '<p class="sim-hint">Horas além do previsto são tratadas pelo Espaço Vista (sob consulta).</p>');
-  h += simCard('Espaço','escolha uma ou mais salas', DATA.spaces.map(s=>{ const on = !!SIM.salas[s.name]; return '<label class="sim-it'+(on?' on':'')+'"><input type="checkbox" '+(on?'checked ':'')+'data-n="'+esc(s.name)+'" onchange="I2.simTog(\'salas\',this.dataset.n,this.checked)"><span>'+esc(s.name)+'</span></label>'; }).join(''));
-  Object.keys(grs).forEach(k=>{ h += simCard('Buffet · '+esc(k),'', grs[k].map(n=>simChk('gast',n,false)).join('')); });
-  h += '</div><div class="sim-col">';
-  h += simCard('Equipamentos','informe a quantidade, se precisar', DATA.equip.map(i=>simChk('equip',i.name,true)).join(''));
-  h += simCard('Serviços','', DATA.serv.map(i=>simChk('serv',i.name,true)).join(''));
-  h += simCard('Observações','', '<textarea rows="4" placeholder="Algo que devemos saber? (cardápio, montagem da sala, horários…)" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>');
-  const cnt = Object.keys(SIM.salas).length + Object.keys(SIM.gast).length + Object.keys(SIM.equip).length + Object.keys(SIM.serv).length;
-  h += '<div class="sim-send"><span>'+cnt+' item(ns) marcado(s)</span><button class="btn btn-w" onclick="I2.simSend()">Enviar para o Espaço Vista</button></div></div></div>';
+  const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
+  let h = '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós.</div>';
+  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
+  st.forEach((id,i)=>{ if(i>SIM.step) return; const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
+    h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
+    if(i<SIM.step || SIM.sent) h += '<div class="sim-b u"><div class="bb">'+simAns(id)+(id!=='resumo'&&!SIM.sent?'<a onclick="I2.simGo('+i+')">editar</a>':'')+'</div></div>';
+    else h += '<div class="sim-ctl'+(fresh?' new':'')+'">'+simControls(id)+'</div>'; });
+  if(SIM.sent) h += '<div class="sim-b a new"><span class="av">V</span><div class="bb">Recebido! ✅ Nossa equipe vai montar a sua <b>proposta final</b> e entrar em contato. Obrigado por escolher o Espaço Vista.</div></div><div class="sim-act"><button class="btn btn-o" onclick="I2.simReset()">Fazer outra simulação (teste)</button></div>';
+  h += '</div><div class="sim-side">'+simSummary()+'</div></div>';
   el.innerHTML = h; simRecv();
+  if(!keepAnim){ const c = el.querySelector('.sim-chat'); const last = c && c.lastElementChild; if(last && SIM.step>0) last.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 function simRecv(){
   const l = simList(), el = $('sim-recv'); if(!el) return;
   el.innerHTML = l.length ? l.map((x,i)=>{ const c = k => Object.keys(x.sel[k]).length;
-    return '<div class="i2-pl"><div><div class="n">'+esc(x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(x.em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+c('gast')+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.</div></div>'
-    +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="I2.simOpen('+i+')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="I2.simDel('+i+')">×</button></div></div>'; }).join('')
-    : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhum orçamento recebido ainda. Preencha a simulação acima e clique em "Enviar para o Espaço Vista".</p>';
+    return '<div class="i2-pl"><div style="flex:1"><div class="n">'+esc(x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(x.em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+c('gast')+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.</div></div>'
+    +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.simOpen('+i+')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.simDel('+i+')">×</button></div></div>'; }).join('')
+    : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhum orçamento recebido ainda. Faça a simulação acima até o fim.</p>';
 }
 Object.assign(I2,{
-  simRender, simTm(f,span){ const s = span.querySelectorAll('select'); SIM[f] = s[0].value ? s[0].value+':'+s[1].value : ''; },
-  simTog(g,n,on){ if(on) SIM[g][n] = (g==='salas'||g==='gast') ? true : 1; else delete SIM[g][n]; simRender(); },
-  simQty(g,n,v){ SIM[g][n] = Math.max(1,parseInt(v)||1); },
+  simRender, simTm(f,span){ const s = span.querySelectorAll('select'); SIM[f] = s[0].value ? s[0].value+':'+s[1].value : ''; if(f==='chegada' && !SIM.inicio) SIM.inicio = SIM.chegada; },
+  simTog(g,n){ if(SIM[g][n]) delete SIM[g][n]; else SIM[g][n] = g==='equip'||g==='serv' ? 1 : true; simRender(true); },
+  simQty(g,n,d){ SIM[g][n] = Math.max(1,(SIM[g][n]||1)+d); simRender(true); },
   simObs(v){ SIM.obs = v; },
-  simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0); if(!cnt){ say('Marque ao menos um item'); return; }
+  simBuf(on){ SIM.buffet = on; SIM.step++; if(!on){ ['gast'].forEach(k=>SIM[k]={}); } simRender(); },
+  simNext(){ SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
+  simGo(i){ SIM.step = i; simRender(); },
+  simReset(){ SIM = simNew(); simRender(); },
+  simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0);
     const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.inicio, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}}); simSave(l);
-    SIM = simNew(); simRender(); say('Enviado ✔ — apareceu em "Orçamentos recebidos" abaixo.'); const r = $('sim-recv'); if(r) r.scrollIntoView({behavior:'smooth',block:'center'}); },
+    SIM.sent = true; simRender(); say('Enviado ✔ — '+cnt+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ const x = simList()[i]; if(!x) return; if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
     const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; const d = p.dias[0]; d.data = x.data; d.chegada = x.chegada; d.inicio = x.inicio; d.termino = x.termino; d.espacos = [];
