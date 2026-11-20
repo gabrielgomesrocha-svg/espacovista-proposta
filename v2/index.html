@@ -280,6 +280,7 @@ body.sb-off .main{margin-left:0}
 .tb-empty{border:1px dashed var(--ru);border-radius:6px;padding:14px;text-align:center;font-size:12px;color:var(--gr)}
 .tb-ed{border:2px solid var(--w);border-radius:8px;padding:14px;background:var(--wp)}
 .i2-lock{background:#f3f1ee;cursor:pointer;color:var(--dk)}.i2-lock:hover{border-color:var(--w)}
+.i2-gate-msg{background:#fff8e6;border:1px dashed #E0A800;border-radius:6px;padding:14px 16px;font-size:13px;color:#6b5200;margin-bottom:16px}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -732,7 +733,7 @@ const Store = {
 };
 
 /* ───────── marcações de estado ───────── */
-function touch(){ dirty = true; LS.set('inv2_draft',JSON.stringify(P)); refresh(); }
+function touch(){ dirty = true; LS.set('inv2_draft',JSON.stringify(P)); refresh(); gate(); }
 function stateLabel(){
   const el = $('i2-state'); if(!el) return;
   el.innerHTML = dirty ? '<span class="dirty">● não salvo</span>' : (P.meta&&P.meta.salvoEm ? '✔ salvo' : '');
@@ -865,6 +866,8 @@ function renderBody(){
       <div class="fg"><label class="fl">Cliente</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome do cliente / empresa" oninput="I2.top('cliente',this.value)"></div>
       <div class="fg"><label class="fl">Nº de convidados (padrão das quantidades)</label><input id="i2-conv" type="number" min="0" value="${esc(P.convidados)}" oninput="I2.conv(this.value)"></div>
     </div></div></div>
+  <div id="i2-gate" class="i2-gate"></div>
+  <div id="i2-rest">
   <div id="i2-days"></div>
   <div style="display:flex;gap:8px;margin:-4px 0 16px"><button class="btn btn-o" onclick="I2.addDay()">＋ Adicionar dia</button></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Extras no dia do evento</span><span style="font-size:11px;color:var(--gr)">Para o fechamento final. Entram como uma linha no resumo (e podem ser ocultados no PDF).</span></div><div class="card-body" id="i2-extras"></div></div>
@@ -883,8 +886,15 @@ function renderBody(){
     <div class="i2-note" id="sm-note"></div>
   </div></div></div>
   <details class="card i2-cond"><summary style="padding:12px 18px;cursor:pointer;font-size:10.5px;font-weight:700;color:var(--w);letter-spacing:.08em;text-transform:uppercase">Condições gerais (padrão — clique para editar)</summary>
-    <div class="card-body" id="i2-conds"></div></details>`;
-  renderDays(); renderExtras(); renderConds();
+    <div class="card-body" id="i2-conds"></div></details>
+  </div>`;
+  renderDays(); renderExtras(); renderConds(); gate();
+}
+function gate(){
+  const g = $('i2-gate'), r = $('i2-rest'); if(!g || !r || !P) return;
+  const falta = []; if(!P.tabela) falta.push('a <b>Tabela de preços</b> (barra no topo)'); if(!String(P.cliente||'').trim()) falta.push('o <b>nome do cliente</b>'); if(!(num(P.convidados)>0)) falta.push('o <b>nº de convidados</b>');
+  const ok = !falta.length; r.style.display = ok ? '' : 'none';
+  g.innerHTML = ok ? '' : '<div class="i2-gate-msg">Para começar, informe '+falta.join(', ').replace(/, ([^,]*)$/,' e $1')+'. Os campos da proposta aparecem em seguida.</div>';
 }
 function renderConds(){
   const el = $('i2-conds'); if(!el) return;
