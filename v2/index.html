@@ -385,6 +385,7 @@ body.sb-off .main{margin-left:0}
 
 .sim-mom{margin-top:12px;padding:12px;border:1px dashed #D9C3C5;border-radius:10px;background:#FFFBFB}.sim-mh{font-weight:700;font-size:12.5px;color:#7F2D34;margin-bottom:8px}
 .sim-warn{font-size:12px;color:#9B3A41;margin:8px 0 0}
+.orc-t{display:inline-block;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:4px;padding:2px 6px;margin-right:6px;vertical-align:1px}
 
 </style>
 </head>
@@ -400,6 +401,7 @@ body.sb-off .main{margin-left:0}
     <div class="sb-link" data-view="esp"><span class="ic">🏛️</span>Espaço</div>
     <div class="sb-link" data-view="hh"><span class="ic">🍸</span>Coquetel</div>
     <div class="sb-link" data-view="clientes"><span class="ic">💼</span>Clientes</div>
+    <div class="sb-link" data-view="orc"><span class="ic">📥</span>Orçamentos recebidos</div>
     <div class="sb-link" data-view="sim"><span class="ic">🧪</span>Simulador (teste)</div>
   </div>
 
@@ -494,6 +496,10 @@ body.sb-off .main{margin-left:0}
   <div class="view" id="view-sim">
     <div class="card"><div class="card-hdr"><span class="card-title">🧪 Simulador do cliente — visão do cliente (teste)</span></div><div class="card-body" id="sim-body"></div></div>
     <div class="card"><div class="card-hdr"><span class="card-title">📥 Orçamentos recebidos — visão do Espaço Vista (teste)</span></div><div class="card-body"><p style="font-size:11px;color:var(--gr);margin-bottom:12px">No sistema final, cada envio do cliente cai aqui automaticamente. "Abrir no Investimento" monta a proposta já com o que ele marcou, para você ajustar e enviar.</p><div id="sim-recv"></div></div></div>
+  </div>
+
+  <div class="view" id="view-orc">
+    <div class="card"><div class="card-hdr"><span class="card-title">📥 Orçamentos recebidos</span><button class="btn btn-o btn-sm" onclick="I2.orcRender()">↻ Atualizar</button></div><div class="card-body"><p style="font-size:11.5px;color:var(--gr);margin-bottom:12px">Tudo o que o cliente monta na aba "Monte sua proposta" do link chega aqui, sem valores. "Abrir no Investimento" monta a proposta com as escolhas dele para você ajustar e enviar. Se o cliente alterar e enviar de novo, chega como um <b>novo</b> orçamento (marcado como reenvio) — o anterior fica guardado.</p><div id="orc-list"></div></div></div>
   </div>
 
   <div class="view" id="view-clientes">
@@ -1421,6 +1427,7 @@ async function boot(){
     else LS.del('inv2_draft');
   }
   renderTabelaSelect(); renderBody();
+  try{ I2.orcLoad(); if(CLOUD) setInterval(()=>I2.orcLoad(),60000); }catch(e){}
 }
 
 Object.assign(I2, {
@@ -2154,6 +2161,11 @@ const ESP_ROWS = {
   park:[['serv','Estacionamento - até 20 carros','Até 20 carros'],['serv','Estacionamento - até 30 carros','Até 30 carros']]
 };
 const ESP_MONT = 'Diária de montagem / desmontagem';
+function espSimCfg(e){
+  const sp = Object.keys(ESP_SALAS).filter(k=>e.salas[k]).map(k=>DATA.spaces[ESP_SALAS[k].sp]).filter(Boolean).map(x=>({name:x.name, desc:x.desc||''}));
+  const g = ['sala','coffee','almoco','hh'].reduce((a,id)=>a.concat(simItems(id)),[]);
+  return {cli:e.cliente, data:e.dataEvento, n:Math.floor(num(e.convidados)), spaces:sp, gast:g, sob:simItems('sobremesa'), equip:simItems('equip'), serv:simItems('serv')};
+}
 function espNew(){ return {id:uid(), tipo:'esp', cliente:'', tabela:'', convidados:'', dataEvento:'', docs:{esp:true,buf:true}, salas:{vista:true,ouro:true,tira:true,excl:true}, meta:{criado:new Date().toISOString(),catV:2}}; }
 function espSp(e,k){ const info = tableInfo(e.tabela); const sp = DATA.spaces[ESP_SALAS[k].sp]; if(!info || !sp) return null; const v = info.esp(sp.name); return {total:v.total, teto:v.teto, base:r2(v.total - v.teto)}; }
 function espTotal(e){ const k = ['vista','ouro','tira','excl'].find(x=>e.salas[x]); const v = k && espSp(e,k); return v ? v.total : 0; }
@@ -2241,13 +2253,15 @@ Object.assign(I2,{
   async espMarkSent(){
     if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
     if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
+    if(!ESPS.dataEvento){ say('Informe a data do evento (campo ao lado do nº de convidados)'); return; }
+    if(!(num(ESPS.convidados)>0)){ say('Informe o nº de convidados'); return; }
     if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
     if(ESP_BUSY) return; ESP_BUSY = true; say('Gerando o link…');
     try{
       const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
       ESPS.meta.enviadoEm = now; ESPS.meta.token = token; ESPS.meta.salvoEm = now;
       const html = espLinkHtml(ESPS, fotos);
-      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:ESPS.id, tipo:'esp', cliente:ESPS.cliente, titulo:'Proposta — '+ESPS.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
+      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:ESPS.id, tipo:'esp', cliente:ESPS.cliente, titulo:'Proposta — '+ESPS.cliente, html:html, sim:espSimCfg(ESPS), enviado_em:now, created_by_email:Store.email()}});
       ESPS.meta.links = (ESPS.meta.links||[]).concat([{token:token, em:now}]);
       await Store.save(ESPS, espTotal(ESPS));
       espSet(false); LINK_CTX = 'esp'; hhShowLink(token, now);
@@ -2261,10 +2275,10 @@ window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vist
    O envio cai em "Orçamentos recebidos" e abre no Investimento. */
 const SIM_KEY = 'sim_recebidos_teste';
 let SIM = null;
-function simNew(){ const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
-const SIM_ST = 'sim_estado_teste';
-function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.cli && !o.sent){ if(!o.coffee) o.coffee = []; return o; } }catch(e){} return null; }
-function simPersist(){ try{ if(SIM && !SIM.sent) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
+function simNew(){ if(window.SIM_CFG){ const c = window.SIM_CFG; return {cli:c.cli, data:c.data, n:c.n, chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; } const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
+let SIM_ST = 'sim_estado_teste';
+function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.cli && (!o.sent || window.SIM_CFG)){ if(!o.coffee) o.coffee = []; return o; } }catch(e){} return null; }
+function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
 function simList(){ try{ return JSON.parse(localStorage.getItem(SIM_KEY)||'[]'); }catch(e){ return []; } }
 function simSave(l){ try{ localStorage.setItem(SIM_KEY, JSON.stringify(l)); }catch(e){} }
 const SIM_NOSUG = n => !/sugest/i.test(n);
@@ -2352,13 +2366,13 @@ function simSummary(){
 function simRender(keepAnim){
   if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
   const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
-  let h = '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
+  let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
   h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
   st.forEach((id,i)=>{ if(i>SIM.step) return; const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
     h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
     if(i<SIM.step || SIM.sent) h += '<div class="sim-b u"><div class="bb">'+simAns(id)+(id!=='resumo'&&!SIM.sent?'<a onclick="I2.simGo('+i+')">editar</a>':'')+'</div></div>';
     else h += '<div class="sim-ctl'+(fresh?' new':'')+'">'+simControls(id)+'</div>'; });
-  if(SIM.sent) h += '<div class="sim-b a new"><span class="av">V</span><div class="bb">Recebido! ✅ Nossa equipe vai montar a sua <b>proposta final</b> e entrar em contato. Obrigado por escolher o Espaço Vista.</div></div><div class="sim-act"><button class="btn btn-o" onclick="I2.simReset()">Fazer outra simulação (teste)</button></div>';
+  if(SIM.sent) h += '<div class="sim-b a new"><span class="av">V</span><div class="bb">Recebido! ✅ Nossa equipe vai montar a sua <b>proposta final</b> e entrar em contato. Obrigado por escolher o Espaço Vista.</div></div><div class="sim-act">'+(window.SIM_CFG?'<button class="btn btn-o" onclick="I2.simRe()">Alterar e enviar novamente</button>':'<button class="btn btn-o" onclick="I2.simReset()">Fazer outra simulação (teste)</button>')+'</div>';
   h += '</div><div class="sim-side">'+simSummary()+'</div></div>';
   el.innerHTML = h; simRecv();
   if(!keepAnim){ const c = el.querySelector('.sim-chat'); const last = c && c.lastElementChild; if(last && SIM.step>0) last.scrollIntoView({behavior:'smooth',block:'nearest'}); }
@@ -2380,14 +2394,16 @@ Object.assign(I2,{
   simCfN(k){ while(SIM.coffee.length<k) SIM.coffee.push({cat:'',hora:''}); SIM.coffee.length = k; simRender(true); },
   simCfCat(i,n){ SIM.coffee[i].cat = n; simRender(true); },
   simCfTm(i,span){ const s = span.querySelectorAll('select'); SIM.coffee[i].hora = s[0].value ? s[0].value+':'+s[1].value : ''; simRender(true); },
-  simNext(){ if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
+  simNext(){ if(simSteps()[SIM.step]==='hor' && (!SIM.chegada || !SIM.termino)){ say('Informe o horário de chegada e o de saída'); return; } if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
+  simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
   simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0) + SIM.coffee.length;
     const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.chegada, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, coffee:SIM.coffee, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+cnt+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
-  async simOpen(i){ const x = simList()[i]; if(!x) return; if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
+  async simOpen(i){ return I2.simOpenRec(simList()[i]); },
+  async simOpenRec(x){ if(!x) return; if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
     const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; const d = p.dias[0]; d.data = x.data; d.chegada = x.chegada; d.inicio = x.chegada; d.termino = x.termino; d.espacos = [];
     Object.keys(x.sel.salas).forEach(nm=>{ const e = newEsp(); e.nome = nm; d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp());
     const gk = Object.keys(x.sel.gast), grp = (re)=>gk.filter(n=>re.test(n));
@@ -2401,6 +2417,27 @@ Object.assign(I2,{
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
     const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.'); }
 });
+/* ═════════ ORÇAMENTOS RECEBIDOS (reais — vindos da aba "Monte sua proposta" do link) ═════════ */
+let ORC = [];
+function orcBadge(){ const n = ORC.filter(o=>o.status==='novo').length, l = document.querySelector('.sb-link[data-view=orc]'); if(!l) return; let b = l.querySelector('.sb-n'); if(!b){ b = document.createElement('span'); b.className = 'sb-n'; b.style.cssText = 'margin-left:auto;background:#d33;color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px'; l.appendChild(b); } b.textContent = n; b.style.display = n ? '' : 'none'; }
+async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } orcBadge(); }
+function orcRender(){
+  const el = $('orc-list'); if(!el) return;
+  orcLoad().then(()=>{
+    el.innerHTML = ORC.length ? ORC.map(o=>{ const x = o.payload||{}, s = x.sel||{}, c = k => Object.keys(s[k]||{}).length;
+      const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
+      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+(c('gast')+(s.coffee||[]).length)+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.'+(x.obs?' · com observações':'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
+        +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('')
+      : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(CLOUD?'Nenhum orçamento recebido ainda.':'Disponível no sistema online (com login).')+'</p>';
+  });
+}
+Object.assign(I2,{
+  orcRender, orcBadge, orcLoad,
+  async orcOpen(id){ const o = ORC.find(z=>z.id===id); if(!o) return; const x = Object.assign({}, o.payload); if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
+    await I2.simOpenRec(x);
+    try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{status:'aberto',visto_por:Store.email(),visto_em:new Date().toISOString()}}); o.status = 'aberto'; o.visto_por = Store.email(); orcBadge(); }catch(e){} },
+  async orcDel(id){ if(!(await ask('Excluir este orçamento recebido? Não dá para desfazer.','Excluir'))) return; try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'DELETE'}); }catch(e){ say('Erro ao excluir: '+e.message); return; } ORC = ORC.filter(z=>z.id!==id); orcBadge(); orcRender(); }
+});
 
 window.I2 = I2;
 window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
@@ -2409,7 +2446,7 @@ document.querySelectorAll('.sb-link').forEach(el=>el.addEventListener('click',()
   document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   el.classList.add('active'); $('view-'+v).classList.add('active'); $('topbar-title').textContent = Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
   document.body.classList.toggle('inv2-on', v==='inv2');
-  syncCat(); if(v==='inv2') refresh(); if(v==='clientes') I2.renderClientes(); if(v==='sim') I2.simRender(); if(v==='catalogo') renderCatalogo(); if(v==='hh') I2.hhOpenNewIfEmpty(); if(v==='esp') I2.espOpenNewIfEmpty();
+  syncCat(); if(v==='inv2') refresh(); if(v==='clientes') I2.renderClientes(); if(v==='sim') I2.simRender(); if(v==='orc') I2.orcRender(); if(v==='catalogo') renderCatalogo(); if(v==='hh') I2.hhOpenNewIfEmpty(); if(v==='esp') I2.espOpenNewIfEmpty();
 }));
 window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
 window.addEventListener('scroll',e=>{ if(!sug.inp || e.target===sugBox()) return; const r = sug.inp.getBoundingClientRect(), b = sugBox(); b.style.left = r.left+'px'; b.style.top = (r.bottom+2)+'px'; b.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 20)+'px'; },true);

@@ -20,15 +20,52 @@ header{position:sticky}.tabs{display:flex;gap:6px;background:#2a2525;padding:8px
 .msg h1{font-size:19px;margin:0 0 10px;color:var(--w)}.msg p{font-size:14px;line-height:1.55;color:#555;margin:0}
 .hint{display:none;text-align:center;font-size:12px;color:#777;padding:8px 14px}
 @media (max-width:820px){.hint{display:block}header{padding:10px 12px}header .v{width:100%;margin:0;order:3}}
+:root{--w:#9B3A41;--wd:#7F2D34}
+.sim-note{background:#FFF8E1;border:1px solid #F0DFA0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#6a5a1a;margin-bottom:14px}
+.sim-top{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:12px;color:#888}.sim-prog{flex:1;height:6px;border-radius:6px;background:#eee;overflow:hidden}.sim-prog i{display:block;height:100%;background:#9B3A41;transition:width .4s}
+.sim-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px;align-items:start}@media(max-width:1000px){.sim-wrap{grid-template-columns:1fr}.sim-side{display:none}}
+.sim-chat{display:flex;flex-direction:column;gap:12px;max-width:820px}
+.sim-b{display:flex;gap:10px;align-items:flex-end}.sim-b.u{justify-content:flex-end}
+.sim-b .av{width:32px;height:32px;border-radius:50%;background:#9B3A41;color:#fff;font:800 14px Montserrat,sans-serif;display:flex;align-items:center;justify-content:center;flex:none}
+.sim-b .bb{padding:11px 15px;border-radius:16px;font-size:14px;line-height:1.5;max-width:86%}
+.sim-b.a .bb{background:#F4EFEF;color:#2a2525;border-bottom-left-radius:4px}.sim-b.u .bb{background:#9B3A41;color:#fff;border-bottom-right-radius:4px}
+.sim-b.u .bb a{color:#F3D3D6;margin-left:10px;font-size:11px;text-decoration:underline;cursor:pointer}
+@keyframes simIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sim-b.new,.sim-ctl.new{animation:simIn .45s ease both}.sim-ctl.new{animation-delay:.35s}
+.sim-ctl{margin-left:42px;background:#fff;border:1px solid #E6E1E1;border-radius:14px;padding:14px}
+.sim-act{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.sim-row{display:flex;gap:14px;flex-wrap:wrap}.sim-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#777}
+.sim-tm{display:flex;align-items:center;gap:4px}.sim-tm select{padding:7px 8px;font-size:14px}
+.sim-hint{font-size:11px;color:#888;margin:8px 0 0}
+.sim-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.sim-card{border:1.5px solid #E6E1E1;border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:.15s}.sim-card:hover{border-color:#C98C91;transform:translateY(-1px)}
+.sim-card b{font-size:13.5px;line-height:1.3}.sim-card small{font-size:11.5px;color:#777;line-height:1.4}.sim-card i{font-style:normal;font-size:11px;font-weight:700;color:#9B3A41;margin-top:auto}
+.sim-card.on{border-color:#9B3A41;background:#FBF1F2}
+.sim-chips{display:flex;flex-wrap:wrap;gap:8px}
+.sim-chip{display:flex;align-items:center;gap:8px;border:1.5px solid #E0DADA;border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;background:#fff;transition:.15s}.sim-chip:hover{border-color:#C98C91}
+.sim-chip.on{border-color:#9B3A41;background:#FBF1F2;color:#7F2D34;font-weight:600}
+.sim-chip em{font-style:normal;display:flex;align-items:center;gap:6px;font-size:13px}.sim-chip em button{width:22px;height:22px;border-radius:50%;border:1px solid #C98C91;background:#fff;color:#9B3A41;cursor:pointer;line-height:1;padding:0}
+.sim-ctl textarea{width:100%}
+.sim-side{position:sticky;top:12px}.sim-sum{border:1px solid #E6E1E1;border-radius:12px;padding:14px;background:#fff;font-size:12.5px;display:flex;flex-direction:column;gap:9px}
+.sim-sum>b{font-size:13px}.sim-s small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:2px}
+
+.sim-mom{margin-top:12px;padding:12px;border:1px dashed #D9C3C5;border-radius:10px;background:#FFFBFB}.sim-mh{font-weight:700;font-size:12.5px;color:#7F2D34;margin-bottom:8px}
+.sim-warn{font-size:12px;color:#9B3A41;margin:8px 0 0}
+.orc-t{display:inline-block;color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.05em;border-radius:4px;padding:2px 6px;margin-right:6px;vertical-align:1px}
+
+.sim-tab{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
+.sim-tab select,.sim-tab textarea{font:inherit;border:1.5px solid #ddd;border-radius:6px;padding:8px 10px;background:#fff}
+.btn{padding:11px 18px;border-radius:6px;font-size:13.5px;font-weight:700;cursor:pointer;border:none}.btn-w{background:var(--w);color:#fff}.btn-o{background:#fff;border:1.5px solid #ccc;color:#555}.btn-sm{padding:8px 12px;font-size:12px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;z-index:99;display:none;max-width:90vw}
 </style></head><body>
 <div id="app"><div class="msg"><p>Carregando a proposta…</p></div></div>
 <script>
 (function(){
-var CFG = {"SUPABASE_URL": "https://tjowmwpdjmswuaamivgh.supabase.co", "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3dtd3Bkam1zd3VhYW1pdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNjQwNDAsImV4cCI6MjExMDc0MDA0MH0.Wgb752sznw8Yn8PyUSZSeZBQjO51JC_9MRAB310jDEs"}, H = null;
+var CFG = {"SUPABASE_URL": "https://tjowmwpdjmswuaamivgh.supabase.co", "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3dtd3Bkam1zd3VhYW1pdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNjQwNDAsImV4cCI6MjExMDc0MDA0MH0.Wgb752sznw8Yn8PyUSZSeZBQjO51JC_9MRAB310jDEs"}, H = null, TK = '';
 var app = document.getElementById('app');
 function msg(t,p){ app.innerHTML = '<div class="msg"><h1>'+t+'</h1><p>'+p+'</p></div>'; }
 function fmt(d){ return new Date(d).toLocaleDateString('pt-BR'); }
-var tk = new URLSearchParams(location.search).get('t') || '';
+var tk = new URLSearchParams(location.search).get('t') || ''; TK = tk;
 if(tk.length < 20){ msg('Link inválido','Confira se o endereço foi copiado por inteiro, ou peça um novo link ao Espaço Vista.'); return; }
 fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/get_public_proposal',{method:'POST',headers:{'apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({t:tk})})
 .then(function(r){ if(!r.ok) throw 0; return r.json(); })
@@ -40,12 +77,181 @@ fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/get_public_proposal',{method:'POST',headers
 }).catch(function(){ msg('Não foi possível abrir','Verifique sua conexão e tente novamente em instantes.'); });
 
 window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vistaGo!=='number') return; var f=[].slice.call(document.querySelectorAll('iframe')).find(function(x){return x.contentWindow===ev.source}); if(!f) return; var r=f.getBoundingClientRect(), k=r.width/(f.offsetWidth||1920), off=(document.querySelector('header')?document.querySelector('header').offsetHeight:0)+(document.querySelector('.tabs')?document.querySelector('.tabs').offsetHeight:0)+8; window.scrollTo({top:r.top+window.pageYOffset+ev.data.vistaGo*k-off,behavior:'smooth'}); });
+
+function bootSim(cfg, token, el){
+  var I2 = window.I2 = {};
+  var DATA = {gast:cfg.gast.map(function(n){return {name:n}}), equip:cfg.equip.map(function(n){return {name:n}}), serv:cfg.serv.map(function(n){return {name:n}}), spaces:cfg.spaces};
+  var BUF_SOB = cfg.sob.map(function(n){return [n]});
+  window.SIM_CFG = cfg;
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+  function $(id){ return document.getElementById(id); }
+  function uid(){ return Math.random().toString(36).slice(2); }
+  var tt; function say(m){ var t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(tt); tt = setTimeout(function(){ t.style.display = 'none'; },3200); }
+/* ═════════ SIMULADOR DO CLIENTE — conversa guiada (protótipo de teste) ═════════
+   Será a 3ª aba do link do cliente ("Monte sua proposta"). O cliente responde passo a passo, SEM ver preços.
+   O envio cai em "Orçamentos recebidos" e abre no Investimento. */
+const SIM_KEY = 'sim_recebidos_teste';
+let SIM = null;
+function simNew(){ if(window.SIM_CFG){ const c = window.SIM_CFG; return {cli:c.cli, data:c.data, n:c.n, chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; } const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
+let SIM_ST = 'sim_estado_teste';
+function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.cli && (!o.sent || window.SIM_CFG)){ if(!o.coffee) o.coffee = []; return o; } }catch(e){} return null; }
+function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
+function simList(){ try{ return JSON.parse(localStorage.getItem(SIM_KEY)||'[]'); }catch(e){ return []; } }
+function simSave(l){ try{ localStorage.setItem(SIM_KEY, JSON.stringify(l)); }catch(e){} }
+const SIM_NOSUG = n => !/sugest/i.test(n);
+function simItems(id){
+  const g = DATA.gast.map(i=>i.name);
+  if(id==='sala') return g.filter(n=>/^Serviço de sala:/.test(n) || n==='Red Bull (unidade)');
+  if(id==='coffee') return g.filter(n=>/^Coffee Break:/.test(n) && SIM_NOSUG(n));
+  if(id==='almoco') return g.filter(n=>/^Almoço:/.test(n) && SIM_NOSUG(n));
+  if(id==='hh') return g.filter(n=>/^(Butiquim Vista|Coquetel Vista):/.test(n));
+  if(id==='sobremesa') return BUF_SOB.map(s=>s[0]).filter(n=>g.indexOf(n)>=0);
+  if(id==='equip') return DATA.equip.map(i=>i.name);
+  if(id==='serv') return DATA.serv.map(i=>i.name);
+  return [];
+}
+const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
+const SIM_ONE = /estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
+const SIM_MAX = [[/^Totem/i,2],[/^Passador de slide/i,3],[/^Quadro branco/i,2],[/^Ribalta/i,10]];
+function simMax(n){ if(SIM_ONE.test(n)) return 1; const m = SIM_MAX.find(x=>x[0].test(n)); return m ? m[1] : 999; }
+const SIM_GRP = {sala:'gast', coffee:'gast', almoco:'gast', hh:'gast', sobremesa:'gast', equip:'equip', serv:'serv'};
+function simLabel(id,n){
+  if(id==='sala' && SIM_SALA[n]) return SIM_SALA[n];
+  if(id==='hh') return (/^Butiquim/.test(n)?'Comida de Buteco':'Coquetel')+' · '+n.replace(/^[^:]+:\s*/,'');
+  return n.replace(/^[^:]+:\s*/,'').replace(/^(.)/,c=>c.toUpperCase());
+}
+function simSteps(){ return ['hello','hor','espaco','sala','coffee','almoco','sobremesa','hh','equip','serv','obs','resumo']; }
+const SIM_Q = {
+  hello:()=>'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar o seu evento de <b>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})+'</b> para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.',
+  hor:()=>'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>',
+  espaco:()=>'Qual <b>espaço</b> combina com o seu evento? É só tocar na opção.',
+  sala:()=>'Vamos ao <b>serviço de sala</b>. O que você quer deixar à disposição dos convidados?',
+  coffee:()=>'Vai querer <b>coffee break</b>? Quantos <b>momentos</b> ao longo do evento? Para cada um, escolha a categoria e o horário.',
+  almoco:()=>'E <b>almoço</b>? Escolha a categoria (ou pule).',
+  hh:()=>'Que tal um <b>happy hour</b> para fechar o dia? Escolha o formato.',
+  sobremesa:()=>'Alguma <b>sobremesa</b>?',
+  equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
+  serv:()=>'E algum <b>serviço</b> extra?',
+  obs:()=>'Quase lá! Quer nos contar mais alguma coisa (cardápio, montagem da sala, horários…)?',
+  resumo:()=>'Pronto! 🎉 Veja o resumo do que você escolheu. Se estiver tudo certo, é só enviar — nossa equipe monta a proposta final com você.'
+};
+function simAns(id){
+  const t = k => { const x = Object.keys(SIM[SIM_GRP[k]||k]||{}); return x; };
+  if(id==='hello') return 'Vamos lá!';
+  if(id==='hor') return 'Chegada às <b>'+SIM.chegada+'</b>, saída às <b>'+SIM.termino+'</b>';
+  if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
+  if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(esc).join(' + ') : 'Ainda não sei — quero ajuda'; }
+  if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
+  if(id==='resumo') return 'Enviar para o Espaço Vista';
+  const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
+  return names.length ? names.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join(', ') : 'Pular';
+}
+function simTime(f){
+  const v = SIM[f]||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = '';
+  for(let i=0;i<24;i++){ const s = String(i).padStart(2,'0'); ho += '<option'+(s===h?' selected':'')+'>'+s+'</option>'; }
+  for(let i=0;i<60;i+=5){ const s = String(i).padStart(2,'0'); mo += '<option'+(s===m?' selected':'')+'>'+s+'</option>'; }
+  return '<span class="sim-tm"><select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+ho+'</select>:<select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+mo+'</select></span>';
+}
+function simCfTime(i){ const v = SIM.coffee[i].hora||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = ''; for(let k=6;k<23;k++){ const t = String(k).padStart(2,'0'); ho += '<option'+(t===h?' selected':'')+'>'+t+'</option>'; } for(let k=0;k<60;k+=5){ const t = String(k).padStart(2,'0'); mo += '<option'+(t===m?' selected':'')+'>'+t+'</option>'; } return '<span class="sim-tm"><select onchange="I2.simCfTm('+i+',this.parentNode)">'+ho+'</select>:<select onchange="I2.simCfTm('+i+',this.parentNode)">'+mo+'</select></span>'; }
+function simControls(id){
+  const next = lbl => '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">'+(lbl||'Continuar')+' →</button></div>';
+  if(id==='hello') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">Vamos lá →</button></div>';
+  if(id==='hor') return '<div class="sim-row"><label>Chegada'+simTime('chegada')+'</label><label>Saída'+simTime('termino')+'</label></div><p class="sim-hint">Horas além do previsto são combinadas com o Espaço Vista.</p>'+next();
+  if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(sp=>'<div class="sim-card'+(SIM.salas[sp.name]?' on':'')+'" onclick="I2.simPick(this.dataset.n)" data-n="'+esc(sp.name)+'"><b>'+esc(sp.name)+'</b><small>'+esc((sp.desc||'').replace(/^Incluso:\s*/,'Inclui: '))+'</small><i>Escolher →</i></div>').join('')+'</div><div class="sim-act"><button class="btn btn-o btn-sm" onclick="I2.simPick(\'\')">Ainda não sei — quero ajuda para escolher</button></div>';
+  if(id==='coffee'){
+    const n = SIM.coffee.length, cats = simItems('coffee');
+    let h = '<div class="sim-chips">'+[0,1,2,3,4].map(k=>'<div class="sim-chip'+(n===k?' on':'')+'" onclick="I2.simCfN('+k+')"><span>'+(k===0?'Nenhum':k+(k===1?' momento':' momentos'))+'</span></div>').join('')+'</div>';
+    SIM.coffee.forEach((c,i)=>{ const hh = parseInt((c.hora||'').split(':')[0]); const warn = !isNaN(hh) && hh>=11 && hh<14;
+      h += '<div class="sim-mom"><div class="sim-mh">'+(n>1?(i+1)+'º momento':'Coffee break')+'</div><div class="sim-chips">'+cats.map(k=>'<div class="sim-chip'+(c.cat===k?' on':'')+'" onclick="I2.simCfCat('+i+',this.dataset.n)" data-n="'+esc(k)+'"><span>'+(c.cat===k?'✔ ':'')+esc(simLabel('coffee',k))+'</span></div>').join('')+'</div>'
+        + '<div class="sim-row" style="margin-top:8px"><label>Horário'+simCfTime(i)+'</label></div>'+(warn?'<p class="sim-warn">⚠ O coffee break não é servido entre 11h e 14h (horário de almoço). Escolha outro horário.</p>':'')+'</div>'; });
+    return h + next(n?'Continuar':'Pular');
+  }
+  if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
+  if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
+  const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast', one1 = id==='almoco'||id==='hh';
+  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.'+(one1?'simOne(\''+id+'\'':'simTog(\''+grp+'\'')+',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+'</span>'+(qty&&on&&!SIM_ONE.test(n)?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button'+(SIM[grp][n]>=simMax(n)?' disabled style="opacity:.35"':'')+' onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
+  const any = its.some(n=>SIM[grp][n]);
+  return '<div class="sim-chips">'+chips+'</div>'+next(any?'Continuar':'Pular');
+}
+function simSummary(){
+  const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
+  const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
+  const sal = Object.keys(SIM.salas).map(esc).join('<br>');
+  return '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+'<br>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR')+' · '+SIM.n+' convidados')+row('Horário','Chegada '+SIM.chegada+' · Saída '+SIM.termino)+row('Espaço',sal)
+    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns('coffee') : '')+row('Almoço',nm('almoco'))+row('Sobremesas',nm('sobremesa'))+row('Happy hour',nm('hh'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
+}
+function simRender(keepAnim){
+  if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
+  const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
+  let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
+  h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
+  st.forEach((id,i)=>{ if(i>SIM.step) return; const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
+    h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
+    if(i<SIM.step || SIM.sent) h += '<div class="sim-b u"><div class="bb">'+simAns(id)+(id!=='resumo'&&!SIM.sent?'<a onclick="I2.simGo('+i+')">editar</a>':'')+'</div></div>';
+    else h += '<div class="sim-ctl'+(fresh?' new':'')+'">'+simControls(id)+'</div>'; });
+  if(SIM.sent) h += '<div class="sim-b a new"><span class="av">V</span><div class="bb">Recebido! ✅ Nossa equipe vai montar a sua <b>proposta final</b> e entrar em contato. Obrigado por escolher o Espaço Vista.</div></div><div class="sim-act">'+(window.SIM_CFG?'<button class="btn btn-o" onclick="I2.simRe()">Alterar e enviar novamente</button>':'<button class="btn btn-o" onclick="I2.simReset()">Fazer outra simulação (teste)</button>')+'</div>';
+  h += '</div><div class="sim-side">'+simSummary()+'</div></div>';
+  el.innerHTML = h; simRecv();
+  if(!keepAnim){ const c = el.querySelector('.sim-chat'); const last = c && c.lastElementChild; if(last && SIM.step>0) last.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function simRecv(){
+  const l = simList(), el = $('sim-recv'); if(!el) return;
+  el.innerHTML = l.length ? l.map((x,i)=>{ const c = k => Object.keys(x.sel[k]).length;
+    return '<div class="i2-pl"><div style="flex:1"><div class="n">'+esc(x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(x.em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+(c('gast')+(x.sel.coffee||[]).length)+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.</div></div>'
+    +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.simOpen('+i+')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.simDel('+i+')">×</button></div></div>'; }).join('')
+    : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhum orçamento recebido ainda. Faça a simulação acima até o fim.</p>';
+}
+Object.assign(I2,{
+  simRender, simTm(f,span){ const s = span.querySelectorAll('select'); SIM[f] = s[0].value ? s[0].value+':'+s[1].value : ''; if(f==='chegada' && !SIM.inicio) SIM.inicio = SIM.chegada; },
+  simTog(g,n){ if(SIM[g][n]) delete SIM[g][n]; else SIM[g][n] = g==='equip'||g==='serv' ? 1 : true; simRender(true); },
+  simOne(id,n){ const g='gast', was=!!SIM[g][n]; simItems(id).forEach(x=>delete SIM[g][x]); if(!was){ SIM[g][n]=true; SIM.step=Math.min(simSteps().length-1,SIM.step+1); } simRender(); },
+  simQty(g,n,d){ SIM[g][n] = Math.min(simMax(n),Math.max(1,(SIM[g][n]||1)+d)); simRender(true); },
+  simObs(v){ SIM.obs = v; },
+  simPick(n){ SIM.salas = n ? {[n]:true} : {}; SIM.step++; simRender(); },
+  simCfN(k){ while(SIM.coffee.length<k) SIM.coffee.push({cat:'',hora:''}); SIM.coffee.length = k; simRender(true); },
+  simCfCat(i,n){ SIM.coffee[i].cat = n; simRender(true); },
+  simCfTm(i,span){ const s = span.querySelectorAll('select'); SIM.coffee[i].hora = s[0].value ? s[0].value+':'+s[1].value : ''; simRender(true); },
+  simNext(){ if(simSteps()[SIM.step]==='hor' && (!SIM.chegada || !SIM.termino)){ say('Informe o horário de chegada e o de saída'); return; } if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
+  simGo(i){ SIM.step = i; simRender(); },
+  simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
+  simReset(){ SIM = simNew(); simPersist(); simRender(); },
+  simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0) + SIM.coffee.length;
+    const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.chegada, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, coffee:SIM.coffee, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}}); simSave(l);
+    SIM.sent = true; simRender(); say('Enviado ✔ — '+cnt+' item(ns) em "Orçamentos recebidos" abaixo.'); },
+  simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
+  async simOpen(i){ return I2.simOpenRec(simList()[i]); },
+  async simOpenRec(x){ if(!x) return; if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
+    const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; const d = p.dias[0]; d.data = x.data; d.chegada = x.chegada; d.inicio = x.chegada; d.termino = x.termino; d.espacos = [];
+    Object.keys(x.sel.salas).forEach(nm=>{ const e = newEsp(); e.nome = nm; d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp());
+    const gk = Object.keys(x.sel.gast), grp = (re)=>gk.filter(n=>re.test(n));
+    grp(/^Serviço de sala:|^Red Bull/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+    (x.sel.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
+    grp(/^Almoço:/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+    gk.filter(n=>!/^(Serviço de sala:|Red Bull|Almoço:|Coffee Break:|Butiquim Vista:|Coquetel Vista:)/.test(n)).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+    grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; l.desc = 'Happy hour escolhido pelo cliente. O valor é calculado no menu Coquetel (para '+x.n+' convidados) — lance aqui o valor correspondente.'; d.gast.push(l); });
+    Object.keys(x.sel.equip).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = x.sel.equip[nm]; d.equip.push(l); });
+    Object.keys(x.sel.serv).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = x.sel.serv[nm]; d.serv.push(l); });
+    if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
+    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.'); }
+});
+
+  SIM_ST = 'sim_' + token;
+  I2.simSend = function(){
+    var b = document.querySelector('.sim-ctl .btn-w'); if(b){ b.disabled = true; b.textContent = 'Enviando…'; }
+    var p = {cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.chegada, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, coffee:SIM.coffee, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}};
+    fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/enviar_orcamento',{method:'POST',headers:{'apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({t:token,p:p})})
+    .then(function(r){ if(!r.ok) throw 0; return r.json(); })
+    .then(function(j){ if(!j||!j.ok) throw j; SIM.sent = true; simRender(); })
+    .catch(function(j){ say(j&&j.erro==='expirada' ? 'Esta proposta expirou. Fale com o Espaço Vista: (31) 3643-8566.' : 'Não foi possível enviar agora. Tente de novo em instantes ou ligue (31) 3643-8566.'); simRender(true); });
+  };
+  simRender();
+}
 function show(j){
   var parts = (j.html||'').split('<!--VISTA-SPLIT-->'); H = parts.join('');
-  var names = parts.length>1 ? ['Proposta do Espaço','Proposta de Buffet'] : [''];
+  var names = parts.length>1 ? ['Proposta do Espaço','Proposta de Buffet'] : ['']; if(j.sim) names = names.length>1 ? names.concat(['Monte sua proposta']) : ['Proposta do Espaço','Monte sua proposta'];
   document.title = j.titulo || 'Proposta — Espaço Vista';
-  var tabs = parts.length>1 ? '<div class="tabs">'+names.map(function(n,i){ return '<button data-i="'+i+'" class="'+(i?'':'on')+'">'+n+'</button>'; }).join('')+'</div>' : '';
-  app.innerHTML = '<header><div class="t">Espaço Vista<small>'+(j.cliente?('Proposta para '+j.cliente.replace(/</g,'&lt;')):'Proposta comercial')+'</small></div><div class="v">Válida até '+fmt(j.expira_em)+'</div><button id="pdf">⬇ Baixar PDF</button></header>'+tabs+'<div class="hint">Dica: use o gesto de pinça para ampliar a proposta.</div><div id="wrap"></div>';
+  var tabs = names.length>1 ? '<div class="tabs">'+names.map(function(n,i){ return '<button data-i="'+i+'" class="'+(i?'':'on')+'">'+n+'</button>'; }).join('')+'</div>' : '';
+  app.innerHTML = '<header><div class="t">Espaço Vista<small>'+(j.cliente?('Proposta para '+j.cliente.replace(/</g,'&lt;')):'Proposta comercial')+'</small></div><div class="v">Válida até '+fmt(j.expira_em)+'</div><button id="pdf">⬇ Baixar PDF</button></header>'+tabs+'<div class="hint">Dica: use o gesto de pinça para ampliar a proposta.</div><div id="wrap"></div><div id="simtab" class="sim-tab" style="display:none"><div id="sim-body"></div></div><div id="toast"></div>';
   var wrap = document.getElementById('wrap'), fr = [];
   parts.forEach(function(p,i){ var f = document.createElement('iframe'); if(!i) f.id='f'; f.setAttribute('scrolling','no'); f.srcdoc = p; f.style.display = i ? 'none' : 'block'; wrap.appendChild(f); fr.push(f); });
   var cur = 0;
@@ -53,7 +259,7 @@ function show(j){
     var np = Math.max(1,(parts[cur].split('class="page').length-1));
     f.style.width='1920px'; f.style.height=(np*1080+(np-1)*40)+'px'; f.style.transform='scale('+k+')'; wrap.style.height = Math.round((np*1080+(np-1)*40)*k)+'px'; }
   fit(); window.addEventListener('resize', fit);
-  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.onclick = function(){ cur = +b.dataset.i; fr.forEach(function(f,i){ f.style.display = i===cur?'block':'none'; }); Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.toggle('on', x===b); }); fit(); window.scrollTo(0,0); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(b){ b.onclick = function(){ var ix = +b.dataset.i, isSim = !!j.sim && ix===parts.length; if(!isSim) cur = ix; fr.forEach(function(f,i){ f.style.display = (!isSim && i===cur)?'block':'none'; }); wrap.style.display = isSim?'none':'block'; var st = document.getElementById('simtab'); st.style.display = isSim?'block':'none'; if(isSim && !st.dataset.b){ st.dataset.b = 1; bootSim(j.sim, TK); } var pb = document.getElementById('pdf'); if(pb) pb.style.display = isSim?'none':''; Array.prototype.forEach.call(document.querySelectorAll('.tabs button'), function(x){ x.classList.toggle('on', x===b); }); if(!isSim) fit(); window.scrollTo(0,0); }; });
   document.getElementById('pdf').onclick = function(){
     var w = window.open('','_blank'); if(!w){ alert('Libere os pop-ups deste site para baixar o PDF.'); return; }
     var doc = parts[0]; for(var i=1;i<parts.length;i++){ doc = doc.replace('</body></html>','') + parts[i].replace(/^[\s\S]*?<body>/,''); }
