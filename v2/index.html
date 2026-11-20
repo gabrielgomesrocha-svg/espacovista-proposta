@@ -282,6 +282,7 @@ body.sb-off .main{margin-left:0}
 .i2-lock{background:#f3f1ee;cursor:pointer;color:var(--dk)}.i2-lock:hover{border-color:var(--w)}
 .i2-gate-msg{background:#fff8e6;border:1px dashed #E0A800;border-radius:6px;padding:14px 16px;font-size:13px;color:#6b5200;margin-bottom:16px}
 .i2-ct3 th.c51,.i2-ct3 td.c51{background:#f8eeeb}.i2-ct3 th.c51{color:var(--w)}.i2-ct3 th.c51s,.i2-ct3 td.c51s{border-left:2px solid #e3c9c3}.i2-ct3 td.c51 input{background:#fffdfc}.i2-ct3 tbody tr:hover td{background:#fbf7f6}.i2-ct3 tbody tr:hover td.c51{background:#f4e4e0}
+.i2-tsel{display:flex;align-items:center;gap:4px}.i2-tsel select{width:auto;min-width:64px;padding-left:8px;padding-right:4px}.i2-tsel span{font-weight:700;color:#888}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -509,6 +510,14 @@ DATA.spaces.forEach((sp,i)=>{ if(sp.hora==null) sp.hora = HORA_EXTRA[i]||0; });
 let espObsPadrao = {};   // texto padrão 'Incluso / Observações' salvo por espaço
 let custom = [];     // tabelas personalizadas
 let conds = DATA.conds.slice();
+function timeSel(d,f){
+  const v = d[f]||'', p = v.split(':'), h = p[0]||'', m = p[1]||'';
+  let ho = '<option value="">--</option>', mo = '<option value="">--</option>';
+  for(let i=0;i<24;i++){ const s = String(i).padStart(2,'0'); ho += '<option'+(s===h?' selected':'')+'>'+s+'</option>'; }
+  const ms = []; for(let i=0;i<60;i+=5) ms.push(String(i).padStart(2,'0')); if(m && ms.indexOf(m)<0){ ms.push(m); ms.sort(); }
+  ms.forEach(s=>{ mo += '<option'+(s===m?' selected':'')+'>'+s+'</option>'; });
+  return '<div class="i2-tsel"><select onchange="I2.tm(\''+d.id+'\',\''+f+'\',this)">'+ho+'</select><span>:</span><select onchange="I2.tm(\''+d.id+'\',\''+f+'\',this)">'+mo+'</select></div>';
+}
 function horaPadrao(nome){ const sp = DATA.spaces.find(x=>x.name===nome); return sp ? num(sp.hora) : 0; }
 function obsPadrao(nome){ const sp = DATA.spaces.find(x=>x.name===nome); return sp ? sp.desc : ''; }
 function allTables(){ return DATA.tables.map(n=>({name:n,custom:false})).concat(custom.map(c=>({name:c.name,custom:true}))); }
@@ -848,9 +857,9 @@ function dayCard(d,i){
   return `<div class="i2-day" id="day-${d.id}">
     <div class="i2-day-h">
       <div class="fg"><label class="fl">${multi?'Dia '+(i+1)+' · ':''}Data</label><input type="date" value="${esc(d.data)}" oninput="I2.day('${d.id}','data',this.value)" onchange="I2.dateChanged()"></div>
-      <div class="fg"><label class="fl">Chegada</label><input type="time" value="${esc(d.chegada)}" oninput="I2.day('${d.id}','chegada',this.value)"></div>
-      <div class="fg"><label class="fl">Início</label><input type="time" value="${esc(d.inicio)}" oninput="I2.day('${d.id}','inicio',this.value)"></div>
-      <div class="fg"><label class="fl">Término</label><input type="time" value="${esc(d.termino)}" oninput="I2.day('${d.id}','termino',this.value)"></div>
+      <div class="fg"><label class="fl">Chegada</label>${timeSel(d,'chegada')}</div>
+      <div class="fg"><label class="fl">Início</label>${timeSel(d,'inicio')}</div>
+      <div class="fg"><label class="fl">Término</label>${timeSel(d,'termino')}</div>
       <div class="i2-hrs" id="hrs-${d.id}"></div>
       <div class="sp"><button class="btn btn-o btn-sm" onclick="I2.dupDay('${d.id}')" title="Copia espaço e itens para o dia seguinte">⧉ Duplicar dia</button>${multi?`<button class="btn btn-o btn-sm" onclick="I2.delDay('${d.id}')">🗑 Remover dia</button>`:''}</div>
     </div>
@@ -1094,6 +1103,7 @@ const I2 = {
 
   /* propostas */
   async novo(){ if(dirty && !(await ask('Há alterações não salvas. Descartar e começar uma nova proposta?','Descartar'))) return; P = newProposal(); dirty=false; LS.del('inv2_draft'); renderTabelaSelect(); renderBody(); },
+  tm(id,f,el){ const w = el.parentNode, hs = w.children[0], ms = w.children[2]; if(el===hs && hs.value!=='' && ms.value==='') ms.value = '00'; if(el===hs && hs.value==='') ms.value = ''; const val = hs.value==='' ? '' : hs.value+':'+(ms.value||'00'); I2.day(id,f,val); },
   async salvar(){
     if(!P.cliente.trim()){ say('Informe o nome do cliente para salvar'); const i = $('i2-cliente'); if(i) i.focus(); return false; }
     const R = calcAll(); P.meta = P.meta || {}; P.meta.salvoEm = new Date().toISOString(); P.meta.por = Store.email();
