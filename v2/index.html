@@ -1401,7 +1401,7 @@ body{background:#777;margin:0;font-family:'Inter',sans-serif;color:var(--k)}
 .park .pr{font:800 24px 'Montserrat'}.park .pl{font-size:16px;color:#444}
 .btns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:26px 0}
 .btn{border:1.5px solid var(--k);border-radius:6px;padding:24px 8px;text-align:center;font:700 13.5px 'Montserrat';letter-spacing:.1em;text-transform:uppercase}
-.btn b{display:block;font-size:26px;margin-bottom:6px;color:var(--w)}
+.btn b{display:block;margin-bottom:10px;color:var(--w);line-height:0}.btn b svg{width:46px;height:46px;display:inline-block}
 .map{height:380px;border-radius:6px}
 .addr{display:flex;gap:16px;align-items:center;margin-top:14px;font-size:15.5px;color:#333}.addr b{color:var(--w)}
 .p4 .band{position:absolute;left:0;right:0;bottom:0;height:70px;background:#E3DCDC;color:#4a2a2a;display:flex;align-items:center;justify-content:space-between;padding:0 80px;font-size:16px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}
@@ -1472,13 +1472,13 @@ function hhCoqPages(c){return `
  </div>
  <div class="grid4">
   <div class="card"><h3>Sobremesas</h3><div class="sub">Das sobremesas típicas à culinária internacional. Valor cobrado por pessoa.</div>
-   <div class="r"><span>Sundae Vista</span><span>R$ 8,00</span></div><div class="r"><span>Mini churros com doce de leite</span><span>R$ 6,00</span></div><div class="r"><span>Espetado de goiabada e queijo minas</span><span>R$ 4,00</span></div><div class="r"><span>Pudim de leite condensado</span><span>R$ 8,00</span></div><div class="r"><span>Pavê de chocolate</span><span>R$ 8,00</span></div><div class="r"><span>Mousse de limão ou chocolate</span><span>R$ 8,00</span></div><div class="r"><span>Brownie servido com sorvete</span><span>R$ 8,00</span></div><div class="r"><span>Petit gateau servido com sorvete</span><span>R$ 10,00</span></div></div>
+   ${c.rows('sob')}</div>
   <div class="card"><h3>Equipamentos extras</h3><div class="sub">Para complementar a estrutura já inclusa na proposta.</div>
-   <div class="r"><span>Internet link dedicado (50 Mb)</span><span>R$ 590,00</span></div><div class="r"><span>Internet link dedicado (100 Mb)</span><span>R$ 890,00</span></div><div class="r"><span>Microfone adicional sem fio</span><span>R$ 290,00</span></div><div class="r"><span>Púlpito</span><span>R$ 190,00</span></div><div class="r"><span>Palco 5m x 2m (h:25 cm)</span><span>R$ 990,00</span></div><div class="r"><span>Iluminação Par Led (unid.)</span><span>R$ 90,00</span></div><div class="r"><span>Gerador 110 kVA (stand by)</span><span>R$ 2.650,00</span></div><div class="r"><span>Monitor de retorno 34 pol</span><span>R$ 650,00</span></div></div>
+   ${c.rows('eq')}</div>
   <div class="card"><h3>Ativação de mídia</h3><div class="sub">Jardim vertical com mais de 30 m² e três TVs embutidas na entrada; mais 3 TVs no Salão Real.</div>
-   <div class="r"><span>Pacote 6 TVs · Entrada + Salão Real</span><span>R$ 1.060,00</span></div><div class="r"><span>Pacote 3 TVs · Jardim Vertical</span><span>R$ 590,00</span></div><div class="r"><span>Pacote 3 TVs · Salão Real (Foyer)</span><span>R$ 590,00</span></div><div class="r"><span>TV 4K 49" com pedestal</span><span>R$ 290,00</span></div></div>
+   ${c.rows('mid')}</div>
   <div class="card"><h3>Serviços extras</h3><div class="sub">O garçom extra é necessário quando há outras bebidas não inclusas.</div>
-   <div class="r"><span>Técnico de áudio e vídeo</span><span>R$ 470,00</span></div><div class="r"><span>Operador de áudio e vídeo</span><span>R$ 300,00</span></div><div class="r"><span>Garçom / Recepcionista extra</span><span>R$ 270,00</span></div><div class="r"><span>Segurança extra</span><span>R$ 270,00</span></div></div>
+   ${c.rows('srv')}</div>
  </div>
  <div class="foot"><span>Espaço Vista · Proposta de confraternização</span><span>3 / 4</span></div>
 </section>
@@ -1498,8 +1498,8 @@ function hhCoqPages(c){return `
    <li>Esta proposta é válida por ${c.validade}.</li>
   </ol></div>
  <div class="rr">
-  <div class="park"><h3>Estacionamento <span>com manobrista</span></h3><span></span><p>Estacionamento próprio para até 30 carros. Manobrista obrigatório e já incluso, tarifado à parte. Sem cobrança individual no dia do evento.</p><span class="pl">Até 20 carros</span><span class="pr">R$ 470,00</span><span class="pl">Até 30 carros</span><span class="pr">R$ 700,00</span></div>
-  <div class="btns">${c.btn("whatsapp","WA","WhatsApp")}${c.btn("instagram","IG","Instagram")}${c.btn("video","▶","Vídeo institucional")}${c.btn("tour","360°","Tour virtual")}</div>
+  <div class="park"><h3>Estacionamento <span>com manobrista</span></h3><span></span><p>Estacionamento próprio para até 30 carros. Manobrista obrigatório e já incluso, tarifado à parte. Sem cobrança individual no dia do evento.</p><span class="pl">Até 20 carros</span><span class="pr">${c.park[0]}</span><span class="pl">Até 30 carros</span><span class="pr">${c.park[1]}</span></div>
+  <div class="btns">${c.btn("whatsapp","whatsapp","WhatsApp")}${c.btn("instagram","instagram","Instagram")}${c.btn("video","video","Vídeo institucional")}${c.btn("tour","tour","Tour virtual")}</div>
   ${c.mapa()}
   <div class="addr"><b>Localização privilegiada</b><span>Rua Juiz Achilles Veloso, 385 · Estoril · Belo Horizonte/MG</span></div>
  </div>
@@ -1532,14 +1532,35 @@ function hhValidade(h){
   return 'até '+d.toLocaleDateString('pt-BR')+' ('+VALIDADE_DIAS+' dias a partir do envio)';
 }
 function hhNew(){ return {id:uid(), tipo:'coq', modo:'conf', cliente:'', convidados:'', tabela:'', horas:5, meta:{criado:new Date().toISOString()}}; }
+
+/* ── extras do Coquetel: preço vem do Catálogo (Tabela da proposta + faixa por nº de convidados); fallback = valor antigo ── */
+const HH_EXTRAS = {
+  sob:[['gast','Sundae de sorvete de creme, castanha de cajú e calda','Sundae Vista',8],['gast','Mini churros com doce de leite',null,6],['gast','Espetado de goiabada e queijo minas',null,4],['gast','Pudim de leite condensado',null,8],['gast','Pavê de chocolate',null,8],['gast','Mousse de chocolate','Mousse de limão ou chocolate',8],['gast','Brownie com sorvete de creme e calda de chocolate','Brownie servido com sorvete',8],['gast','Petit gateau servido com sorvete de creme','Petit gateau servido com sorvete',10]],
+  eq:[['equip','Link dedicado 50 MB','Internet link dedicado (50 Mb)',590],['equip','Link dedicado 100mb','Internet link dedicado (100 Mb)',890],['equip','Microfone adicional sem fio',null,290],['equip','Púlpito',null,190],['equip','Palco 5m x 2m','Palco 5m x 2m (h:25 cm)',990],['equip','Parled','Iluminação Par Led (unid.)',90],['serv','Gerador de energia 110 kVa (stand by -10h)','Gerador 110 kVA (stand by)',2650],['equip','Monitor de palco 27 polegadas',null,650]],
+  mid:[['equip','Pacote de 6 Tvs - Entrada + Salão Real','Pacote 6 TVs · Entrada + Salão Real',1060],['equip','Pacote 3 TVs - Jardim Vertical','Pacote 3 TVs · Jardim Vertical',590],['equip','Pacote 3 TV´s - Salão Real','Pacote 3 TVs · Salão Real (Foyer)',590],['equip','Totem com TV 4K 49"','TV 4K 49" com totem',290]],
+  srv:[['serv','Técnico de áudio e vídeo',null,470],[null,null,'Operador de áudio e vídeo',300],['serv','Garçom extra','Garçom / Recepcionista extra',270],['serv','Segurança','Segurança extra',270]]
+};
+function hhExtraPrice(h,r){
+  const n = Math.floor(num(h.convidados)), t = baseKey(+h.tabela||3, n<=50 ? 'ate' : 'mais');
+  if(r[0]){ const it = (DATA[r[0]]||[]).find(i=>i.name===r[1]); const info = tableInfo(t); if(it && info && it.prices[info.key]!=null) return num(it.prices[info.key]); }
+  return r[3];
+}
+function hhRows(h,k){ return HH_EXTRAS[k].map(r=>'<div class="r"><span>'+esc(r[2]||r[1])+'</span><span>'+money(hhExtraPrice(h,r))+'</span></div>').join(''); }
+function hhPark(h){ return [['serv','Estacionamento - até 20 carros',470],['serv','Estacionamento - até 30 carros',700]].map(r=>money(hhExtraPrice(h,[r[0],r[1],null,r[2]]))); }
+const HH_ICONS = {
+  whatsapp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2-5.4A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 8.3c.2 2.6 3 5.3 5.7 5.7l1.4-1.4-2.1-1.1-1 .8c-.9-.4-2-1.4-2.4-2.4l.8-1-1.1-2.1z" fill="currentColor" stroke="none"/></svg>',
+  instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="5.2"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>',
+  video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4.5"/><path d="M10 8.8l5.2 3.2-5.2 3.2z" fill="currentColor"/></svg>',
+  tour:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 15.5c0 2 4 3.5 9 3.5s9-1.5 9-3.5c0-1.4-2-2.6-4.8-3.2"/><path d="M7.8 12.3C5 12.9 3 14.1 3 15.5" /><path d="M19 17.2l2.2-1.7-2.7-.6" stroke-linejoin="round"/><text x="12" y="10.2" text-anchor="middle" font-size="8.6" font-weight="800" fill="currentColor" stroke="none" font-family="Montserrat,Arial,sans-serif">360°</text></svg>'
+};
 function hhHtml(h){
   const c = hhCalc(h); if(!c) return '';
   const F = MIDIA.fotos||{}, L = MIDIA.links||{};
   const ctx = {
-    logo:DATA.logo, n:h.convidados, horas:(num(h.horas)||5), premium:money(num(HH_PRECOS.premium)), p:c.opcoes.map(money), j:c.jantar.map(money), validade:hhValidade(h),
+    logo:DATA.logo, n:h.convidados, horas:(num(h.horas)||5), premium:money(num(HH_PRECOS.premium)), p:c.opcoes.map(money), j:c.jantar.map(money), validade:hhValidade(h), rows:k=>hhRows(h,k), park:hhPark(h),
     foto:(i,l)=> F['foto'+(i+1)] ? '<div class="ph f"><img src="'+F['foto'+(i+1)]+'" style="'+hhImgStyle('foto'+(i+1))+'" alt=""></div>' : '<div class="ph" data-l="'+l+'"></div>',
     mapa:()=> F.mapa ? (L.mapa ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:block;color:inherit">' : '')+'<div class="map ph f"><img src="'+F.mapa+'" style="'+hhImgStyle('mapa')+'" alt=""></div>'+(L.mapa ? '</a>' : '') : '<div class="ph map" data-l="mapa · localização"></div>',
-    btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+ic+'</b>'+l+'</a>' : '<div class="btn"><b>'+ic+'</b>'+l+'</div>'
+    btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</a>' : '<div class="btn"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</div>'
   };
   return '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(h.cliente||'Confraternização')+'</title><style>'+HH_COQ_STYLE+'</style></head><body>'+hhCoqPages(ctx)+'</body></html>';
 }
