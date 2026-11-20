@@ -383,6 +383,9 @@ body.sb-off .main{margin-left:0}
 .sim-side{position:sticky;top:12px}.sim-sum{border:1px solid #E6E1E1;border-radius:12px;padding:14px;background:#fff;font-size:12.5px;display:flex;flex-direction:column;gap:9px}
 .sim-sum>b{font-size:13px}.sim-s small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:2px}
 
+.sim-mom{margin-top:12px;padding:12px;border:1px dashed #D9C3C5;border-radius:10px;background:#FFFBFB}.sim-mh{font-weight:700;font-size:12.5px;color:#7F2D34;margin-bottom:8px}
+.sim-warn{font-size:12px;color:#9B3A41;margin:8px 0 0}
+
 </style>
 </head>
 <body>
@@ -2257,7 +2260,10 @@ window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vist
    O envio cai em "Orçamentos recebidos" e abre no Investimento. */
 const SIM_KEY = 'sim_recebidos_teste';
 let SIM = null;
-function simNew(){ const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', buffet:null, salas:{}, gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
+function simNew(){ const d = new Date(); d.setDate(d.getDate()+45); return {cli:'Empresa Exemplo Ltda', data:d.toISOString().slice(0,10), n:60, chegada:'08:00', inicio:'09:00', termino:'17:00', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}, obs:'', step:0, sent:false}; }
+const SIM_ST = 'sim_estado_teste';
+function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.cli && !o.sent){ if(!o.coffee) o.coffee = []; return o; } }catch(e){} return null; }
+function simPersist(){ try{ if(SIM && !SIM.sent) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
 function simList(){ try{ return JSON.parse(localStorage.getItem(SIM_KEY)||'[]'); }catch(e){ return []; } }
 function simSave(l){ try{ localStorage.setItem(SIM_KEY, JSON.stringify(l)); }catch(e){} }
 const SIM_NOSUG = n => !/sugest/i.test(n);
@@ -2272,19 +2278,20 @@ function simItems(id){
   if(id==='serv') return DATA.serv.map(i=>i.name);
   return [];
 }
+const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
 const SIM_GRP = {sala:'gast', coffee:'gast', almoco:'gast', hh:'gast', sobremesa:'gast', equip:'equip', serv:'serv'};
 function simLabel(id,n){
+  if(id==='sala' && SIM_SALA[n]) return SIM_SALA[n];
   if(id==='hh') return (/^Butiquim/.test(n)?'Comida de Buteco':'Coquetel')+' · '+n.replace(/^[^:]+:\s*/,'');
   return n.replace(/^[^:]+:\s*/,'').replace(/^(.)/,c=>c.toUpperCase());
 }
-function simSteps(){ return ['hello','hor','espaco','buffet'].concat(SIM.buffet ? ['sala','coffee','almoco','hh','sobremesa'] : [], ['equip','serv','obs','resumo']); }
+function simSteps(){ return ['hello','hor','espaco','sala','coffee','almoco','hh','sobremesa','equip','serv','obs','resumo']; }
 const SIM_Q = {
   hello:()=>'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar o seu evento de <b>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})+'</b> para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.',
-  hor:()=>'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas o evento termina?</b>',
-  espaco:()=>'Qual <b>espaço</b> combina com o seu evento? Pode marcar mais de um.',
-  buffet:()=>'Vai querer <b>buffet</b> no seu evento? 🍽️',
+  hor:()=>'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>',
+  espaco:()=>'Qual <b>espaço</b> combina com o seu evento? É só tocar na opção.',
   sala:()=>'Vamos ao <b>serviço de sala</b>. O que você quer deixar à disposição dos convidados?',
-  coffee:()=>'Quer <b>coffee break</b>? Escolha a categoria (ou pule).',
+  coffee:()=>'Vai querer <b>coffee break</b>? Quantos <b>momentos</b> ao longo do evento? Para cada um, escolha a categoria e o horário.',
   almoco:()=>'E <b>almoço</b>? Escolha a categoria (ou pule).',
   hh:()=>'Que tal um <b>happy hour</b> para fechar o dia? Escolha o formato.',
   sobremesa:()=>'Alguma <b>sobremesa</b>?',
@@ -2297,8 +2304,8 @@ function simAns(id){
   const t = k => { const x = Object.keys(SIM[SIM_GRP[k]||k]||{}); return x; };
   if(id==='hello') return 'Vamos lá!';
   if(id==='hor') return 'Chegada às <b>'+SIM.chegada+'</b>, saída às <b>'+SIM.termino+'</b>';
+  if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
   if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(esc).join(' + ') : 'Ainda não sei — quero ajuda'; }
-  if(id==='buffet') return SIM.buffet ? 'Sim, quero buffet' : 'Só o espaço, por enquanto';
   if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
   if(id==='resumo') return 'Enviar para o Espaço Vista';
   const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
@@ -2310,12 +2317,20 @@ function simTime(f){
   for(let i=0;i<60;i+=5){ const s = String(i).padStart(2,'0'); mo += '<option'+(s===m?' selected':'')+'>'+s+'</option>'; }
   return '<span class="sim-tm"><select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+ho+'</select>:<select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+mo+'</select></span>';
 }
+function simCfTime(i){ const v = SIM.coffee[i].hora||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = ''; for(let k=6;k<23;k++){ const t = String(k).padStart(2,'0'); ho += '<option'+(t===h?' selected':'')+'>'+t+'</option>'; } for(let k=0;k<60;k+=5){ const t = String(k).padStart(2,'0'); mo += '<option'+(t===m?' selected':'')+'>'+t+'</option>'; } return '<span class="sim-tm"><select onchange="I2.simCfTm('+i+',this.parentNode)">'+ho+'</select>:<select onchange="I2.simCfTm('+i+',this.parentNode)">'+mo+'</select></span>'; }
 function simControls(id){
   const next = lbl => '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">'+(lbl||'Continuar')+' →</button></div>';
   if(id==='hello') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">Vamos lá →</button></div>';
-  if(id==='hor') return '<div class="sim-row"><label>Chegada'+simTime('chegada')+'</label><label>Início'+simTime('inicio')+'</label><label>Saída'+simTime('termino')+'</label></div><p class="sim-hint">Horas além do previsto são combinadas com o Espaço Vista.</p>'+next();
-  if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(s=>{ const on = !!SIM.salas[s.name]; return '<div class="sim-card'+(on?' on':'')+'" onclick="I2.simTog(\'salas\',this.dataset.n)" data-n="'+esc(s.name)+'"><b>'+esc(s.name)+'</b><small>'+esc((s.desc||'').replace(/^Incluso:\s*/,'Inclui: '))+'</small><i>'+(on?'✔ Escolhido':'Escolher')+'</i></div>'; }).join('')+'</div>'+next(Object.keys(SIM.salas).length?'Continuar':'Quero ajuda para escolher');
-  if(id==='buffet') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simBuf(true)">Sim, quero buffet</button><button class="btn btn-o" onclick="I2.simBuf(false)">Só o espaço, por enquanto</button></div>';
+  if(id==='hor') return '<div class="sim-row"><label>Chegada'+simTime('chegada')+'</label><label>Saída'+simTime('termino')+'</label></div><p class="sim-hint">Horas além do previsto são combinadas com o Espaço Vista.</p>'+next();
+  if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(sp=>'<div class="sim-card'+(SIM.salas[sp.name]?' on':'')+'" onclick="I2.simPick(this.dataset.n)" data-n="'+esc(sp.name)+'"><b>'+esc(sp.name)+'</b><small>'+esc((sp.desc||'').replace(/^Incluso:\s*/,'Inclui: '))+'</small><i>Escolher →</i></div>').join('')+'</div><div class="sim-act"><button class="btn btn-o btn-sm" onclick="I2.simPick(\'\')">Ainda não sei — quero ajuda para escolher</button></div>';
+  if(id==='coffee'){
+    const n = SIM.coffee.length, cats = simItems('coffee');
+    let h = '<div class="sim-chips">'+[0,1,2,3,4].map(k=>'<div class="sim-chip'+(n===k?' on':'')+'" onclick="I2.simCfN('+k+')"><span>'+(k===0?'Nenhum':k+(k===1?' momento':' momentos'))+'</span></div>').join('')+'</div>';
+    SIM.coffee.forEach((c,i)=>{ const hh = parseInt((c.hora||'').split(':')[0]); const warn = !isNaN(hh) && hh>=11 && hh<14;
+      h += '<div class="sim-mom"><div class="sim-mh">'+(n>1?(i+1)+'º momento':'Coffee break')+'</div><div class="sim-chips">'+cats.map(k=>'<div class="sim-chip'+(c.cat===k?' on':'')+'" onclick="I2.simCfCat('+i+',this.dataset.n)" data-n="'+esc(k)+'"><span>'+(c.cat===k?'✔ ':'')+esc(simLabel('coffee',k))+'</span></div>').join('')+'</div>'
+        + '<div class="sim-row" style="margin-top:8px"><label>Horário'+simCfTime(i)+'</label></div>'+(warn?'<p class="sim-warn">⚠ O coffee break não é servido entre 11h e 14h (horário de almoço). Escolha outro horário.</p>':'')+'</div>'; });
+    return h + next(n?'Continuar':'Pular');
+  }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
   const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast';
@@ -2327,13 +2342,13 @@ function simSummary(){
   const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
   const sal = Object.keys(SIM.salas).map(esc).join('<br>');
-  return '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+'<br>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR')+' · '+SIM.n+' convidados')+row('Horário',SIM.chegada+' → '+SIM.termino)+row('Espaço',sal)
-    +(SIM.buffet ? row('Serviço de sala',nm('sala'))+row('Coffee break',nm('coffee'))+row('Almoço',nm('almoco'))+row('Happy hour',nm('hh'))+row('Sobremesas',nm('sobremesa')) : '')+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
+  return '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+'<br>'+new Date(SIM.data+'T12:00:00').toLocaleDateString('pt-BR')+' · '+SIM.n+' convidados')+row('Horário','Chegada '+SIM.chegada+' · Saída '+SIM.termino)+row('Espaço',sal)
+    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns('coffee') : '')+row('Almoço',nm('almoco'))+row('Happy hour',nm('hh'))+row('Sobremesas',nm('sobremesa'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv'))+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
 }
 function simRender(keepAnim){
-  if(!SIM) SIM = simNew(); const el = $('sim-body'); if(!el) return;
+  if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simPersist();
   const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
-  let h = '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós.</div>';
+  let h = '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
   h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span></div><div class="sim-wrap"><div class="sim-chat">';
   st.forEach((id,i)=>{ if(i>SIM.step) return; const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
     h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
@@ -2347,7 +2362,7 @@ function simRender(keepAnim){
 function simRecv(){
   const l = simList(), el = $('sim-recv'); if(!el) return;
   el.innerHTML = l.length ? l.map((x,i)=>{ const c = k => Object.keys(x.sel[k]).length;
-    return '<div class="i2-pl"><div style="flex:1"><div class="n">'+esc(x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(x.em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+c('gast')+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.</div></div>'
+    return '<div class="i2-pl"><div style="flex:1"><div class="n">'+esc(x.cli)+' · evento em '+(x.data?new Date(x.data+'T12:00:00').toLocaleDateString('pt-BR'):'—')+'</div><div class="m">Recebido '+new Date(x.em).toLocaleString('pt-BR')+' · '+x.n+' convidados · '+(x.chegada||'--')+' às '+(x.termino||'--')+' · '+c('salas')+' sala(s), '+(c('gast')+(x.sel.coffee||[]).length)+' buffet, '+c('equip')+' equip., '+c('serv')+' serv.</div></div>'
     +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.simOpen('+i+')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.simDel('+i+')">×</button></div></div>'; }).join('')
     : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhum orçamento recebido ainda. Faça a simulação acima até o fim.</p>';
 }
@@ -2356,22 +2371,26 @@ Object.assign(I2,{
   simTog(g,n){ if(SIM[g][n]) delete SIM[g][n]; else SIM[g][n] = g==='equip'||g==='serv' ? 1 : true; simRender(true); },
   simQty(g,n,d){ SIM[g][n] = Math.max(1,(SIM[g][n]||1)+d); simRender(true); },
   simObs(v){ SIM.obs = v; },
-  simBuf(on){ SIM.buffet = on; SIM.step++; if(!on){ ['gast'].forEach(k=>SIM[k]={}); } simRender(); },
-  simNext(){ SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
+  simPick(n){ SIM.salas = n ? {[n]:true} : {}; SIM.step++; simRender(); },
+  simCfN(k){ while(SIM.coffee.length<k) SIM.coffee.push({cat:'',hora:''}); SIM.coffee.length = k; simRender(true); },
+  simCfCat(i,n){ SIM.coffee[i].cat = n; simRender(true); },
+  simCfTm(i,span){ const s = span.querySelectorAll('select'); SIM.coffee[i].hora = s[0].value ? s[0].value+':'+s[1].value : ''; simRender(true); },
+  simNext(){ if(simSteps()[SIM.step]==='coffee'){ if(SIM.coffee.some(c=>!c.cat)){ say('Escolha a categoria de cada momento de coffee break'); return; } if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })){ say('Coffee break não é servido entre 11h e 14h — ajuste o horário'); return; } } SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
-  simReset(){ SIM = simNew(); simRender(); },
-  simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0);
-    const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.inicio, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}}); simSave(l);
+  simReset(){ SIM = simNew(); simPersist(); simRender(); },
+  simSend(){ const cnt = ['salas','gast','equip','serv'].reduce((s,k)=>s+Object.keys(SIM[k]).length,0) + SIM.coffee.length;
+    const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, data:SIM.data, n:SIM.n, chegada:SIM.chegada, inicio:SIM.chegada, termino:SIM.termino, obs:SIM.obs, sel:{salas:SIM.salas, coffee:SIM.coffee, gast:SIM.gast, equip:SIM.equip, serv:SIM.serv}}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+cnt+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ const x = simList()[i]; if(!x) return; if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; const d = p.dias[0]; d.data = x.data; d.chegada = x.chegada; d.inicio = x.inicio; d.termino = x.termino; d.espacos = [];
+    const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; const d = p.dias[0]; d.data = x.data; d.chegada = x.chegada; d.inicio = x.chegada; d.termino = x.termino; d.espacos = [];
     Object.keys(x.sel.salas).forEach(nm=>{ const e = newEsp(); e.nome = nm; d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp());
     Object.keys(x.sel.gast).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+    (x.sel.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
     Object.keys(x.sel.equip).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = x.sel.equip[nm]; d.equip.push(l); });
     Object.keys(x.sel.serv).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = x.sel.serv[nm]; d.serv.push(l); });
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
-    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); say('Simulação aberta no Investimento — escolha a Tabela para aplicar os preços.'); }
+    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.'); }
 });
 
 window.I2 = I2;
