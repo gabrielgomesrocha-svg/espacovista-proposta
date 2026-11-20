@@ -57,6 +57,7 @@ function show(j){
   document.getElementById('pdf').onclick = function(){
     var w = window.open('','_blank'); if(!w){ alert('Libere os pop-ups deste site para baixar o PDF.'); return; }
     var doc = parts[0]; for(var i=1;i<parts.length;i++){ doc = doc.replace('</body></html>','') + parts[i].replace(/^[\s\S]*?<body>/,''); }
+    doc = doc.replace('</head>','<script>(function(){function z(){document.documentElement.style.zoom=Math.min(1,innerWidth/1920)}z();addEventListener("resize",z);addEventListener("beforeprint",function(){document.documentElement.style.zoom=1});addEventListener("afterprint",z)})()<\/script></head>');
     w.document.open(); w.document.write(doc); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} },1200);
   };
 }
