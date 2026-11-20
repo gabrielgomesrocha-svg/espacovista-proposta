@@ -333,6 +333,8 @@ body.sb-off .main{margin-left:0}
 .esp-sw{display:flex;flex-wrap:wrap;gap:6px}
 .esp-sw button{border:1px solid var(--bd,#d9d4d4);background:#fff;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;color:#555;white-space:nowrap}
 .esp-sw button.on{background:var(--w,#8B0000);border-color:var(--w,#8B0000);color:#fff}
+.i2-foot{position:sticky;bottom:0;z-index:30;display:flex;gap:10px;justify-content:flex-end;align-items:center;background:#fff;border-top:1px solid #e3dede;box-shadow:0 -4px 14px rgba(0,0,0,.06);padding:10px 16px;margin:18px -2px 0}
+.i2-foot small{margin-right:auto;color:#888;font-size:11.5px}
 
 </style>
 </head>
@@ -384,6 +386,7 @@ body.sb-off .main{margin-left:0}
     </div></div>
     <div id="i2-body"></div>
     <div id="i2-warn" class="i2-warn" style="margin:14px 0 24px"></div>
+    <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.salvar()">💾 Salvar</button><button class="btn btn-w" onclick="I2.pdf()">⬇ Exportar PDF</button></div>
   </div>
 
   <div class="i2-sug" id="i2-sug"></div>
@@ -417,6 +420,7 @@ body.sb-off .main{margin-left:0}
     </div></div>
     <div id="hh-wait" style="display:none" class="card"><div class="card-body" style="text-align:center;padding:30px;color:var(--gr)">O modelo de <b>Happy Hour</b> será o próximo a ser criado.</div></div>
     <div id="hh-prev"><iframe id="hh-frame" title="Pré-visualização"></iframe></div>
+      <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.hhSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.hhPdf()">⬇ Exportar PDF</button><button class="btn btn-w" onclick="I2.hhMarkSent()">🔗 Gerar link</button></div>
   </div>
 
   <div class="view" id="view-esp">
@@ -432,6 +436,7 @@ body.sb-off .main{margin-left:0}
       <div id="esp-info"></div><div id="esp-links"></div>
     </div></div>
     <div id="esp-prev"><iframe id="esp-frame" title="Pré-visualização"></iframe></div>
+      <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.espSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.espPdf()">⬇ Exportar PDF</button><button class="btn btn-w" onclick="I2.espMarkSent()">🔗 Gerar link</button></div>
   </div>
 
   <div class="view" id="view-clientes">
@@ -1174,13 +1179,15 @@ const I2 = {
   async login(){ const e = $('i2-l-email').value.trim(), p = $('i2-l-pass').value; $('i2-l-err').textContent='';
     try{ await Store.login(e,p); $('i2-login').classList.remove('on'); LS.del('inv2_draft'); HHS = null; await boot(); sbUser(); I2.hhOpenNewIfEmpty && 0; }catch(x){ $('i2-l-err').textContent = x.message==='Failed to fetch' ? 'Sem conexão com o servidor.' : (/invalid/i.test(x.message) ? 'E-mail ou senha incorretos.' : x.message); } },
   async logout(){ if(dirty && !(await ask('Há alterações não salvas. Sair mesmo assim?','Sair'))) return; Store.saveSess(null); LS.del('inv2_draft'); HHS = null; sbUser(); showLogin(); },
-  pdf(){
+  async pdf(){
     const R = calcAll();
     if(!P.tabela){ say('Escolha a Tabela de preços antes de exportar'); return; }
     if(!P.cliente.trim()){ say('Informe o cliente antes de exportar'); return; }
     if(!P.dias.some(d=>d.espacos.some(e=>e.nome))){ say('Escolha o espaço antes de exportar'); return; }
     const html = buildPrint(P,R,true);
     const w = window.open('','_blank'); if(!w){ say('O navegador bloqueou a janela do PDF — permita pop-ups para este site.'); return; }
+    let ok = true;
+    try{ P.meta = P.meta || {}; P.meta.salvoEm = new Date().toISOString(); P.meta.por = Store.email(); if(!P.meta.criadoPor) P.meta.criadoPor = Store.email(); await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); stateLabel(); say('Proposta salva ✔ e PDF gerado.'); }catch(e){ ok = false; say('PDF gerado, mas não foi possível salvar: '+e.message); }
     w.document.write(html); w.document.close();
   }
 };
@@ -1672,11 +1679,13 @@ Object.assign(I2,{
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     const c = hhCalc(HHS); if(!c){ say('Informe o nº de convidados e a tabela'); return; } HHS.meta.salvoEm = new Date().toISOString();
     try{ await Store.save(HHS, c?c.opcoes[0]:0); HHS = hhNew(); hhSet(false); hhRender(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); }catch(e){ say('Erro ao salvar: '+e.message); } },
-  hhPdf(){
+  async hhPdf(){
     if(HHS.modo==='hh'){ say('O modelo Happy Hour ainda será criado'); return; }
-    if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; }
+    if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
+    const c = hhCalc(HHS); if(!c){ say('Informe o nº de convidados e a tabela'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
-    w.document.open(); w.document.write(hhHtml(HHS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },700); },
+    try{ HHS.meta.salvoEm = new Date().toISOString(); await Store.save(HHS, c.opcoes[0]); hhSet(false); say('Proposta salva ✔ e PDF gerado.'); }catch(er){ say('PDF gerado, mas não foi possível salvar: '+er.message); }
+    w.document.open(); w.document.write(hhHtml(HHS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(x){} },700); },
   async hhMarkSent(){
     if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; }
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
@@ -2124,10 +2133,12 @@ Object.assign(I2,{
     if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
     ESPS.meta.salvoEm = new Date().toISOString();
     try{ await Store.save(ESPS, espTotal(ESPS)); ESPS = espNew(); espSet(false); espRender(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); }catch(e){ say('Erro ao salvar: '+e.message); } },
-  espPdf(){
+  async espPdf(){
+    if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
-    w.document.open(); w.document.write(espHtml(ESPS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },1200); },
+    try{ ESPS.meta.salvoEm = new Date().toISOString(); await Store.save(ESPS, espTotal(ESPS)); espSet(false); say('Proposta salva ✔ e PDF gerado.'); }catch(er){ say('PDF gerado, mas não foi possível salvar: '+er.message); }
+    w.document.open(); w.document.write(espHtml(ESPS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(x){} },1200); },
   async espMarkSent(){
     if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
     if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
