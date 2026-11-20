@@ -162,7 +162,7 @@ body.inv2-on .tb-acts{display:none}
 .i2-sec{padding:10px 14px 4px}
 .i2-sec-t{font-size:10px;font-weight:700;color:var(--w);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
 .i2-sec-t span.sub{color:var(--gr);font-weight:600;text-transform:none;letter-spacing:0;font-size:10.5px}
-.i2-esp{display:grid;grid-template-columns:2.6fr 1.1fr 1fr 1fr 22px;gap:10px;align-items:end}
+.i2-esp{display:grid;grid-template-columns:3.4fr .9fr .9fr .9fr 22px;gap:10px;align-items:end}
 .i2-esp-box{border:1px solid var(--ru);border-radius:6px;padding:10px 12px;margin-bottom:8px;background:#fff}
 .i2-he{display:flex;align-items:flex-end;gap:10px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--ru)}
 .i2-he .lbl{font-size:10px;font-weight:700;color:var(--w);text-transform:uppercase;letter-spacing:.07em;align-self:center;min-width:72px}
@@ -311,7 +311,7 @@ body.sb-off .main{margin-left:0}
 .i2-sum-h{display:none;font-size:11px;font-weight:800;color:var(--w);text-transform:uppercase;letter-spacing:.07em;padding:2px 10px 8px}.i2-sumwrap.multi .i2-sum-h{display:block}
 @media(max-width:1000px){.i2-sumwrap.multi{grid-template-columns:1fr}.i2-sumwrap.multi .i2-sum{position:static}}
 
-.top-grid.top4{grid-template-columns:minmax(220px,1fr) 170px minmax(260px,auto) 120px}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
+.top-grid.top4{grid-template-columns:minmax(220px,1fr) 150px minmax(260px,auto) 170px}.top-grid .fl{white-space:nowrap}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
 
 /* ── lote 21 ── */
 .i2-ln td.nm{position:relative;padding-left:22px}
@@ -333,6 +333,20 @@ body.sb-off .main{margin-left:0}
 .wa-box{border:1px solid var(--ru);border-radius:8px;padding:12px;background:#fafafa}
 .wa-prev{margin-top:14px;border:1px solid var(--ru);border-radius:8px;padding:10px 12px;background:#E7F6EA}.wa-prev small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#4c7a55;margin-bottom:4px}.wa-prev div{white-space:pre-wrap;font-size:13px;color:#1b3b22}
 .sim-fone{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--ru,#ddd);border-radius:8px;margin-bottom:10px}
+/* ── celular: itens em cartões ── */
+@media(max-width:700px){
+  .i2-ln,.i2-ln tbody{display:block;width:100%}.i2-ln colgroup,.i2-ln thead{display:none}
+  .i2-ln tr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 8px;border:1px solid var(--ru);border-radius:8px;padding:8px 10px;margin-bottom:8px;background:#fff}
+  .i2-ln td{display:block;border:0;padding:0}
+  .i2-ln td.nm{grid-column:1/-1;padding-left:20px}.i2-ln td.hr{grid-column:1/-1}.i2-ln td.hr:empty{display:none}
+  .i2-ln td.q::before,.i2-ln td.u::before,.i2-ln td.st::before{display:block;font-size:9.5px;font-weight:700;color:var(--gr);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+  .i2-ln td.q::before{content:'Qtd.'}.i2-ln td.u::before{content:'Vlr. unit.'}.i2-ln td.st::before{content:'Subtotal'}
+  .i2-ln td.u input{width:calc(100% - 22px)}.i2-ln td.st{padding-top:0;text-align:right;align-self:end}
+  .i2-ln td.x{grid-column:1/-1;text-align:right;padding-top:0}
+  .mv-b{font-size:14px;padding:6px 10px}
+  .i2-ln .grab{display:none}.i2-ln td.nm{padding-left:0}
+}
+@media(max-width:700px){.i2-sug{left:8px!important;right:8px!important;width:auto!important;max-width:calc(100vw - 16px);max-height:45vh}.i2-sug div{gap:8px}.i2-sug div span:first-child{min-width:0;overflow-wrap:anywhere}}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -945,8 +959,8 @@ function lineRow(dId,cat,l){
     <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
       <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea></td>
     <td class="hr">${cat==='gast' ? `<input class="i2-hor" autocomplete="off" data-d="${dId}" data-l="${l.id}" value="${esc(l.hor)}" placeholder="Escolha ou escreva…" oninput="${n('hor','this.value')}">` : ''}</td>
-    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="${n('qtd','this.value')}"></td>
-    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
+    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('qtd','this.value')}"></td>
+    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
     <td class="st" id="st-${l.id}">${money(lineTotal(l))}</td>
     <td class="x"><button class="mv-b" title="Subir" onclick="I2.mvLine('${dId}','${cat}','${l.id}',-1)">▲</button><button class="mv-b" title="Descer" onclick="I2.mvLine('${dId}','${cat}','${l.id}',1)">▼</button><button class="x-btn" title="Remover" onclick="I2.delLine('${dId}','${cat}','${l.id}')">×</button></td></tr>`;
 }
@@ -1053,7 +1067,7 @@ function renderBody(){
       <div class="fg"><label class="fl">Cliente</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome do cliente / empresa" oninput="I2.top('cliente',this.value)"></div>
       <div class="fg"><label class="fl">Nº de convidados</label><input id="i2-conv" type="number" min="0" value="${esc(P.convidados)}" oninput="I2.conv(this.value)"></div>
       <div class="fg"><label class="fl">Data(s) do evento</label><div class="dts" id="i2-dts"></div></div>
-      <div class="fg"><label class="fl">WhatsApp do cliente</label><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" oninput="I2.top('fone',this.value)"></div>
+      <div class="fg"><label class="fl">WhatsApp</label><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" oninput="I2.top('fone',this.value)"></div>
     </div></div></div>
   <div id="i2-gate" class="i2-gate"></div>
   <div id="i2-rest">
@@ -1107,7 +1121,7 @@ function refresh(){
       di.innerHTML = `<span>Consumação elegível: <b>${money(c.elig)}</b></span><span>Retorno do espaço: <b>${money(c.teto)}</b></span>`
         + `<span>Desconto: <span class="neg">− ${money(c.desconto)}</span></span>`
         + (c.excedente>0 ? `<span class="over">Passou do retorno em ${money(c.excedente)} (cobrado a mais)</span>` : `<span>Crédito disponível: <b>${money(c.credito)}</b></span>`)
-        + `<span class="gd">Dia: <b>${money(r2(c.esp+c.he+c.elig+c.serv-c.desconto))}</b></span>`;
+        + `<span class="gd">Total do dia: <b>${money(r2(c.esp+c.he+c.elig+c.serv-c.desconto))}</b></span>`;
     }
     ['gast','equip','serv'].forEach(k=>d[k].forEach(l=>setIf('st-'+l.id, money(lineTotal(l)))));
   });
@@ -1242,8 +1256,8 @@ const I2 = {
   newBlank(dId,cat){ const d = dayOf(dId); if(!d) return; const l = newLine(cat,{manual:true,name:''}); d[cat].push(l); touch(); renderDay(dId); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   newBlankEx(){ const l = newLine('extras',{manual:true,name:''}); P.extras.push(l); touch(); renderExtras(); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   ln(dId,cat,id,k,v){ const l = lineOf(dId,cat,id); if(!l) return;
-    if(k==='qtd'){ l.qtd = num(v); l.qtdMan = true; }
-    else if(k==='unit'){ l.unit = num(v); l.man = true; const i = document.querySelector('[data-k=unit][data-l="'+id+'"]'); if(i) i.classList.add('man'); }
+    if(k==='qtd'){ l.qtd = Math.max(0,num(v)); l.qtdMan = true; }
+    else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; const i = document.querySelector('[data-k=unit][data-l="'+id+'"]'); if(i) i.classList.add('man'); }
     else l[k] = v;
     touch(); },
   resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = itemPrice(l.src||cat,l.base,P.tabela); touch(); renderDay(dId); },
@@ -1251,7 +1265,7 @@ const I2 = {
   dropLine(dId,cat,from,to,after){ const d = dayOf(dId); if(!d || from===to) return; const a = d[cat], i = a.findIndex(l=>l.id===from); if(i<0) return; const it = a.splice(i,1)[0]; let j = a.findIndex(l=>l.id===to); if(j<0){ a.push(it); } else a.splice(after?j+1:j,0,it); touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+from+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   delLine(dId,cat,id){ const d = dayOf(dId); if(!d) return; d[cat] = d[cat].filter(l=>l.id!==id); touch(); renderDay(dId); },
   ex(id,k,v){ const l = P.extras.find(x=>x.id===id); if(!l) return;
-    if(k==='qtd') l.qtd = num(v); else if(k==='unit'){ l.unit = num(v); l.man = true; } else l[k] = v;
+    if(k==='qtd') l.qtd = num(v); else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; } else l[k] = v;
     touch(); },
   resetEx(id){ const l = P.extras.find(x=>x.id===id); if(!l) return; l.man = false; l.unit = itemPrice(l.src,l.base,P.tabela); touch(); renderExtras(); },
   delEx(id){ P.extras = P.extras.filter(l=>l.id!==id); touch(); renderExtras(); },
@@ -2561,7 +2575,7 @@ function simRender(keepAnim){
   if(!SIM) SIM = simLoad() || simNew(); const el = $('sim-body'); if(!el) return; simSync(); simPersist();
   if(!el._cdb){ el._cdb = 1; ['click','change','input'].forEach(t=>el.addEventListener(t,e=>{ const b = e.target.closest && e.target.closest('[data-d]'); if(b && b.dataset.d!=='') CD = +b.dataset.d; },true)); }
   const st = simSteps(); if(SIM.step >= st.length) SIM.step = st.length-1;
-  let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Protótipo de teste</b> — esta seria a <b>3ª aba</b> do link do cliente ("Monte sua proposta"), ao lado de "Proposta do Espaço" e "Proposta de Buffet". Nome, data e convidados já vêm preenchidos por nós. A conversa fica salva: se o cliente sair para ver a proposta e voltar, continua de onde parou.</div>';
+  let h = window.SIM_CFG ? '' : '<div class="sim-note"><b>Teste</b> — é assim que o cliente vê a aba <b>"Monte sua proposta"</b> no link. Nome, data e convidados já vêm preenchidos. A conversa fica salva se ele sair e voltar.</div>';
   h += '<div class="sim-top"><div class="sim-prog"><i style="width:'+Math.round(100*SIM.step/(st.length-1))+'%"></i></div><span>Passo '+(SIM.step+1)+' de '+st.length+'</span><button class="sim-rs" onclick="I2.simRestart()">↺ Recomeçar conversa</button></div><div class="sim-wrap"><div class="sim-chat">';
   st.forEach((id,i)=>{ if(i>SIM.step) return; CD = simDayOf(i); const cur = i===SIM.step && !SIM.sent, fresh = !keepAnim && i===SIM.step;
     h += '<div class="sim-b a'+(fresh?' new':'')+'"><span class="av">V</span><div class="bb">'+SIM_Q[id]()+'</div></div>';
