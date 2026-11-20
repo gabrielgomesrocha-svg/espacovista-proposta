@@ -311,7 +311,7 @@ body.sb-off .main{margin-left:0}
 .i2-sum-h{display:none;font-size:11px;font-weight:800;color:var(--w);text-transform:uppercase;letter-spacing:.07em;padding:2px 10px 8px}.i2-sumwrap.multi .i2-sum-h{display:block}
 @media(max-width:1000px){.i2-sumwrap.multi{grid-template-columns:1fr}.i2-sumwrap.multi .i2-sum{position:static}}
 
-.top-grid.top4{grid-template-columns:minmax(220px,1fr) 150px minmax(260px,auto) 170px}.top-grid .fl{white-space:nowrap}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
+.top-grid.top4{grid-template-columns:minmax(220px,1fr) 150px minmax(260px,auto) 320px}.top-grid .fl{white-space:nowrap}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
 
 /* ── lote 21 ── */
 .i2-ln td.nm{position:relative;padding-left:22px}
@@ -332,7 +332,7 @@ body.sb-off .main{margin-left:0}
 .i2-pl .n{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}.i2-pl .n .nm{font-size:14px}.i2-pl .n .orc-t{margin-right:0}
 .wa-box{border:1px solid var(--ru);border-radius:8px;padding:12px;background:#fafafa}
 .wa-prev{margin-top:14px;border:1px solid var(--ru);border-radius:8px;padding:10px 12px;background:#E7F6EA}.wa-prev small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#4c7a55;margin-bottom:4px}.wa-prev div{white-space:pre-wrap;font-size:13px;color:#1b3b22}
-.sim-fone{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--ru,#ddd);border-radius:8px;margin-bottom:10px}
+
 /* ── celular: itens em cartões ── */
 @media(max-width:700px){
   .i2-ln,.i2-ln tbody{display:block;width:100%}.i2-ln colgroup,.i2-ln thead{display:none}
@@ -442,6 +442,8 @@ body.sb-off .main{margin-left:0}
 .sim-chat{padding-bottom:120px}.sim-chat>*{scroll-margin-bottom:150px;scroll-margin-top:150px}.sim-rs{font-size:11.5px;color:#9B3A41;background:none;border:none;text-decoration:underline;cursor:pointer;padding:0;margin-left:auto}
 .sim-done{margin-left:42px;max-width:620px;background:#fff;border:1.5px solid #CFE3D4;border-radius:16px;padding:22px 24px;text-align:center}.sim-done .ck{width:54px;height:54px;border-radius:50%;background:#2e8b57;color:#fff;font-size:28px;line-height:54px;margin:0 auto 10px}.sim-done h3{margin:0 0 6px;font-size:19px}.sim-done p{font-size:14px;line-height:1.5;color:#444;margin:0 0 12px}.sim-done ol{text-align:left;font-size:13.5px;line-height:1.55;color:#444;margin:0 0 14px 20px;padding:0}.sim-done .sim-act{justify-content:center}.sim-done a.btn{text-decoration:none;display:inline-block}.sim-done small{display:block;margin-top:12px;color:#888;font-size:11.5px}
 .sim-dblk{margin-top:12px;padding:12px 12px 14px;border:1px solid #E5C3C6;border-radius:12px;background:#FFFBFB}.sim-dblk:first-child{margin-top:0}.sim-dhead{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9B3A41;margin-bottom:10px}
+
+.sim-fone{display:block;width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--ru,#ddd);border-radius:8px;margin-bottom:10px}
 
 </style>
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
@@ -797,7 +799,7 @@ function syncCat(){
   CATMODE = want; rebuildAll();
 }
 function newProposal(){
-  return { id:uid(), cliente:'', fone:'', convidados:'', tabela:'',
+  return { id:uid(), cliente:'', contato:'', fone:'', convidados:'', tabela:'',
     obs:'Forma de pagamento: 50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.',
     dias:[newDay()], extras:[], hide:{credito:false,extras:false}, meta:{catV:2} };
 }
@@ -1067,7 +1069,7 @@ function renderBody(){
       <div class="fg"><label class="fl">Cliente</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome do cliente / empresa" oninput="I2.top('cliente',this.value)"></div>
       <div class="fg"><label class="fl">Nº de convidados</label><input id="i2-conv" type="number" min="0" value="${esc(P.convidados)}" oninput="I2.conv(this.value)"></div>
       <div class="fg"><label class="fl">Data(s) do evento</label><div class="dts" id="i2-dts"></div></div>
-      <div class="fg"><label class="fl">WhatsApp</label><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" oninput="I2.top('fone',this.value)"></div>
+      <div class="fg"><label class="fl">Contato · WhatsApp</label><div style="display:flex;gap:6px"><input id="i2-contato" type="text" value="${esc(P.contato||'')}" placeholder="Nome" style="flex:1;min-width:0" oninput="I2.top('contato',this.value)"><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" style="flex:1.2;min-width:0" oninput="I2.top('fone',this.value)"></div></div>
     </div></div></div>
   <div id="i2-gate" class="i2-gate"></div>
   <div id="i2-rest">
@@ -1401,7 +1403,7 @@ const I2 = {
       await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:P.id, tipo:'inv', cliente:P.cliente, titulo:'Proposta — '+P.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
       P.meta.links = (P.meta.links||[]).concat([{token:token, em:now}]); P.meta.enviadoEm = now;
       await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); stateLabel();
-      LINK_CTX = 'inv'; hhShowLink(token, now, {cli:P.cliente, fone:P.fone});
+      LINK_CTX = 'inv'; hhShowLink(token, now, {cli:(P.contato||P.cliente||'').split(' ')[0]||P.cliente, fone:P.fone});
     }catch(e){ say('Erro ao gerar o link: '+e.message); }
     I2._lkBusy = false; lkBusy('gerarLink',false); },
   async pdf(){
@@ -2442,7 +2444,7 @@ let CD = 0;
 function simDayNew(dt){ return {data:dt||'', chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}}; }
 function simBind(o){ const E = simDayNew(); SIM_DAYF.forEach(k=>Object.defineProperty(o,k,{configurable:true,enumerable:false,get(){ return (o.dias[CD]||E)[k]; },set(v){ if(o.dias[CD]) o.dias[CD][k] = v; }})); return o; }
 function simNew(){ let datas; if(window.SIM_CFG) datas = (window.SIM_CFG.datas||[]).slice(); else { const d = new Date(); d.setDate(d.getDate()+45); datas = [d.toISOString().slice(0,10)]; }
-  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', fone:'', step:0, sent:false}); }
+  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', fone:'', contato:'', step:0, sent:false}); }
 let SIM_ST = 'sim_estado_teste';
 function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.v===2 && o.cli && Array.isArray(o.dias) && (!o.sent || window.SIM_CFG)){ return simBind(o); } }catch(e){} return null; }
 function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
@@ -2496,7 +2498,7 @@ const SIM_Q = {
   sobremesa:()=>'Alguma <b>sobremesa</b>?',
   equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
   serv:()=>'E algum <b>serviço</b> extra?',
-  fone:()=>'Para terminar: qual o seu <b>WhatsApp</b> (com DDD)? É por ele que nossa equipe vai te enviar a <b>proposta final</b>.',
+  fone:()=>'Para terminar: qual o seu <b>nome</b> e <b>WhatsApp</b> (com DDD)? É por lá que nossa equipe envia a <b>proposta final</b>.',
   obs:()=>'Quase lá! Quer nos contar mais alguma coisa (cardápio, montagem da sala, horários…)?',
   resumo:()=>'Pronto! 🎉 Veja o resumo do que você escolheu. Se estiver tudo certo, é só enviar — nossa equipe monta a proposta final com você.'
 };
@@ -2508,7 +2510,7 @@ function simAns1(id){
   if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
   if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(n=>esc(simEsp(n).t)).join(' + ') : 'Ainda não sei — quero ajuda'; }
   if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
-  if(id==='fone') return esc(SIM.fone||'');
+  if(id==='fone') return esc((SIM.contato||'')+' · '+(SIM.fone||''));
   if(id==='resumo') return 'Enviar para o Espaço Vista';
   const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
   return names.length ? names.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join(', ') : 'Pular';
@@ -2545,7 +2547,7 @@ function simControls(id){
   if(id==='igual') return '<div class="sim-chips"><div class="sim-chip" onclick="I2.simIgual(1)"><span>Sim, igual — duplicar tudo</span></div><div class="sim-chip" onclick="I2.simIgual(0)"><span>Não, vou escolher dia a dia</span></div></div>';
   if(id==='dias'){ const mx = Math.min(7, Math.max(5,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
-  if(id==='fone') return '<input type="tel" class="sim-fone" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" value="'+esc(SIM.fone||'')+'" oninput="I2.simFone(this.value)" onkeydown="if(event.key===\'Enter\'){I2.simNext()}">'+next();
+  if(id==='fone') return '<input type="text" class="sim-fone" autocomplete="name" placeholder="Seu nome" value="'+esc(SIM.contato||'')+'" oninput="I2.simContato(this.value)"><input type="tel" class="sim-fone" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" value="'+esc(SIM.fone||'')+'" oninput="I2.simFone(this.value)" onkeydown="if(event.key===\'Enter\'){I2.simNext()}">'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
   const keep = CD; let h = '';
   if(simMulti()){
@@ -2562,7 +2564,7 @@ function simSummary(){
   const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
   const dts = (SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR')).join(' e ');
-  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('WhatsApp',esc(SIM.fone)):'');
+  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('Contato',esc((SIM.contato||'')+(SIM.contato?'<br>':'')+SIM.fone)):'');
   const keep = CD; const list = SIM.igual ? [0] : SIM.dias.map((_,k)=>k);
   list.forEach(k=>{ CD = k;
     h += (SIM.dias.length>1 ? '<div class="sim-dh">'+(SIM.igual ? 'Todos os '+SIM.dias.length+' dias (iguais)' : esc(simDayHead(k)))+'</div>' : '')
@@ -2603,8 +2605,9 @@ Object.assign(I2,{
   simOne(id,n){ const g='gast', was=!!SIM[g][n]; simItems(id).forEach(x=>delete SIM[g][x]); if(!was){ SIM[g][n]=true; if(!simMulti()) SIM.step=Math.min(simSteps().length-1,SIM.step+1); } simRender(simMulti()); },
   simQty(g,n,d){ SIM[g][n] = Math.min(simMax(n),Math.max(1,(SIM[g][n]||1)+d)); simRender(true); },
   simObs(v){ SIM.obs = v; },
+  simContato(v){ SIM.contato = v; simPersist(); },
   simFone(v){ SIM.fone = v; simPersist(); },
-  simND(k){ SIM.ndias = k; SIM.igual = undefined; while(SIM.dias.length<k){ const dn = simDayNew((SIM.datas||[])[SIM.dias.length]||''); if(!window.SIM_CFG){ dn.chegada = '08:00'; dn.inicio = '09:00'; dn.termino = '17:00'; } SIM.dias.push(dn); } SIM.dias.length = k; SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
+  simND(k){ SIM.ndias = k; SIM.igual = undefined; while(SIM.dias.length<k){ const dn = simDayNew((SIM.datas||[])[SIM.dias.length]||''); dn.chegada = '08:00'; dn.inicio = '08:00'; dn.termino = '17:00'; SIM.dias.push(dn); } SIM.dias.length = k; SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simIgual(yes){ SIM.igual = !!yes; if(yes) simSync(); SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simPrint(){ const w = window.open('','_blank'); if(!w){ say('Libere os pop-ups para baixar o resumo'); return; } w.document.write('<html><head><meta charset="utf-8"><title>Resumo — Espaço Vista</title><style>body{font:14px Arial,sans-serif;padding:30px;color:#222;max-width:720px;margin:auto}h1{font-size:18px;color:#9B3A41}.sim-s{margin:10px 0}.sim-s small{display:block;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:.06em}.sim-dh{margin-top:16px;font-weight:800;color:#9B3A41;border-top:1px dashed #ccc;padding-top:8px}.sim-hint{color:#888;font-size:11px}</style></head><body><h1>Espaço Vista — resumo da sua simulação</h1>'+simSummary()+'</body></html>'); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },500); },
   simDt(v,k){ if(k!=null) CD = k; SIM.data = v; simRender(true); },
@@ -2615,19 +2618,19 @@ Object.assign(I2,{
   simNext(){ const id = simSteps()[SIM.step], keep = CD, days = simMulti() ? SIM.dias.map((_,k)=>k) : [0]; let err = '';
     if(id==='hor'){ if(SIM.igual) SIM.dias.forEach((d,k)=>{ if(!err && !d.data) err = 'Informe a data do Dia '+(k+1); }); days.forEach(k=>{ CD = k; const p = simMulti() ? 'do Dia '+(k+1) : ''; if(!err && !SIM.data) err = 'Informe a data '+p; if(!err && (!SIM.chegada || !SIM.termino)) err = 'Informe o horário de chegada e o de saída '+p; }); }
     if(id==='coffee') days.forEach(k=>{ CD = k; const p = simMulti() ? ' (Dia '+(k+1)+')' : ''; if(err) return; if(SIM.coffee.some(c=>!c.cat)) err = 'Escolha a categoria de cada momento de coffee break'+p; else if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })) err = 'Coffee break não é servido entre 11h e 14h — ajuste o horário'+p; });
-    if(id==='fone' && !simFoneOk()) err = 'Informe um WhatsApp válido, com DDD. Ex.: (31) 99999-9999';
+    if(id==='fone'){ if(String(SIM.contato||'').trim().length<2) err = 'Informe o seu nome.'; else if(!simFoneOk()) err = 'Informe um WhatsApp válido, com DDD. Ex.: (31) 99999-9999'; }
     CD = keep; if(err){ say(err); return; }
     SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
-  simSend(){ if(!simFoneOk()){ say('Informe o seu WhatsApp (com DDD) antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
+  simSend(){ if(!simFoneOk() || String(SIM.contato||'').trim().length<2){ say('Informe o seu nome e WhatsApp (com DDD) antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, contato:SIM.contato, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); p.cliente = x.cli; p.fone = x.fone||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const p = newProposal(); p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
       Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
@@ -2650,7 +2653,7 @@ function orcRender(){
   orcLoad().then(()=>{
     el.innerHTML = ORC.length ? ORC.map(o=>{ const x = o.payload||{}, u = simSum(x);
       const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
-      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.fone?' · WhatsApp '+esc(x.fone):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
+      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.contato?' · '+esc(x.contato):'')+(x.fone?' · WhatsApp '+esc(x.fone):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
         +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('')
       : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(CLOUD?'Nenhum orçamento recebido ainda.':'Disponível no sistema online (com login).')+'</p>';
   });
