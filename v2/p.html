@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Proposta — Espaço Vista</title>
+<style>
+:root{--w:#7a1712;--k:#1a1a1a;--bg:#ece8e8}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--k)}
+header{position:sticky;top:0;z-index:10;background:#1a1a1a;color:#fff;display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap}
+header .t{font-weight:800;letter-spacing:.14em;font-size:13px;text-transform:uppercase}
+header .t small{display:block;font-weight:400;letter-spacing:.02em;text-transform:none;font-size:12px;color:#cfc6c6;margin-top:1px}
+header .v{margin-left:auto;font-size:12px;color:#d9cfcf}
+header button{background:var(--w);color:#fff;border:0;border-radius:6px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer}
+header button:hover{filter:brightness(1.15)}
+#wrap{position:relative;width:100%;overflow:hidden}
+#wrap iframe{position:absolute;left:0;top:0;border:0;transform-origin:0 0;background:#fff}
+.msg{max-width:460px;margin:12vh auto;background:#fff;border-radius:10px;padding:34px 28px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.msg h1{font-size:19px;margin:0 0 10px;color:var(--w)}.msg p{font-size:14px;line-height:1.55;color:#555;margin:0}
+.hint{display:none;text-align:center;font-size:12px;color:#777;padding:8px 14px}
+@media (max-width:820px){.hint{display:block}header{padding:10px 12px}header .v{width:100%;margin:0;order:3}}
+</style></head><body>
+<div id="app"><div class="msg"><p>Carregando a proposta…</p></div></div>
+<script>
+(function(){
+var CFG = {"SUPABASE_URL": "https://tjowmwpdjmswuaamivgh.supabase.co", "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqb3dtd3Bkam1zd3VhYW1pdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNjQwNDAsImV4cCI6MjExMDc0MDA0MH0.Wgb752sznw8Yn8PyUSZSeZBQjO51JC_9MRAB310jDEs"}, H = null;
+var app = document.getElementById('app');
+function msg(t,p){ app.innerHTML = '<div class="msg"><h1>'+t+'</h1><p>'+p+'</p></div>'; }
+function fmt(d){ return new Date(d).toLocaleDateString('pt-BR'); }
+var tk = new URLSearchParams(location.search).get('t') || '';
+if(tk.length < 20){ msg('Link inválido','Confira se o endereço foi copiado por inteiro, ou peça um novo link ao Espaço Vista.'); return; }
+fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/get_public_proposal',{method:'POST',headers:{'apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({t:tk})})
+.then(function(r){ if(!r.ok) throw 0; return r.json(); })
+.then(function(j){
+  if(!j){ msg('Proposta não encontrada','Este link não existe ou foi digitado incorretamente. Peça um novo link ao Espaço Vista.'); return; }
+  if(j.status === 'expirada'){ msg('Proposta expirada','O prazo de validade desta proposta terminou em '+fmt(new Date(new Date(j.enviado_em).getTime()+10*864e5))+'. Fale com o Espaço Vista para receber uma versão atualizada: (31) 3643-8566.'); return; }
+  if(j.status !== 'ok'){ msg('Proposta indisponível','Peça um novo link ao Espaço Vista.'); return; }
+  show(j);
+}).catch(function(){ msg('Não foi possível abrir','Verifique sua conexão e tente novamente em instantes.'); });
+
+function show(j){
+  H = j.html; document.title = j.titulo || 'Proposta — Espaço Vista';
+  app.innerHTML = '<header><div class="t">Espaço Vista<small>'+(j.cliente?('Proposta para '+j.cliente.replace(/</g,'&lt;')):'Proposta comercial')+'</small></div><div class="v">Válida até '+fmt(j.expira_em)+'</div><button id="pdf">⬇ Baixar PDF</button></header><div class="hint">Dica: use o gesto de pinça para ampliar, ou gire o celular.</div><div id="wrap"><iframe id="f" title="Proposta" scrolling="no"></iframe></div>';
+  var f = document.getElementById('f'), wrap = document.getElementById('wrap');
+  function fit(){ var w = Math.max(320, wrap.clientWidth), k = w/1920; f.style.width='1920px'; f.style.height='4520px'; f.style.transform='scale('+k+')'; wrap.style.height = Math.round((4*1080+3*40)*k)+'px'; }
+  f.srcdoc = H; fit(); window.addEventListener('resize', fit);
+  document.getElementById('pdf').onclick = function(){
+    var w = window.open('','_blank'); if(!w){ alert('Libere os pop-ups deste site para baixar o PDF.'); return; }
+    w.document.open(); w.document.write(H); w.document.close(); setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} },900);
+  };
+}
+})();
+</script></body></html>

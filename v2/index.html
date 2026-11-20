@@ -328,6 +328,7 @@ body.sb-off .main{margin-left:0}
 .sb-user:not(:empty)+.sb-foot{margin-top:0}
 .hh-sls{display:flex;flex-direction:column;gap:2px}.hh-sl{display:flex;align-items:center;gap:8px;font-size:11px;color:#666}.hh-sl span{width:96px;flex:none}.hh-sl input{flex:1;padding:0}
 .hh-ph .th{position:relative}
+.hh-links{margin-top:12px;border-top:1px solid #eee;padding-top:10px;font-size:12px}.hh-links b{display:block;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#666}.hh-lk{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}.hh-lk span{flex:1;min-width:180px}
 
 </style>
 </head>
@@ -411,8 +412,8 @@ body.sb-off .main{margin-left:0}
         <div class="fg" style="width:110px"><label class="fl">Duração (horas)</label><input id="hh-h" type="number" min="1" max="12" step="0.5" oninput="I2.hhField('horas',this.value)"></div>
         <div class="fg"><label class="fl">Modalidade</label><div class="hh-sw" id="hh-modo"><button data-m="hh" onclick="I2.hhModo('hh')">Happy Hour</button><button data-m="conf" onclick="I2.hhModo('conf')">Confraternização</button></div></div>
       </div>
-      <div class="hh-acts"><button id="hh-save" class="btn btn-w" onclick="I2.hhSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.hhPdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.hhMarkSent()" title="Registra a data do envio: a proposta vale por 10 dias a partir dela">✉ Marcar como enviada</button><button class="btn btn-o" onclick="I2.hhOpenNew()">＋ Nova proposta</button></div>
-      <div id="hh-info"></div>
+      <div class="hh-acts"><button id="hh-save" class="btn btn-w" onclick="I2.hhSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.hhPdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.hhMarkSent()" title="Registra a data do envio: a proposta vale por 10 dias a partir dela">🔗 Gerar link (marcar como enviada)</button><button class="btn btn-o" onclick="I2.hhOpenNew()">＋ Nova proposta</button></div>
+      <div id="hh-info"></div><div id="hh-links"></div>
     </div></div>
     <div id="hh-wait" style="display:none" class="card"><div class="card-body" style="text-align:center;padding:30px;color:var(--gr)">O modelo de <b>Happy Hour</b> será o próximo a ser criado.</div></div>
     <div id="hh-prev"><iframe id="hh-frame" title="Pré-visualização"></iframe></div>
@@ -683,6 +684,7 @@ const Store = {
     this.saveSess({access:j.access_token, refresh:j.refresh_token, email:(j.user&&j.user.email)||'', exp:Date.now()+(j.expires_in||3600)*1000-30000});
   },
   async login(email,pass){ await this.auth({email:email,password:pass},'password'); },
+  async tok(){ if(this.sess && Date.now() > this.sess.exp) await this.refresh(); return this.sess ? this.sess.access : ''; },
   async refresh(){ if(!this.sess) throw new Error('sem sessão'); await this.auth({refresh_token:this.sess.refresh},'refresh_token'); },
   async api(path,opt){
     opt = opt || {};
@@ -1541,6 +1543,39 @@ function hhValidade(h){
   const d = new Date(env); d.setDate(d.getDate()+VALIDADE_DIAS);
   return 'até '+d.toLocaleDateString('pt-BR')+' ('+VALIDADE_DIAS+' dias a partir do envio)';
 }
+
+let HH_BUSY = false;
+function hhToken(){ const a = new Uint8Array(18); crypto.getRandomValues(a); return btoa(String.fromCharCode.apply(null,a)).replace(/\+/g,'-').replace(/\//g,'_'); }
+async function hhSha(s){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b)).slice(0,10).map(x=>('0'+x.toString(16)).slice(-2)).join(''); }
+function hhLinkUrl(t){ return /^https?:/.test(t||'') ? t : new URL('p.html?t='+encodeURIComponent(t), location.href).href; }
+/* fotos vão para o armazenamento (nome = hash do conteúdo): a versão enviada fica congelada mesmo se a foto do catálogo mudar */
+async function hhPublishMedia(){
+  const out = {}, F = MIDIA.fotos||{};
+  for(const k of Object.keys(F)){ const d = F[k]; if(!d) continue; if(!/^data:/.test(d)){ out[k] = d; continue; }
+    const name = (await hhSha(d))+'.jpg', url = CFG.SUPABASE_URL+'/storage/v1/object/public/midia/'+name;
+    let ok = false; try{ ok = (await fetch(url,{method:'HEAD'})).ok; }catch(e){}
+    if(!ok){ const blob = await (await fetch(d)).blob(); const tk = await Store.tok();
+      const r = await fetch(CFG.SUPABASE_URL+'/storage/v1/object/midia/'+name,{method:'POST',headers:{apikey:CFG.SUPABASE_ANON_KEY,Authorization:'Bearer '+tk,'Content-Type':'image/jpeg','x-upsert':'true'},body:blob});
+      if(!r.ok) throw new Error('falha ao enviar a foto ('+k+')'); }
+    out[k] = url; }
+  return out;
+}
+function hhFmt(d){ return new Date(d).toLocaleDateString('pt-BR'); }
+function hhExp(em){ const d = new Date(em); d.setDate(d.getDate()+VALIDADE_DIAS); return d; }
+function hhShowLink(token,em){
+  const url = hhLinkUrl(token); let m = $('hh-link-modal');
+  if(!m){ m = document.createElement('div'); m.id = 'hh-link-modal'; m.className = 'i2-modal'; document.body.appendChild(m); }
+  m.innerHTML = '<div class="i2-mbox" style="width:min(580px,100%)"><div class="i2-mh"><b>Link da proposta gerado ✔</b></div><div class="i2-mb">'
+    + '<p style="font-size:12.5px;color:#444;margin-bottom:10px">Envie ao cliente por WhatsApp ou e-mail. Abre no celular e no computador, com botão para baixar o PDF. Válido até <b>'+hhExp(em).toLocaleDateString('pt-BR')+'</b> ('+VALIDADE_DIAS+' dias). Esta versão fica congelada: se você alterar a proposta e reenviar, o cliente recebe um novo link.</p>'
+    + '<input id="hh-link-in" readonly value="'+esc(url)+'" onclick="this.select()" style="margin-bottom:12px">'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-w" onclick="I2.hhCopy()">📋 Copiar link</button><a class="btn btn-o" href="'+esc(url)+'" target="_blank">👁 Ver como cliente</a><a class="btn btn-o" href="https://wa.me/?text='+encodeURIComponent('Segue a proposta do Espaço Vista: '+url)+'" target="_blank">WhatsApp</a><button class="btn btn-o" onclick="I2.hhLinkClose()">Fechar</button></div></div></div>';
+  m.classList.add('on');
+}
+function hhLinksHtml(h){
+  const L = (h.meta&&h.meta.links)||[]; if(!L.length) return '';
+  return '<div class="hh-links"><b>Links enviados</b>'+L.slice().reverse().map(l=>{ const exp = hhExp(l.em), vivo = new Date() <= exp;
+    return '<div class="hh-lk"><span>'+hhFmt(l.em)+' → '+(vivo?'válido até ':'<i>expirou em </i>')+exp.toLocaleDateString('pt-BR')+'</span><button class="btn btn-o btn-sm" onclick="I2.hhCopy(\''+l.token+'\')">Copiar link</button><a class="btn btn-o btn-sm" href="'+esc(hhLinkUrl(l.token))+'" target="_blank">Abrir</a></div>'; }).join('')+'</div>';
+}
 function hhNew(){ return {id:uid(), tipo:'coq', modo:'conf', cliente:'', convidados:'', tabela:'', horas:5, meta:{criado:new Date().toISOString()}}; }
 
 /* ── extras do Coquetel: preço vem do Catálogo (Tabela da proposta + faixa por nº de convidados); fallback = valor antigo ── */
@@ -1563,9 +1598,9 @@ const HH_ICONS = {
   video:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4.5"/><path d="M10 8.8l5.2 3.2-5.2 3.2z" fill="currentColor"/></svg>',
   tour:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 15.5c0 2 4 3.5 9 3.5s9-1.5 9-3.5c0-1.4-2-2.6-4.8-3.2"/><path d="M7.8 12.3C5 12.9 3 14.1 3 15.5" /><path d="M19 17.2l2.2-1.7-2.7-.6" stroke-linejoin="round"/><text x="12" y="10.2" text-anchor="middle" font-size="8.6" font-weight="800" fill="currentColor" stroke="none" font-family="Montserrat,Arial,sans-serif">360°</text></svg>'
 };
-function hhHtml(h){
+function hhHtml(h,fotos){
   const c = hhCalc(h); if(!c) return '';
-  const F = MIDIA.fotos||{}, L = MIDIA.links||{};
+  const F = fotos || MIDIA.fotos||{}, L = MIDIA.links||{};
   const ctx = {
     logo:DATA.logo, n:h.convidados, horas:(num(h.horas)||5), premium:money(num(HH_PRECOS.premium)), p:c.opcoes.map(money), j:c.jantar.map(money), validade:hhValidade(h), rows:k=>hhRows(h,k), park:hhPark(h),
     foto:(i,l)=> F['foto'+(i+1)] ? '<div class="ph f"><img src="'+F['foto'+(i+1)]+'" style="'+hhImgStyle('foto'+(i+1))+'" alt=""></div>' : '<div class="ph" data-l="'+l+'"></div>',
@@ -1586,6 +1621,7 @@ function hhRender(){
       + c.opcoes.map((v,i)=>'<div><small>Opção '+(i+1)+'</small><b>'+money(v)+'</b></div>').join('')+'</div>'
       + '<div class="hh-jan">Jantar opcional (separado): '+c.jantar.map((v,i)=>'Sugestão '+(i+1)+' '+money(v)).join(' · ')+'</div>';
   }
+  if($('hh-links')) $('hh-links').innerHTML = hhLinksHtml(h);
   $('hh-info').innerHTML = info || '<div class="hh-jan">Informe o <b>nº de convidados</b> e escolha a <b>tabela</b> para calcular os valores.</div>';
   const fr = $('hh-frame');
   if(!c && h.modo!=='hh'){ fr.style.display='none'; $('hh-wait').style.display='none'; $('hh-prev').style.height='0px'; return; }
@@ -1622,7 +1658,25 @@ Object.assign(I2,{
     if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
     w.document.open(); w.document.write(hhHtml(HHS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },700); },
-  async hhMarkSent(){ if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; } HHS.meta.enviadoEm = new Date().toISOString(); hhSet(true); hhRender(); say('Envio registrado — validade de '+VALIDADE_DIAS+' dias'); },
+  async hhMarkSent(){
+    if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; }
+    if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
+    if(HHS.modo==='hh'){ say('O modelo Happy Hour ainda será criado'); return; }
+    if(!CLOUD){ say('O link só funciona no sistema online (com login).'); return; }
+    if(HH_BUSY) return; HH_BUSY = true; say('Gerando o link…');
+    try{
+      const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
+      HHS.meta.enviadoEm = now; HHS.meta.token = token; HHS.meta.salvoEm = now;
+      const html = hhHtml(HHS, fotos);
+      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:HHS.id, tipo:'coq', cliente:HHS.cliente, titulo:'Proposta — '+HHS.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
+      HHS.meta.links = (HHS.meta.links||[]).concat([{token:token, em:now}]);
+      await Store.save(HHS, hhCalc(HHS).opcoes[0]);
+      hhSet(false); hhShowLink(token, now);
+    }catch(e){ delete HHS.meta.token; say('Erro ao gerar o link: '+e.message); }
+    HH_BUSY = false; },
+  hhCopy(t){ const url = hhLinkUrl(t || ($('hh-link-in')||{}).value); const done = ()=>say('Link copiado ✔');
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>{ prompt('Copie o link:',url); }); else { prompt('Copie o link:',url); } },
+  hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); HHS = hhNew(); hhSet(false); hhRender(); window.scrollTo(0,0); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
