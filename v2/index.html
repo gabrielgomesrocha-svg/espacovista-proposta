@@ -279,6 +279,7 @@ body.sb-off .main{margin-left:0}
 .tb-act{display:flex;align-items:center;gap:6px}
 .tb-empty{border:1px dashed var(--ru);border-radius:6px;padding:14px;text-align:center;font-size:12px;color:var(--gr)}
 .tb-ed{border:2px solid var(--w);border-radius:8px;padding:14px;background:var(--wp)}
+.i2-lock{background:#f3f1ee;cursor:pointer;color:var(--dk)}.i2-lock:hover{border-color:var(--w)}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -403,7 +404,7 @@ body.sb-off .main{margin-left:0}
       <div class="hh-top">
         <div class="fg" style="flex:1;min-width:200px"><label class="fl">Cliente</label><input id="hh-cli" placeholder="Nome do cliente / empresa" oninput="I2.hhField('cliente',this.value)"></div>
         <div class="fg" style="width:130px"><label class="fl">Nº de convidados</label><input id="hh-n" type="number" min="0" step="1" oninput="I2.hhField('convidados',this.value)"></div>
-        <div class="fg" style="width:110px"><label class="fl">Tabela</label><select id="hh-tab" onchange="I2.hhField('tabela',this.value)"><option value="1">Tabela 1</option><option value="2">Tabela 2</option><option value="3">Tabela 3</option></select></div>
+        <div class="fg" style="width:110px"><label class="fl">Tabela</label><select id="hh-tab" onchange="I2.hhField('tabela',this.value)"><option value="">Selecione</option><option value="1">Tabela 1</option><option value="2">Tabela 2</option><option value="3">Tabela 3</option></select></div>
         <div class="fg" style="width:110px"><label class="fl">Duração (horas)</label><input id="hh-h" type="number" min="1" max="12" step="0.5" oninput="I2.hhField('horas',this.value)"></div>
         <div class="fg"><label class="fl">Modalidade</label><div class="hh-sw" id="hh-modo"><button data-m="hh" onclick="I2.hhModo('hh')">Happy Hour</button><button data-m="conf" onclick="I2.hhModo('conf')">Confraternização</button></div></div>
       </div>
@@ -458,7 +459,8 @@ const rn = x => String(x||'').replace('a partir de 50 pessoas','a partir de 51 p
 const SEED_CUSTOM = (function(){
   const n = 'Dezembro 30k', esp = {};
   DATA.spaces.forEach(sp=>{ const t = Number(DATA.teto[n][sp.name])||0; esp[sp.name] = {total:(Number(DATA.base[n][sp.name])||0)+t, teto:t}; });
-  return [{name:n, t:3, faixa:'mais', itemsBase:'Tabela 3 - a partir de 51 pessoas', esp:esp}];
+  const mk = (nm,tot,teto) => { const e = {}; DATA.spaces.forEach((sp,i)=>{ e[sp.name] = {total:tot[i], teto:teto[i]}; }); return {name:nm, t:3, faixa:'mais', itemsBase:'Tabela 3 - a partir de 51 pessoas', esp:e}; };
+  return [mk('20k',[19970,5090,730,24990],[13000,3000,0,14000]), mk('25k',[24490,4650,460,29990],[16000,3000,0,18000]), {name:n, t:3, faixa:'mais', itemsBase:'Tabela 3 - a partir de 51 pessoas', esp:esp}];
 })();
 (function(){
   const remap = o => { const r = {}; Object.keys(o).forEach(k=>{ if(k!=='Dezembro 30k') r[rn(k)] = o[k]; }); return r; };
@@ -742,6 +744,7 @@ const eyeSvg = off => off
   ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.9 17.9A10.9 10.9 0 0112 20c-7 0-11-8-11-8a18.5 18.5 0 015.1-5.9M9.9 4.2A9.1 9.1 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.2 3.2M1 1l22 22"/></svg>'
   : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 
+function lockV(e,k){ const un = k==='valor' ? (e.man||e.unV) : (e.manTeto||e.unT); return (P.tabela && e.nome && !un) ? 'readonly title="Valor vindo da tabela — clique para editar manualmente" class="i2-lock"' : ''; }
 function renderTabelaSelect(){
   const s = $('i2-tabela'); if(!s) return;
   let h = '<option value="">Escolher tabela…</option>';
@@ -805,8 +808,8 @@ function espBlock(d,e,k){
     <div class="i2-esp">
       <div class="fg"><label class="fl">${multi?'Espaço '+(k+1):'Espaço'}</label><select onchange="I2.espSel('${d.id}','${e.id}',this.value)">${spOpts}</select></div>
       <div class="fg"><label class="fl">Montagem</label><select onchange="I2.esp('${d.id}','${e.id}','montagem',this.value)">${mOpts}</select></div>
-      <div class="fg"><label class="fl">Valor do espaço</label><input type="number" step="any" min="0" data-esp="valor" data-e="${e.id}" value="${e.valor}" style="${e.man?manS:''}" oninput="I2.esp('${d.id}','${e.id}','valor',this.value)"></div>
-      <div class="fg"><label class="fl">Retorno de consumação</label><input type="number" step="any" min="0" data-esp="teto" data-e="${e.id}" value="${e.teto}" style="${e.manTeto?manS:''}" oninput="I2.esp('${d.id}','${e.id}','teto',this.value)"></div>
+      <div class="fg"><label class="fl">Valor do espaço</label><input type="number" step="any" min="0" data-esp="valor" data-e="${e.id}" value="${e.valor}" style="${e.man?manS:''}" ${lockV(e,'valor')} onfocus="I2.unlock('${d.id}','${e.id}','valor',this)" oninput="I2.esp('${d.id}','${e.id}','valor',this.value)"></div>
+      <div class="fg"><label class="fl">Retorno de consumação</label><input type="number" step="any" min="0" data-esp="teto" data-e="${e.id}" value="${e.teto}" style="${e.manTeto?manS:''}" ${lockV(e,'teto')} onfocus="I2.unlock('${d.id}','${e.id}','teto',this)" oninput="I2.esp('${d.id}','${e.id}','teto',this.value)"></div>
       ${multi?`<button class="x-btn" style="margin-bottom:6px" title="Remover este espaço" onclick="I2.delEsp('${d.id}','${e.id}')">×</button>`:'<span></span>'}
     </div>
     <div class="fg" style="margin-top:8px"><label class="fl">Incluso / observações do espaço <a href="#" class="i2-lnk" onclick="I2.restoreObs('${d.id}','${e.id}');return false" title="Volta ao texto cadastrado em Catálogo → Espaços">↻ restaurar do Catálogo</a></label><textarea rows="2" style="min-height:44px" oninput="I2.esp('${d.id}','${e.id}','obs',this.value)">${esc(e.obs)}</textarea></div>
@@ -1011,7 +1014,10 @@ const I2 = {
     else if(k==='teto'){ e.teto = num(v); e.manTeto = true; mark('teto'); }
     else e[k] = v;
     touch(); },
-  espSel(dId,eId,nome){ const e = espOf(dId,eId); if(!e) return;
+  async unlock(dId,eId,k,el){ if(!el.readOnly) return; const e = espOf(dId,eId); if(!e) return; el.blur();
+    if(!(await ask('Este valor vem da tabela de preços. Deseja realmente editar manualmente?','Editar valor'))) return;
+    if(k==='valor') e.unV = true; else e.unT = true; el.readOnly = false; el.classList.remove('i2-lock'); el.focus(); el.select(); },
+  espSel(dId,eId,nome){ const e = espOf(dId,eId); if(!e) return; e.unV = false; e.unT = false;
     const prev = obsPadrao(e.nome);
     e.nome = nome; e.man = false; e.manTeto = false;
     const info = tableInfo(P.tabela);
@@ -1266,7 +1272,7 @@ function normalize(p){
 }
 function showLogin(){ $('i2-login').classList.add('on'); }
 async function boot(){
-  try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = Array.isArray(t) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
+  try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
   try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); } }catch(e){ CAT = catFromData(); }
   try{ await hhLoadCfg(); }catch(e){}
@@ -1513,7 +1519,7 @@ function hhTier(prod,tab,n){
   return best ? {row:best, below:false} : {row:rows[0], below:true};
 }
 function hhCalc(h){
-  const n = Math.floor(num(h.convidados)); const t = hhTier('coq',h.tabela,n); if(!t) return null;
+  const n = Math.floor(num(h.convidados)); if(!(n>0) || !h.tabela) return null; const t = hhTier('coq',h.tabela,n); if(!t) return null;
   const r = t.row, conf = h.modo==='conf';
   const base = conf ? [r[4],r[5],r[6]] : [r[1],r[2],r[3]];
   return {faixa:r[0], below:t.below, n:n, opcoes:base.map(v=>r2(v)), jantar:[r[7],r[8],r[9]].map(v=>r2(v))};
@@ -1523,7 +1529,7 @@ function hhValidade(h){
   const d = new Date(env); d.setDate(d.getDate()+VALIDADE_DIAS);
   return 'até '+d.toLocaleDateString('pt-BR')+' ('+VALIDADE_DIAS+' dias a partir do envio)';
 }
-function hhNew(){ return {id:uid(), tipo:'coq', modo:'conf', cliente:'', convidados:40, tabela:3, horas:5, meta:{criado:new Date().toISOString()}}; }
+function hhNew(){ return {id:uid(), tipo:'coq', modo:'conf', cliente:'', convidados:'', tabela:'', horas:5, meta:{criado:new Date().toISOString()}}; }
 function hhHtml(h){
   const c = hhCalc(h); if(!c) return '';
   const F = MIDIA.fotos||{}, L = MIDIA.links||{};
@@ -1547,8 +1553,9 @@ function hhRender(){
       + c.opcoes.map((v,i)=>'<div><small>Opção '+(i+1)+'</small><b>'+money(v)+'</b></div>').join('')+'</div>'
       + '<div class="hh-jan">Jantar opcional (separado): '+c.jantar.map((v,i)=>'Sugestão '+(i+1)+' '+money(v)).join(' · ')+'</div>';
   }
-  $('hh-info').innerHTML = info;
+  $('hh-info').innerHTML = info || '<div class="hh-jan">Informe o <b>nº de convidados</b> e escolha a <b>tabela</b> para calcular os valores.</div>';
   const fr = $('hh-frame');
+  if(!c && h.modo!=='hh'){ fr.style.display='none'; $('hh-wait').style.display='none'; $('hh-prev').style.height='0px'; return; }
   if(h.modo==='hh'){ fr.style.display='none'; $('hh-wait').style.display='block'; return; }
   fr.style.display='block'; $('hh-wait').style.display='none';
   const wrap = $('hh-prev'), w = Math.max(320, wrap.clientWidth), k = w/1920;
@@ -1568,17 +1575,18 @@ function renderMidia(){
 async function midiaSave(){ try{ await Store.setSetting('midia',MIDIA); say('Mídia salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } }
 Object.assign(I2,{
   hhOpenNew(){ HHS = hhNew(); hhSet(false); hhRender(); },
-  hhField(k,v){ if(k==='convidados'){ v = Math.max(0,Math.floor(num(v))); } if(k==='tabela') v = +v; if(k==='horas') v = Math.max(1,Math.min(12,num(v)||5)); HHS[k]=v; hhSet(true); hhRender(); },
+  hhField(k,v){ if(k==='convidados'){ v = (v===''||v==null) ? '' : Math.max(0,Math.floor(num(v))); } if(k==='tabela') v = v ? +v : ''; if(k==='horas') v = Math.max(1,Math.min(12,num(v)||5)); HHS[k]=v; hhSet(true); hhRender(); },
   hhModo(m){ HHS.modo = m; hhSet(true); hhRender(); },
   async hhSave(){
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
-    const c = hhCalc(HHS); HHS.meta.salvoEm = new Date().toISOString();
+    const c = hhCalc(HHS); if(!c){ say('Informe o nº de convidados e a tabela'); return; } HHS.meta.salvoEm = new Date().toISOString();
     try{ await Store.save(HHS, c?c.opcoes[0]:0); HHS = hhNew(); hhSet(false); hhRender(); window.scrollTo(0,0); say('Proposta salva ✔ — está em Clientes. Formulário limpo para a próxima.'); }catch(e){ say('Erro ao salvar: '+e.message); } },
   hhPdf(){
     if(HHS.modo==='hh'){ say('O modelo Happy Hour ainda será criado'); return; }
+    if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
     w.document.open(); w.document.write(hhHtml(HHS)); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },700); },
-  async hhMarkSent(){ HHS.meta.enviadoEm = new Date().toISOString(); hhSet(true); hhRender(); say('Envio registrado — validade de '+VALIDADE_DIAS+' dias'); },
+  async hhMarkSent(){ if(!hhCalc(HHS)){ say('Informe o nº de convidados e a tabela'); return; } HHS.meta.enviadoEm = new Date().toISOString(); hhSet(true); hhRender(); say('Envio registrado — validade de '+VALIDADE_DIAS+' dias'); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
