@@ -312,6 +312,27 @@ body.sb-off .main{margin-left:0}
 @media(max-width:1000px){.i2-sumwrap.multi{grid-template-columns:1fr}.i2-sumwrap.multi .i2-sum{position:static}}
 
 .top-grid.top4{grid-template-columns:minmax(220px,1fr) 170px minmax(260px,auto) 120px}@media(max-width:900px){.top-grid.top4{grid-template-columns:1fr 1fr}.top-grid.top4>:nth-child(3){grid-column:1/-1}}
+
+/* ── lote 21 ── */
+.i2-ln td.nm{position:relative;padding-left:22px}
+.i2-ln .grab{position:absolute;left:3px;top:9px;width:16px;text-align:center;cursor:grab;color:#b9aeae;font-size:13px;letter-spacing:-2px;user-select:none;line-height:1}
+.i2-ln .grab:hover{color:var(--w)}.i2-ln .grab:active{cursor:grabbing}
+.i2-ln td.x{white-space:nowrap;text-align:right}
+.mv-b{border:0;background:none;color:#b9aeae;cursor:pointer;font-size:10px;padding:3px 3px;line-height:1}.mv-b:hover{color:var(--w)}
+.i2-ln tr.dr-src{opacity:.4}
+.i2-ln tr.dr-top td{box-shadow:inset 0 3px 0 -1px var(--w)}.i2-ln tr.dr-bot td{box-shadow:inset 0 -3px 0 -1px var(--w)}
+.i2-ln tr.mv-flash td{background:#FFF4D6;transition:background .6s}
+.cli-tools{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:4px}
+.cli-tools #i2-cli-q{width:min(620px,100%);padding:12px 16px;font-size:15px;border-radius:8px;text-align:center}
+.cli-fs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.cli-f{border:1px solid var(--ru);background:#fff;color:#555;border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;cursor:pointer}
+.cli-f:hover{border-color:var(--w)}.cli-f.on{background:var(--w);border-color:var(--w);color:#fff}
+.i2-bulk label{white-space:nowrap;flex:none}.i2-bulk label span{white-space:nowrap}
+.i2-bulk{min-height:34px}
+.i2-pl .n{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}.i2-pl .n .nm{font-size:14px}.i2-pl .n .orc-t{margin-right:0}
+.wa-box{border:1px solid var(--ru);border-radius:8px;padding:12px;background:#fafafa}
+.wa-prev{margin-top:14px;border:1px solid var(--ru);border-radius:8px;padding:10px 12px;background:#E7F6EA}.wa-prev small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#4c7a55;margin-bottom:4px}.wa-prev div{white-space:pre-wrap;font-size:13px;color:#1b3b22}
+.sim-fone{width:100%;padding:12px 14px;font-size:16px;border:1px solid var(--ru,#ddd);border-radius:8px;margin-bottom:10px}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -461,7 +482,7 @@ body.sb-off .main{margin-left:0}
       </div>
     </div></div>
     <div id="i2-body"></div>
-    <div id="i2-warn" class="i2-warn" style="margin:14px 0 24px"></div>
+    
     <div class="i2-foot"><small>O PDF é gerado e salvo automaticamente.</small><button class="btn btn-o" onclick="I2.salvar()">💾 Salvar</button><button class="btn btn-w" onclick="I2.pdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.gerarLink()">🔗 Gerar link</button></div>
   </div>
 
@@ -543,9 +564,10 @@ body.sb-off .main{margin-left:0}
 
   <div class="view" id="view-clientes">
     <div class="card">
-      <div class="card-hdr"><span class="card-title">Propostas salvas</span>
-        <input id="i2-cli-q" type="text" placeholder="Buscar cliente…" style="width:220px;padding:5px 9px;font-size:12px" oninput="I2.renderClientes()"></div>
-      <div class="card-body"><p style="font-size:11px;color:var(--gr);margin-bottom:12px">Toda proposta salva no Investimento aparece aqui. Clique para abrir e editar.</p><div id="i2-cli-list"></div></div>
+      <div class="card-hdr"><span class="card-title">Propostas salvas</span></div>
+      <div class="card-body"><div class="cli-tools"><input id="i2-cli-q" type="text" placeholder="🔍  Buscar cliente…" oninput="I2.cliDraw()">
+        <div class="cli-fs"><button class="cli-f on" data-f="all" onclick="I2.cliFilt('all')">Todos</button><button class="cli-f" data-f="inv" onclick="I2.cliFilt('inv')">Investimento</button><button class="cli-f" data-f="esp" onclick="I2.cliFilt('esp')">Espaço</button><button class="cli-f" data-f="coq" onclick="I2.cliFilt('coq')">Coquetel</button></div></div>
+        <p style="font-size:11px;color:var(--gr);margin:6px 0 12px;text-align:center">Toda proposta salva aparece aqui. Clique para abrir e editar.</p><div id="i2-cli-list"></div></div>
     </div>
   </div>
 
@@ -670,15 +692,24 @@ let CAT = null, catTab = 'sp', catDirty = false;
 function catSet(d){ catDirty = d; const b = $('cat-save'); if(b){ b.disabled = !d; b.textContent = d ? '💾 Salvar alterações' : '✔ Salvo'; } const h = $('cat-hint'); if(h) h.textContent = d ? 'Há alterações não salvas.' : ''; }
 function numIn(v,onch){ return '<input type="number" step="0.01" min="0" value="'+(v||0)+'" style="text-align:right" onchange="'+onch+'">'; }
 function catTabsHtml(){
-  const tabs = [['sp','🏛️ Espaços'],['gast','🍴 Gastronomia'],['eq','🎙️ Equipamentos e serviços'],['hhp','🍸 Preços HH / Confraternização'],['md','🖼️ Mídia e links']];
+  const tabs = [['sp','🏛️ Espaços'],['gast','🍴 Gastronomia'],['eq','🎙️ Equipamentos e serviços'],['hhp','🍸 Preços HH / Confraternização'],['md','🖼️ Mídia e links'],['wa','💬 Mensagem do WhatsApp']];
   return tabs.map(t=>'<div class="adm-tab '+(catTab===t[0]?'active':'')+'" data-ct="'+t[0]+'" onclick="I2.catTab(\''+t[0]+'\')">'+t[1]+'</div>').join('');
 }
 function renderCatalogo(){
   if(!CAT) CAT = catFromData();
   let h = '<div class="adm-tabs">' + catTabsHtml() + '</div>';
-  if(catTab==='sp') h += catSpaces(); else if(catTab==='gast') h += catGast(); else if(catTab==='md') h += renderMidia(); else if(catTab==='hhp') h += renderHhp(); else h += catEquip();
+  if(catTab==='sp') h += catSpaces(); else if(catTab==='gast') h += catGast(); else if(catTab==='md') h += renderMidia(); else if(catTab==='wa') h += renderWa(); else if(catTab==='hhp') h += renderHhp(); else h += catEquip();
   $('cat-body').innerHTML = h; catSet(catDirty);
   if(catTab==='sp') I2.renderTabs();
+}
+let WA_MSG = 'Olá, {nome}! Tudo bem? 😊\nSegue a proposta do Espaço Vista para o seu evento:\n{link}\n\nO link é válido até {validade}. Qualquer dúvida, é só me chamar por aqui!';
+function waText(cli,url,em){ return String(WA_MSG).replace(/\{nome\}/g,(cli||'').trim()||'tudo bem').replace(/\{link\}/g,url).replace(/\{validade\}/g,hhExp(em).toLocaleDateString('pt-BR')); }
+function renderWa(){
+  return `<div class="card" style="box-shadow:none"><div class="card-hdr"><span class="card-title">Mensagem padrão do WhatsApp</span></div><div class="card-body">
+    <p style="font-size:12px;color:#555;margin-bottom:10px">Texto que já vem preenchido quando você gera o link da proposta e clica em <b>Enviar pelo WhatsApp</b>. Você ainda pode ajustar antes de enviar. Use: <b>{nome}</b> (cliente), <b>{link}</b> (link da proposta) e <b>{validade}</b> (data de validade).</p>
+    <textarea id="wa-msg" rows="7" style="width:100%;font-size:13px" oninput="I2.waSet(this.value)">${esc(WA_MSG)}</textarea>
+    <div style="margin-top:8px;font-size:11px;color:var(--gr)" id="wa-hint">Salvo automaticamente.</div>
+    <div class="wa-prev"><small>Prévia</small><div id="wa-prev">${esc(waText('Empresa Exemplo','https://…/p.html?t=abc123',new Date().toISOString()))}</div></div></div></div>`;
 }
 function catSpaces(){
   let h = '<p class="i2-cnote">O valor do espaço exibido na proposta = <b>valor da tabela + retorno de consumação</b>. Cada tabela (1, 2 e 3) vale para as duas faixas de pessoas.</p><div class="i2-csg">';
@@ -752,7 +783,7 @@ function syncCat(){
   CATMODE = want; rebuildAll();
 }
 function newProposal(){
-  return { id:uid(), cliente:'', convidados:'', tabela:'',
+  return { id:uid(), cliente:'', fone:'', convidados:'', tabela:'',
     obs:'Forma de pagamento: 50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.',
     dias:[newDay()], extras:[], hide:{credito:false,extras:false}, meta:{catV:2} };
 }
@@ -906,24 +937,25 @@ function renderTabelaSelect(){
   if(custom.length) h += '<optgroup label="★ Personalizadas">' + custom.map(c=>'<option '+(c.name===P.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('') + '</optgroup>';
   s.innerHTML = h; s.className = P.tabela ? '' : 'empty';
 }
+const COLS2 = '<colgroup><col><col style="width:17%"><col style="width:74px"><col style="width:118px"><col style="width:108px"><col style="width:76px"></colgroup>';
 const COLS = '<colgroup><col><col style="width:17%"><col style="width:74px"><col style="width:118px"><col style="width:108px"><col style="width:28px"></colgroup>';
 function lineRow(dId,cat,l){
   const n = (k,v)=>`I2.ln('${dId}','${cat}','${l.id}','${k}',${v})`;
-  return `<tr>
-    <td class="nm">${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
+  return `<tr data-l="${l.id}" data-d="${dId}" data-cat="${cat}">
+    <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
       <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea></td>
     <td class="hr">${cat==='gast' ? `<input class="i2-hor" autocomplete="off" data-d="${dId}" data-l="${l.id}" value="${esc(l.hor)}" placeholder="Escolha ou escreva…" oninput="${n('hor','this.value')}">` : ''}</td>
     <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="${n('qtd','this.value')}"></td>
     <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
     <td class="st" id="st-${l.id}">${money(lineTotal(l))}</td>
-    <td class="x"><button class="x-btn" title="Remover" onclick="I2.delLine('${dId}','${cat}','${l.id}')">×</button></td></tr>`;
+    <td class="x"><button class="mv-b" title="Subir" onclick="I2.mvLine('${dId}','${cat}','${l.id}',-1)">▲</button><button class="mv-b" title="Descer" onclick="I2.mvLine('${dId}','${cat}','${l.id}',1)">▼</button><button class="x-btn" title="Remover" onclick="I2.delLine('${dId}','${cat}','${l.id}')">×</button></td></tr>`;
 }
 function catBlock(d,cat){
   const rows = d[cat].map(l=>lineRow(d.id,cat,l)).join('');
   const head = `<thead><tr><th>Item</th><th>${cat==='gast'?'Horário / período':''}</th><th class="r" style="text-align:right">Qtd.</th><th class="r" style="text-align:right">Vlr. unit.</th><th class="r" style="text-align:right">Subtotal</th><th></th></tr></thead>`;
   const sub = cat==='serv' ? '<span class="sub">não entram na consumação</span>' : '<span class="sub">entram na consumação</span>';
   return `<div class="i2-sec"><div class="i2-sec-t"><span>${CATS[cat]}</span>${sub}</div>
-    ${d[cat].length ? `<table class="i2-ln">${COLS}${head}<tbody>${rows}</tbody></table>` : ''}
+    ${d[cat].length ? `<table class="i2-ln">${COLS2}${head}<tbody>${rows}</tbody></table>` : ''}
     <div class="i2-addrow"><input class="i2-add" id="add-${d.id}-${cat}" data-d="${d.id}" data-cat="${cat}" autocomplete="off" placeholder="＋ Adicionar em ${CATS[cat]} — digite para buscar${cat==='gast'?' (ex.: coffee, almoço, brownie)':cat==='equip'?' (ex.: microfone, palco, tv)':' (ex.: estacionamento, gerador)'}…">
       <button class="btn btn-o i2-plus" title="Criar um item novo (escrever nome, descrição e valor)" onclick="I2.newBlank('${d.id}','${cat}')">＋ Novo item</button></div></div>`;
 }
@@ -1017,10 +1049,11 @@ function renderBody(){
   const b = $('i2-body'); if(!b) return;
   b.innerHTML = `
   <div class="card"><div class="card-hdr"><span class="card-title">Cliente e evento</span></div><div class="card-body">
-    <div class="top-grid">
+    <div class="top-grid top4">
       <div class="fg"><label class="fl">Cliente</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome do cliente / empresa" oninput="I2.top('cliente',this.value)"></div>
       <div class="fg"><label class="fl">Nº de convidados</label><input id="i2-conv" type="number" min="0" value="${esc(P.convidados)}" oninput="I2.conv(this.value)"></div>
       <div class="fg"><label class="fl">Data(s) do evento</label><div class="dts" id="i2-dts"></div></div>
+      <div class="fg"><label class="fl">WhatsApp do cliente</label><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" oninput="I2.top('fone',this.value)"></div>
     </div></div></div>
   <div id="i2-gate" class="i2-gate"></div>
   <div id="i2-rest">
@@ -1097,7 +1130,7 @@ function refresh(){
   const note = $('sm-note');
   if(note){ const hid = []; if(P.hide.credito) hid.push('Crédito disponível'); if(P.hide.extras) hid.push('Extras'+(R.extras?'':''));
     note.textContent = hid.length ? ('Oculto no PDF: '+hid.join(' e ')+(P.hide.extras ? ' · total no PDF: '+money(R.totalPdf) : '')) : ''; }
-  const w = warnings(), we = $('i2-warn'); if(we) we.innerHTML = w.length ? '⚠ Pendências: '+w.map(esc).join(' · ') : '';
+  
   stateLabel();
 }
 
@@ -1214,6 +1247,8 @@ const I2 = {
     else l[k] = v;
     touch(); },
   resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = itemPrice(l.src||cat,l.base,P.tabela); touch(); renderDay(dId); },
+  mvLine(dId,cat,id,dir){ const d = dayOf(dId); if(!d) return; const a = d[cat], i = a.findIndex(l=>l.id===id), j = i+dir; if(i<0 || j<0 || j>=a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+id+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
+  dropLine(dId,cat,from,to,after){ const d = dayOf(dId); if(!d || from===to) return; const a = d[cat], i = a.findIndex(l=>l.id===from); if(i<0) return; const it = a.splice(i,1)[0]; let j = a.findIndex(l=>l.id===to); if(j<0){ a.push(it); } else a.splice(after?j+1:j,0,it); touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+from+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   delLine(dId,cat,id){ const d = dayOf(dId); if(!d) return; d[cat] = d[cat].filter(l=>l.id!==id); touch(); renderDay(dId); },
   ex(id,k,v){ const l = P.extras.find(x=>x.id===id); if(!l) return;
     if(k==='qtd') l.qtd = num(v); else if(k==='unit'){ l.unit = num(v); l.man = true; } else l[k] = v;
@@ -1225,6 +1260,7 @@ const I2 = {
     P.dias.push(d); touch(); renderDays(); renderExtras(); },
   dupDay(id){ const d = dayOf(id); if(!d) return; const c = newDay(d); P.dias.splice(P.dias.indexOf(d)+1,0,c); touch(); renderDays(); renderExtras(); say('Dia duplicado — ajuste a data'); },
   async delDay(id){ if(P.dias.length<2) return; if(!(await ask('Remover este dia e todos os itens dele?','Remover dia'))) return; P.dias = P.dias.filter(d=>d.id!==id); touch(); renderDays(); renderExtras(); },
+  waSet(v){ WA_MSG = v; const p = $('wa-prev'); if(p) p.textContent = waText('Empresa Exemplo','https://…/p.html?t=abc123',new Date().toISOString()); clearTimeout(I2._wt); const h = $('wa-hint'); if(h) h.textContent = 'Salvando…'; I2._wt = setTimeout(()=>{ Store.setSetting('whats_msg',{t:WA_MSG}).then(()=>{ const h2 = $('wa-hint'); if(h2) h2.textContent = 'Salvo ✔'; }).catch(e=>say('Não foi possível salvar a mensagem: '+e.message)); },700); },
   eye(k){ P.hide[k] = !P.hide[k]; touch(); },
   cond(i,v){ conds[i] = v; I2._condDirty(); },
   addCond(){ conds.push(''); I2._condDirty(); renderConds(); },
@@ -1247,28 +1283,35 @@ const I2 = {
     $('i2-plist').innerHTML = l.length ? l.map(x=>`<div class="i2-pl" onclick="I2.open('${esc(x.id)}')"><div><div class="n">${esc(x.cliente||'(sem nome)')}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
       <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.dup('${esc(x.id)}')">Duplicar</button><button class="x-btn" onclick="event.stopPropagation();I2.del('${esc(x.id)}')" title="Excluir">×</button></div>`).join('') : '<p style="color:var(--gr)">Nenhuma proposta salva.</p>';
   },
-  async renderClientes(){
-    const el = $('i2-cli-list'); if(!el) return; el.innerHTML = '<p style="color:var(--gr);font-size:12px">Carregando…</p>';
-    let l = []; try{ l = await Store.list(); }catch(e){ el.innerHTML = '<p style="color:var(--w);font-size:12px">'+esc(e.message)+'</p>'; return; }
-    I2._list = l; const q = norm(($('i2-cli-q')||{}).value||''); l = l.filter(x=>!q || norm(x.cliente).indexOf(q)>=0);
-    I2._sel = I2._sel || new Set(); const ids = new Set(l.map(x=>x.id)); I2._sel.forEach(i=>{ if(!ids.has(i)) I2._sel.delete(i); });
-    const nSel = I2._sel.size, all = l.length>0 && nSel===l.length;
-    const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"> Selecionar todos (${l.length})</label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
-    el.innerHTML = bar + (l.length ? l.map(x=>`<div class="i2-pl${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1"><div class="n">${I2.cliTags(x)}${esc(x.cliente||'(sem nome)')}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
-      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`).join('') : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhuma proposta do Investimento 2 salva ainda.</p>');
+  async renderClientes(reload){
+    const el = $('i2-cli-list'); if(!el) return;
+    if(reload!==false){ if(!(I2._list||[]).length) el.innerHTML = '<p style="color:var(--gr);font-size:12px">Carregando…</p>';
+      try{ I2._list = await Store.list(); }catch(e){ el.innerHTML = '<p style="color:var(--w);font-size:12px">'+esc(e.message)+'</p>'; return; } }
+    I2.cliDraw();
+  },
+  cliVisible(){ const q = norm(($('i2-cli-q')||{}).value||''), f = I2._cf||'all';
+    return (I2._list||[]).filter(x=>{ const t = x.tipo==='esp'?'esp':x.tipo==='coq'?'coq':'inv'; return (f==='all'||f===t) && (!q || norm(x.cliente).indexOf(q)>=0); }); },
+  cliFilt(f){ I2._cf = f; document.querySelectorAll('.cli-f').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); I2.cliDraw(); },
+  cliDraw(){
+    const el = $('i2-cli-list'); if(!el) return; const l = I2.cliVisible();
+    I2._sel = I2._sel || new Set(); const ids = new Set((I2._list||[]).map(x=>x.id)); I2._sel.forEach(i=>{ if(!ids.has(i)) I2._sel.delete(i); });
+    const nSel = l.filter(x=>I2._sel.has(x.id)).length, all = l.length>0 && nSel===l.length;
+    const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"><span>Selecionar todos (${l.length})</span></label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
+    el.innerHTML = bar + (l.length ? l.map(x=>`<div class="i2-pl${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1;min-width:0"><div class="n"><span class="nm">${esc(x.cliente||'(sem nome)')}</span>${I2.cliTags(x)}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
+      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`).join('') : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhuma proposta encontrada.</p>');
   },
   async openFromClientes(id,copy){ const l = document.querySelector('.sb-link[data-view=inv2]'); if(l) l.click(); await I2.open(id,copy); },
   cliTags(x){ const T = x.tipo==='esp' ? ['Espaço','#7a1712'] : x.tipo==='coq' ? ['Coquetel','#b25b00'] : ['Investimento','#444'];
     let h = '<span class="orc-t" style="background:'+T[1]+'">'+T[0]+'</span>'; const L = Array.isArray(x.links) ? x.links : [];
     if(L.length){ const last = L[L.length-1], exp = new Date(new Date(last.em).getTime()+10*864e5), vivo = new Date() <= exp; h += '<span class="orc-t" style="background:'+(vivo?'#2e8b57':'#999')+'">'+(vivo?'🔗 LINK ENVIADO · VÁLIDO ATÉ '+exp.toLocaleDateString('pt-BR'):'LINK EXPIRADO EM '+exp.toLocaleDateString('pt-BR'))+'</span>'; }
     return h; },
-  cliSel(id,on){ I2._sel = I2._sel || new Set(); on ? I2._sel.add(id) : I2._sel.delete(id); I2.renderClientes(); },
-  cliSelAll(on){ I2._sel = new Set(on ? (I2._list||[]).filter(x=>!norm(($('i2-cli-q')||{}).value||'') || norm(x.cliente).indexOf(norm($('i2-cli-q').value))>=0).map(x=>x.id) : []); I2.renderClientes(); },
+  cliSel(id,on){ I2._sel = I2._sel || new Set(); on ? I2._sel.add(id) : I2._sel.delete(id); I2.cliDraw(); },
+  cliSelAll(on){ I2._sel = I2._sel || new Set(); I2.cliVisible().forEach(x=>{ on ? I2._sel.add(x.id) : I2._sel.delete(x.id); }); I2.cliDraw(); },
   async cliDelSel(){ const ids = Array.from(I2._sel||[]); if(!ids.length) return;
     if(!(await ask('Excluir definitivamente '+ids.length+' proposta(s) selecionada(s)? Esta ação não pode ser desfeita.','Excluir '+ids.length))) return;
-    let ok = 0, err = ''; for(const id of ids){ try{ await Store.remove(id); ok++; I2._sel.delete(id); }catch(e){ err = e.message; } }
-    say(ok+' proposta(s) excluída(s)'+(err?' — erro em alguma: '+err:'')); I2.renderClientes(); },
-  async delFromClientes(id){ if(!(await ask('Excluir esta proposta definitivamente?','Excluir'))) return; try{ await Store.remove(id); say('Proposta excluída'); I2.renderClientes(); }catch(e){ say('Erro: '+e.message); } },
+    let ok = 0, err = ''; for(const id of ids){ try{ await Store.remove(id); ok++; I2._sel.delete(id); I2._list = (I2._list||[]).filter(x=>x.id!==id); }catch(e){ err = e.message; } }
+    say(ok+' proposta(s) excluída(s)'+(err?' — erro em alguma: '+err:'')); I2.cliDraw(); },
+  async delFromClientes(id){ if(!(await ask('Excluir esta proposta definitivamente?','Excluir'))) return; try{ await Store.remove(id); I2._list = (I2._list||[]).filter(x=>x.id!==id); I2._sel && I2._sel.delete(id); say('Proposta excluída'); I2.cliDraw(); }catch(e){ say('Erro: '+e.message); } },
   async open(id,asCopy){
     if(dirty && !(await ask('Há alterações não salvas. Abrir outra proposta mesmo assim?','Abrir mesmo assim'))) return;
     try{ const p = await Store.get(id); if(!p){ say('Proposta não encontrada'); return; }
@@ -1344,7 +1387,7 @@ const I2 = {
       await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:P.id, tipo:'inv', cliente:P.cliente, titulo:'Proposta — '+P.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
       P.meta.links = (P.meta.links||[]).concat([{token:token, em:now}]); P.meta.enviadoEm = now;
       await Store.save(P,R.total); dirty = false; LS.del('inv2_draft'); stateLabel();
-      LINK_CTX = 'inv'; hhShowLink(token, now);
+      LINK_CTX = 'inv'; hhShowLink(token, now, {cli:P.cliente, fone:P.fone});
     }catch(e){ say('Erro ao gerar o link: '+e.message); }
     I2._lkBusy = false; lkBusy('gerarLink',false); },
   async pdf(){
@@ -1385,24 +1428,25 @@ function buildPrint(p,R,autoPrint){
       + `<tr><td class="l">Horas contratadas</td><td class="v"><b>${fmtH(days.reduce((s,d)=>s+(R.days[idxOf(d)].horas||0),0))}</b> (soma dos dias)</td></tr>`;
   }
   const sr = (l,v,cls) => `<tr class="${cls||''}"><td class="l">${l}</td><td class="v">${v}</td></tr>`;
-  const sumRows = [];
-  if(days.length>1) days.forEach((d,k)=>{ const c = R.days[idxOf(d)];
-    sumRows.push(sr('<b>Dia '+(k+1)+(d.data?' · '+fdate(d.data):'')+'</b>','','dh'));
-    sumRows.push(sr('Espaço'+(c.he>0?' + hora extra':''),m(r2(c.esp+c.he))));
-    sumRows.push(sr('Gastronomia e equipamentos',m(c.elig)));
-    if(c.serv>0) sumRows.push(sr('Serviços / Outros',m(c.serv)));
-    if(c.desconto>0) sumRows.push(sr('Desconto de consumação','− '+m(c.desconto),'disc'));
-    sumRows.push(sr('Total do Dia '+(k+1),m(r2(c.esp+c.he+c.elig+c.serv-c.desconto)),'sub')); });
-  if(days.length>1) sumRows.push(sr('<b>Total do evento (todos os dias)</b>','','dh'));
-  sumRows.push(sr('Valor do Espaço',m(R.esp)));
-  if(R.he>0) sumRows.push(sr('Hora Extra do espaço',m(R.he)));
-  sumRows.push(sr('Investimento (gastronomia e equipamentos)',m(R.inv)));
-  if(R.serv>0) sumRows.push(sr('Serviços / Outros',m(R.serv)));
-  sumRows.push(sr('Valor do Evento',m(R.evento),'sub'));
-  if(R.desconto>0) sumRows.push(sr('Desconto de Consumação','− '+m(R.desconto),'disc'));
-  if(!p.hide.credito && R.credito>0) sumRows.push(sr('Crédito disponível',m(R.credito),'cred'));
-  if(!p.hide.extras && R.extras>0) sumRows.push(sr('Extras do evento',m(R.extras)));
-  sumRows.push(sr('VALOR TOTAL DO INVESTIMENTO',m(R.totalPdf),'grand'));
+  const dayCards = [], tot = [];
+  if(days.length>1) days.forEach((d,k)=>{ const c = R.days[idxOf(d)], rs = [];
+    rs.push(sr('Espaço'+(c.he>0?' + hora extra':''),m(r2(c.esp+c.he))));
+    rs.push(sr('Gastronomia e equipamentos',m(c.elig)));
+    if(c.serv>0) rs.push(sr('Serviços / Outros',m(c.serv)));
+    if(c.desconto>0) rs.push(sr('Desconto de consumação','− '+m(c.desconto),'disc'));
+    rs.push(sr('Total do Dia '+(k+1),m(r2(c.esp+c.he+c.elig+c.serv-c.desconto)),'sub'));
+    dayCards.push('<table class="sum dc"><tr class="dh"><td colspan="2">Dia '+(k+1)+(d.data?' · '+fdate(d.data):'')+'</td></tr>'+rs.join('')+'</table>'); });
+  tot.push(sr('Valor do Espaço',m(R.esp)));
+  if(R.he>0) tot.push(sr('Hora Extra do espaço',m(R.he)));
+  tot.push(sr('Investimento (gastronomia e equipamentos)',m(R.inv)));
+  if(R.serv>0) tot.push(sr('Serviços / Outros',m(R.serv)));
+  tot.push(sr('Valor do Evento',m(R.evento),'sub'));
+  if(R.desconto>0) tot.push(sr('Desconto de Consumação','− '+m(R.desconto),'disc'));
+  if(!p.hide.credito && R.credito>0) tot.push(sr('Crédito disponível',m(R.credito),'cred'));
+  if(!p.hide.extras && R.extras>0) tot.push(sr('Extras do evento',m(R.extras)));
+  tot.push(sr('VALOR TOTAL DO INVESTIMENTO',m(R.totalPdf),'grand'));
+  const sumHtml = '<div class="sumg'+(days.length>1?' multi':'')+'">'+(dayCards.length?'<div class="sumd">'+dayCards.join('')+'</div>':'')
+    +'<table class="sum tc">'+(days.length>1?'<tr class="dh"><td colspan="2">Total do evento (todos os dias)</td></tr>':'')+tot.join('')+'</table></div>';
   const condsH = conds.filter(c=>c.trim()).map((c,i)=>`<tr><td class="cn">${i+1}.</td><td class="ct">${esc(c)}</td></tr>`).join('');
   const css = `
   @page{size:A4;margin:0}
@@ -1431,17 +1475,19 @@ function buildPrint(p,R,autoPrint){
   table.t td{padding:5px 7px;border-bottom:.3px solid #E5E5E5;color:#555;vertical-align:top;overflow-wrap:anywhere}
   table.t tr{break-inside:avoid}
   table.t td.r{text-align:right}.nw{white-space:nowrap;overflow-wrap:normal!important}
-  .sumw{display:flex;justify-content:flex-end;break-inside:avoid}
-  table.sum{width:340px;border-collapse:collapse;font-size:9px}
-  table.sum td{padding:4px 7px}
-  table.sum .l{text-align:right;color:#555}
-  table.sum .v{text-align:right;color:#1A1A1A;font-weight:500;white-space:nowrap;width:105px}
-  table.sum .sub td{font-weight:700;border-top:.75px solid #8B0000;border-bottom:.75px solid #8B0000;color:#1A1A1A}
+  .sumg{display:block;break-inside:auto}
+  .sumg.multi{display:grid;grid-template-columns:1.25fr 1fr;gap:10px;align-items:start}
+  .sumd{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  table.sum{width:100%;border-collapse:separate;border-spacing:0;font-size:9px;border:.75px solid #E5D5D5;border-radius:4px;overflow:hidden;break-inside:avoid;background:#FCFAFA}
+  .sumg:not(.multi) table.sum{width:62%;margin-left:auto}
+  table.sum td{padding:4px 8px}
+  table.sum .l{text-align:left;color:#555}
+  table.sum .v{text-align:right;color:#1A1A1A;font-weight:500;white-space:nowrap}
+  table.sum .sub td{font-weight:700;border-top:.75px solid #8B0000;color:#1A1A1A}
   table.sum .disc td{color:#8B0000;font-weight:700}
-  table.sum .dh td{text-align:left;padding-top:9px;color:#8B0000;font-size:9.5px;letter-spacing:.04em}
-  table.sum .dh .l{text-align:left}
+  table.sum .dh td{text-align:left;padding:6px 8px;color:#8B0000;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#F2EEEE;border-bottom:.75px solid #8B0000}
   table.sum .cred td{color:#8B0000}
-  table.sum .grand td{background:#1A1A1A;color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px 7px!important}
+  table.sum .grand td{background:#1A1A1A;color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px 8px!important}
   .pay{background:#F9F4F4;padding:6px 10px;font-size:8px;color:#555;margin-top:7px;border-radius:3px;break-inside:avoid}
   .obs{font-size:8.5px;color:#555;white-space:pre-wrap;line-height:1.5;break-inside:avoid}
   table.c{width:100%;border-collapse:collapse}
@@ -1466,7 +1512,7 @@ function buildPrint(p,R,autoPrint){
   ${tbl('Serviços / Outros',th('Data')+th('Item')+th('Descrição')+th('Qtd.',1)+th('Vlr. Unit.',1)+th('Subtotal',1),servH,['62px','25%','','32px','74px','84px'])}
   ${tbl('Extras no dia do evento',th('Data')+th('Item')+th('Descrição')+th('Qtd.',1)+th('Vlr. Unit.',1)+th('Subtotal',1),extH,['62px','25%','','32px','74px','84px'])}
   <div class="sec">Resumo do Investimento</div><hr>
-  <div class="sumw"><table class="sum">${sumRows.join('')}</table></div>
+  ${sumHtml}
   ${p.obs && p.obs.trim() ? `<div class="sec">Observações</div><hr><div class="obs">${esc(p.obs)}</div>` : ''}
   <div class="sec">Condições Gerais</div><hr>
   <table class="c">${condsH}</table>
@@ -1489,7 +1535,13 @@ function normalize(p){
 }
 function showLogin(){ $('i2-login').classList.add('on'); }
 if(window.__AUDIT){ I2._a = { get:()=>({DATA:JSON.parse(JSON.stringify(DATA)), P:JSON.parse(JSON.stringify(P)), R:calcAll(), HH:HH_PRECOS, HHS:HHS?JSON.parse(JSON.stringify(HHS)):null}),
-  mut:f=>{ f(P); touch(); renderBody(); }, clean:()=>{ dirty = false; }, hh:()=>hhCalc(HHS), print:()=>buildPrint(P,calcAll(),false), money:money }; }
+  mut:f=>{ f(P); touch(); renderBody(); }, clean:()=>{ dirty = false; }, hh:()=>hhCalc(HHS), print:()=>buildPrint(P,calcAll(),false), money:money, link:(t,e,i)=>hhShowLink(t,e,i) }; }
+(function(){ let drag = null; const clr = ()=>document.querySelectorAll('tr.dr-top,tr.dr-bot,tr.dr-src').forEach(r=>r.classList.remove('dr-top','dr-bot','dr-src'));
+  document.addEventListener('dragstart',e=>{ const g = e.target.closest && e.target.closest('.grab'); if(!g){ return; } const tr = g.closest('tr[data-l]'); if(!tr) return; drag = {l:tr.dataset.l,d:tr.dataset.d,cat:tr.dataset.cat}; try{ e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain',drag.l); e.dataTransfer.setDragImage(tr,20,16); }catch(x){} setTimeout(()=>tr.classList.add('dr-src'),0); });
+  document.addEventListener('dragover',e=>{ if(!drag) return; const tr = e.target.closest && e.target.closest('tr[data-l]'); if(!tr || tr.dataset.d!==drag.d || tr.dataset.cat!==drag.cat) return; e.preventDefault(); const r = tr.getBoundingClientRect(), after = e.clientY > r.top + r.height/2; document.querySelectorAll('tr.dr-top,tr.dr-bot').forEach(x=>x.classList.remove('dr-top','dr-bot')); tr.classList.add(after?'dr-bot':'dr-top'); });
+  document.addEventListener('drop',e=>{ if(!drag) return; const tr = e.target.closest && e.target.closest('tr[data-l]'); if(!tr || tr.dataset.d!==drag.d || tr.dataset.cat!==drag.cat){ clr(); drag = null; return; } e.preventDefault(); const r = tr.getBoundingClientRect(), after = e.clientY > r.top + r.height/2, f = drag; clr(); drag = null; I2.dropLine(f.d,f.cat,f.l,tr.dataset.l,after); });
+  document.addEventListener('dragend',()=>{ clr(); drag = null; });
+})();
 async function boot(){
   try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
@@ -1498,6 +1550,7 @@ async function boot(){
   try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{},aj:m.aj||{}}; }catch(e){}
   Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; });
   try{ const o = await Store.getSetting('espaco_obs_padrao'); if(o && typeof o==='object') espObsPadrao = o; }catch(e){}
+  try{ const w = await Store.getSetting('whats_msg'); if(w && typeof w.t==='string' && w.t.trim()) WA_MSG = w.t; }catch(e){}
   try{ const c = await Store.getSetting('condicoes_inv2'); if(Array.isArray(c) && c.length) conds = c; }catch(e){}
   let draft = null; try{ draft = JSON.parse(LS.get('inv2_draft')||'null'); }catch(e){}
   P = newProposal(); dirty = false;
@@ -1508,7 +1561,7 @@ async function boot(){
     else LS.del('inv2_draft');
   }
   renderTabelaSelect(); renderBody();
-  try{ I2.orcLoad(); if(CLOUD) setInterval(()=>I2.orcLoad(),60000); }catch(e){}
+  try{ I2.orcLoad(); if(CLOUD){ setInterval(()=>I2.orcLoad(),20000); document.addEventListener('visibilitychange',()=>{ if(!document.hidden) I2.orcLoad(); }); window.addEventListener('focus',()=>I2.orcLoad()); } }catch(e){}
 }
 
 Object.assign(I2, {
@@ -1774,13 +1827,17 @@ async function hhPublishMedia(){
 function lkBusy(name,on){ document.querySelectorAll('button[onclick*="'+name+'"]').forEach(b=>{ if(on){ b.dataset.t = b.textContent; b.textContent = '⏳ Gerando link…'; b.disabled = true; } else { b.textContent = b.dataset.t || b.textContent; b.disabled = false; } }); }
 function hhFmt(d){ return new Date(d).toLocaleDateString('pt-BR'); }
 function hhExp(em){ const d = new Date(em); d.setDate(d.getDate()+VALIDADE_DIAS); return d; }
-function hhShowLink(token,em){
-  const url = hhLinkUrl(token); let m = $('hh-link-modal');
+function waDigits(v){ let d = String(v||'').replace(/\D/g,''); if(d.length>=12 && d.slice(0,2)==='55') return d; return d.length>=10 ? '55'+d : ''; }
+function hhShowLink(token,em,info){
+  info = info || {}; const url = hhLinkUrl(token); let m = $('hh-link-modal'); I2._wi = info;
   if(!m){ m = document.createElement('div'); m.id = 'hh-link-modal'; m.className = 'i2-modal'; document.body.appendChild(m); }
-  m.innerHTML = '<div class="i2-mbox" style="width:min(580px,100%)"><div class="i2-mh"><b>Link da proposta gerado ✔</b></div><div class="i2-mb">'
-    + '<p style="font-size:12.5px;color:#444;margin-bottom:10px">Envie ao cliente por WhatsApp ou e-mail. Abre no celular e no computador, com botão para baixar o PDF. Válido até <b>'+hhExp(em).toLocaleDateString('pt-BR')+'</b> ('+VALIDADE_DIAS+' dias). Esta versão fica congelada: se você alterar a proposta e reenviar, o cliente recebe um novo link.</p>'
+  m.innerHTML = '<div class="i2-mbox" style="width:min(600px,100%)"><div class="i2-mh"><b>Link da proposta gerado ✔</b></div><div class="i2-mb">'
+    + '<p style="font-size:12.5px;color:#444;margin-bottom:10px">Válido até <b>'+hhExp(em).toLocaleDateString('pt-BR')+'</b> ('+VALIDADE_DIAS+' dias). Abre no celular e no computador, com botão para baixar o PDF. Esta versão fica congelada: se você alterar a proposta e reenviar, o cliente recebe um novo link.</p>'
     + '<input id="hh-link-in" readonly value="'+esc(url)+'" onclick="this.select()" style="margin-bottom:12px">'
-    + '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-w" onclick="I2.hhCopy()">📋 Copiar link</button><a class="btn btn-o" href="'+esc(url)+'" target="_blank">👁 Ver como cliente</a><a class="btn btn-o" href="https://wa.me/?text='+encodeURIComponent('Segue a proposta do Espaço Vista: '+url)+'" target="_blank">WhatsApp</a><button class="btn btn-o" onclick="I2.hhLinkClose()">Fechar</button></div></div></div>';
+    + '<div class="wa-box"><label class="fl">WhatsApp do cliente</label><input id="hh-wa-fone" type="tel" value="'+esc(info.fone||'')+'" placeholder="(31) 99999-9999" oninput="I2._wi.fone=this.value">'
+    + '<label class="fl" style="margin-top:8px">Mensagem (você pode ajustar antes de enviar)</label><textarea id="hh-wa-msg" rows="6" style="width:100%;font-size:12.5px">'+esc(waText(info.cli,url,em))+'</textarea>'
+    + '<button class="btn btn-w" style="margin-top:8px;width:100%;background:#1f9d55" onclick="I2.hhWa()">💬 Enviar pelo WhatsApp</button></div>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-o" onclick="I2.hhCopy()">📋 Copiar link</button><a class="btn btn-o" href="'+esc(url)+'" target="_blank">👁 Ver como cliente</a><button class="btn btn-o" onclick="I2.hhLinkClose()">Fechar</button></div></div></div>';
   m.classList.add('on');
 }
 function hhLinksHtml(h){
@@ -1891,9 +1948,11 @@ Object.assign(I2,{
       await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:HHS.id, tipo:'coq', cliente:HHS.cliente, titulo:'Proposta — '+HHS.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
       HHS.meta.links = (HHS.meta.links||[]).concat([{token:token, em:now}]);
       await Store.save(HHS, hhCalc(HHS).opcoes[0]);
-      hhSet(false); hhShowLink(token, now);
+      hhSet(false); hhShowLink(token, now, {cli:HHS.cliente, fone:HHS.fone});
     }catch(e){ delete HHS.meta.token; say('Erro ao gerar o link: '+e.message); }
     HH_BUSY = false; lkBusy('hhMarkSent',false); },
+  hhWa(){ const f = waDigits(($('hh-wa-fone')||{}).value); if(!f){ say('Informe o WhatsApp do cliente com DDD, ex.: (31) 99999-9999'); const i = $('hh-wa-fone'); if(i) i.focus(); return; }
+    const txt = ($('hh-wa-msg')||{}).value || ''; window.open('https://wa.me/'+f+'?text='+encodeURIComponent(txt),'_blank'); say('WhatsApp aberto ✔ — é só tocar em enviar.'); },
   hhCopy(t){ const url = hhLinkUrl(t || ($('hh-link-in')||{}).value); const mm = $('hh-link-modal'), isOpen = !!(mm && mm.classList.contains('on')); const done = ()=>{ say('Link copiado ✔'); if(isOpen){ const b = mm.querySelector('.btn-w'); if(b){ b.textContent = '✔ Link copiado!'; b.style.background = '#2e8b57'; b.disabled = true; } setTimeout(()=>I2.hhLinkClose(),900); } };
     if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,()=>{ prompt('Copie o link:',url); }); else { prompt('Copie o link:',url); } },
   hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='inv'){ LINK_CTX = 'hh'; return; } if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
@@ -2353,7 +2412,7 @@ Object.assign(I2,{
       await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:ESPS.id, tipo:'esp', cliente:ESPS.cliente, titulo:'Proposta — '+ESPS.cliente, html:html, sim:espSimCfg(ESPS), enviado_em:now, created_by_email:Store.email()}});
       ESPS.meta.links = (ESPS.meta.links||[]).concat([{token:token, em:now}]);
       await Store.save(ESPS, espTotal(ESPS));
-      espSet(false); LINK_CTX = 'esp'; hhShowLink(token, now);
+      espSet(false); LINK_CTX = 'esp'; hhShowLink(token, now, {cli:ESPS.cliente, fone:ESPS.fone});
     }catch(e){ delete ESPS.meta.token; say('Erro ao gerar o link: '+e.message); }
     ESP_BUSY = false; lkBusy('espMarkSent',false); }
 });
@@ -2369,7 +2428,7 @@ let CD = 0;
 function simDayNew(dt){ return {data:dt||'', chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}}; }
 function simBind(o){ const E = simDayNew(); SIM_DAYF.forEach(k=>Object.defineProperty(o,k,{configurable:true,enumerable:false,get(){ return (o.dias[CD]||E)[k]; },set(v){ if(o.dias[CD]) o.dias[CD][k] = v; }})); return o; }
 function simNew(){ let datas; if(window.SIM_CFG) datas = (window.SIM_CFG.datas||[]).slice(); else { const d = new Date(); d.setDate(d.getDate()+45); datas = [d.toISOString().slice(0,10)]; }
-  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', step:0, sent:false}); }
+  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', fone:'', step:0, sent:false}); }
 let SIM_ST = 'sim_estado_teste';
 function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.v===2 && o.cli && Array.isArray(o.dias) && (!o.sent || window.SIM_CFG)){ return simBind(o); } }catch(e){} return null; }
 function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
@@ -2388,7 +2447,7 @@ function simItems(id){
   return [];
 }
 const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
-const SIM_ONE = /estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
+const SIM_ONE = /^Toalhas?\b|estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
 const SIM_EXCL = [/^Estacionamento/i,/^Gerador/i,/^Link dedicado/i];
 const SIM_MAX = [[/^Totem/i,2],[/^Passador de slide/i,3],[/^Quadro branco/i,2],[/^Ribalta/i,10]];
 function simMax(n){ if(SIM_ONE.test(n)) return 1; const m = SIM_MAX.find(x=>x[0].test(n)); return m ? m[1] : 999; }
@@ -2404,7 +2463,8 @@ function simEsp(n){ const m = SIM_ESP.find(x=>x[0].test(n)); return m ? {t:m[1],
 const SIM_PER = ['hor','espaco','sala','coffee','almoco','sobremesa','hh','equip','serv'];
 function simNd(){ return Math.max(1, (SIM && SIM.ndias) || 1); }
 function simMulti(){ return simNd()>1 && !SIM.igual; }
-function simSeq(){ const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>a.push({id:id,day:0})); a.push({id:'obs',day:0},{id:'resumo',day:0}); return a; }
+function simFoneOk(){ return String((SIM&&SIM.fone)||'').replace(/\D/g,'').length>=10; }
+function simSeq(){ const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>a.push({id:id,day:0})); a.push({id:'obs',day:0},{id:'fone',day:0},{id:'resumo',day:0}); return a; }
 function simSync(){ if(SIM && SIM.igual && SIM.dias.length>1){ const b = SIM.dias[0]; for(let k=1;k<SIM.dias.length;k++){ const c = JSON.parse(JSON.stringify(b)); c.data = SIM.dias[k].data; SIM.dias[k] = c; } } }
 function simSteps(){ return simSeq().map(x=>x.id); }
 function simDayOf(i){ const x = simSeq()[i]; return x ? x.day : 0; }
@@ -2422,6 +2482,7 @@ const SIM_Q = {
   sobremesa:()=>'Alguma <b>sobremesa</b>?',
   equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
   serv:()=>'E algum <b>serviço</b> extra?',
+  fone:()=>'Para terminar: qual o seu <b>WhatsApp</b> (com DDD)? É por ele que nossa equipe vai te enviar a <b>proposta final</b>.',
   obs:()=>'Quase lá! Quer nos contar mais alguma coisa (cardápio, montagem da sala, horários…)?',
   resumo:()=>'Pronto! 🎉 Veja o resumo do que você escolheu. Se estiver tudo certo, é só enviar — nossa equipe monta a proposta final com você.'
 };
@@ -2433,12 +2494,13 @@ function simAns1(id){
   if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
   if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(n=>esc(simEsp(n).t)).join(' + ') : 'Ainda não sei — quero ajuda'; }
   if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
+  if(id==='fone') return esc(SIM.fone||'');
   if(id==='resumo') return 'Enviar para o Espaço Vista';
   const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
   return names.length ? names.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join(', ') : 'Pular';
 }
 function simAns(id){
-  if(!simMulti() || ['dias','igual','obs','resumo'].indexOf(id)>=0) return simAns1(id);
+  if(!simMulti() || ['dias','igual','obs','fone','resumo'].indexOf(id)>=0) return simAns1(id);
   const keep = CD; const r = SIM.dias.map((d,k)=>{ CD = k; return '<b>Dia '+(k+1)+':</b> '+simAns1(id).replace(/<br>/g,' · '); }).join('<br>'); CD = keep; return r;
 }
 function simTime(f){
@@ -2469,6 +2531,7 @@ function simControls(id){
   if(id==='igual') return '<div class="sim-chips"><div class="sim-chip" onclick="I2.simIgual(1)"><span>Sim, igual — duplicar tudo</span></div><div class="sim-chip" onclick="I2.simIgual(0)"><span>Não, vou escolher dia a dia</span></div></div>';
   if(id==='dias'){ const mx = Math.min(7, Math.max(5,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
+  if(id==='fone') return '<input type="tel" class="sim-fone" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" value="'+esc(SIM.fone||'')+'" oninput="I2.simFone(this.value)" onkeydown="if(event.key===\'Enter\'){I2.simNext()}">'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
   const keep = CD; let h = '';
   if(simMulti()){
@@ -2485,7 +2548,7 @@ function simSummary(){
   const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
   const dts = (SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR')).join(' e ');
-  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados');
+  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('WhatsApp',esc(SIM.fone)):'');
   const keep = CD; const list = SIM.igual ? [0] : SIM.dias.map((_,k)=>k);
   list.forEach(k=>{ CD = k;
     h += (SIM.dias.length>1 ? '<div class="sim-dh">'+(SIM.igual ? 'Todos os '+SIM.dias.length+' dias (iguais)' : esc(simDayHead(k)))+'</div>' : '')
@@ -2526,6 +2589,7 @@ Object.assign(I2,{
   simOne(id,n){ const g='gast', was=!!SIM[g][n]; simItems(id).forEach(x=>delete SIM[g][x]); if(!was){ SIM[g][n]=true; if(!simMulti()) SIM.step=Math.min(simSteps().length-1,SIM.step+1); } simRender(simMulti()); },
   simQty(g,n,d){ SIM[g][n] = Math.min(simMax(n),Math.max(1,(SIM[g][n]||1)+d)); simRender(true); },
   simObs(v){ SIM.obs = v; },
+  simFone(v){ SIM.fone = v; simPersist(); },
   simND(k){ SIM.ndias = k; SIM.igual = undefined; while(SIM.dias.length<k){ const dn = simDayNew((SIM.datas||[])[SIM.dias.length]||''); if(!window.SIM_CFG){ dn.chegada = '08:00'; dn.inicio = '09:00'; dn.termino = '17:00'; } SIM.dias.push(dn); } SIM.dias.length = k; SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simIgual(yes){ SIM.igual = !!yes; if(yes) simSync(); SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simPrint(){ const w = window.open('','_blank'); if(!w){ say('Libere os pop-ups para baixar o resumo'); return; } w.document.write('<html><head><meta charset="utf-8"><title>Resumo — Espaço Vista</title><style>body{font:14px Arial,sans-serif;padding:30px;color:#222;max-width:720px;margin:auto}h1{font-size:18px;color:#9B3A41}.sim-s{margin:10px 0}.sim-s small{display:block;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:.06em}.sim-dh{margin-top:16px;font-weight:800;color:#9B3A41;border-top:1px dashed #ccc;padding-top:8px}.sim-hint{color:#888;font-size:11px}</style></head><body><h1>Espaço Vista — resumo da sua simulação</h1>'+simSummary()+'</body></html>'); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },500); },
@@ -2537,18 +2601,19 @@ Object.assign(I2,{
   simNext(){ const id = simSteps()[SIM.step], keep = CD, days = simMulti() ? SIM.dias.map((_,k)=>k) : [0]; let err = '';
     if(id==='hor'){ if(SIM.igual) SIM.dias.forEach((d,k)=>{ if(!err && !d.data) err = 'Informe a data do Dia '+(k+1); }); days.forEach(k=>{ CD = k; const p = simMulti() ? 'do Dia '+(k+1) : ''; if(!err && !SIM.data) err = 'Informe a data '+p; if(!err && (!SIM.chegada || !SIM.termino)) err = 'Informe o horário de chegada e o de saída '+p; }); }
     if(id==='coffee') days.forEach(k=>{ CD = k; const p = simMulti() ? ' (Dia '+(k+1)+')' : ''; if(err) return; if(SIM.coffee.some(c=>!c.cat)) err = 'Escolha a categoria de cada momento de coffee break'+p; else if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })) err = 'Coffee break não é servido entre 11h e 14h — ajuste o horário'+p; });
+    if(id==='fone' && !simFoneOk()) err = 'Informe um WhatsApp válido, com DDD. Ex.: (31) 99999-9999';
     CD = keep; if(err){ say(err); return; }
     SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
-  simSend(){ const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
+  simSend(){ if(!simFoneOk()){ say('Informe o seu WhatsApp (com DDD) antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const p = newProposal(); p.cliente = x.cli; p.fone = x.fone||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
       Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
@@ -2571,7 +2636,7 @@ function orcRender(){
   orcLoad().then(()=>{
     el.innerHTML = ORC.length ? ORC.map(o=>{ const x = o.payload||{}, u = simSum(x);
       const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
-      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
+      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.fone?' · WhatsApp '+esc(x.fone):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
         +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('')
       : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(CLOUD?'Nenhum orçamento recebido ainda.':'Disponível no sistema online (com login).')+'</p>';
   });

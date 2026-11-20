@@ -103,7 +103,7 @@ let CD = 0;
 function simDayNew(dt){ return {data:dt||'', chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}}; }
 function simBind(o){ const E = simDayNew(); SIM_DAYF.forEach(k=>Object.defineProperty(o,k,{configurable:true,enumerable:false,get(){ return (o.dias[CD]||E)[k]; },set(v){ if(o.dias[CD]) o.dias[CD][k] = v; }})); return o; }
 function simNew(){ let datas; if(window.SIM_CFG) datas = (window.SIM_CFG.datas||[]).slice(); else { const d = new Date(); d.setDate(d.getDate()+45); datas = [d.toISOString().slice(0,10)]; }
-  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', step:0, sent:false}); }
+  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', fone:'', step:0, sent:false}); }
 let SIM_ST = 'sim_estado_teste';
 function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.v===2 && o.cli && Array.isArray(o.dias) && (!o.sent || window.SIM_CFG)){ return simBind(o); } }catch(e){} return null; }
 function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
@@ -122,7 +122,7 @@ function simItems(id){
   return [];
 }
 const SIM_SALA = {'Serviço de sala: água':'Água mineral (com e sem gás)','Serviço de sala: água em jarra':'Água em jarra','Serviço de sala: café':'Café da Casa — coado e servido em garrafa, à vontade','Serviço de sala: café expresso (cápsula)':'Estação de Expresso — café de cápsula','Serviço de sala: petit four':'Petit four'};
-const SIM_ONE = /estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
+const SIM_ONE = /^Toalhas?\b|estacionamento|gerador|palco|jardim vertical|^Pacote|^Link dedicado|^Monitor de palco|^Púlpito|^Diária de montagem/i;
 const SIM_EXCL = [/^Estacionamento/i,/^Gerador/i,/^Link dedicado/i];
 const SIM_MAX = [[/^Totem/i,2],[/^Passador de slide/i,3],[/^Quadro branco/i,2],[/^Ribalta/i,10]];
 function simMax(n){ if(SIM_ONE.test(n)) return 1; const m = SIM_MAX.find(x=>x[0].test(n)); return m ? m[1] : 999; }
@@ -138,7 +138,8 @@ function simEsp(n){ const m = SIM_ESP.find(x=>x[0].test(n)); return m ? {t:m[1],
 const SIM_PER = ['hor','espaco','sala','coffee','almoco','sobremesa','hh','equip','serv'];
 function simNd(){ return Math.max(1, (SIM && SIM.ndias) || 1); }
 function simMulti(){ return simNd()>1 && !SIM.igual; }
-function simSeq(){ const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>a.push({id:id,day:0})); a.push({id:'obs',day:0},{id:'resumo',day:0}); return a; }
+function simFoneOk(){ return String((SIM&&SIM.fone)||'').replace(/\D/g,'').length>=10; }
+function simSeq(){ const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>a.push({id:id,day:0})); a.push({id:'obs',day:0},{id:'fone',day:0},{id:'resumo',day:0}); return a; }
 function simSync(){ if(SIM && SIM.igual && SIM.dias.length>1){ const b = SIM.dias[0]; for(let k=1;k<SIM.dias.length;k++){ const c = JSON.parse(JSON.stringify(b)); c.data = SIM.dias[k].data; SIM.dias[k] = c; } } }
 function simSteps(){ return simSeq().map(x=>x.id); }
 function simDayOf(i){ const x = simSeq()[i]; return x ? x.day : 0; }
@@ -156,6 +157,7 @@ const SIM_Q = {
   sobremesa:()=>'Alguma <b>sobremesa</b>?',
   equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
   serv:()=>'E algum <b>serviço</b> extra?',
+  fone:()=>'Para terminar: qual o seu <b>WhatsApp</b> (com DDD)? É por ele que nossa equipe vai te enviar a <b>proposta final</b>.',
   obs:()=>'Quase lá! Quer nos contar mais alguma coisa (cardápio, montagem da sala, horários…)?',
   resumo:()=>'Pronto! 🎉 Veja o resumo do que você escolheu. Se estiver tudo certo, é só enviar — nossa equipe monta a proposta final com você.'
 };
@@ -167,12 +169,13 @@ function simAns1(id){
   if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
   if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(n=>esc(simEsp(n).t)).join(' + ') : 'Ainda não sei — quero ajuda'; }
   if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
+  if(id==='fone') return esc(SIM.fone||'');
   if(id==='resumo') return 'Enviar para o Espaço Vista';
   const names = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]);
   return names.length ? names.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join(', ') : 'Pular';
 }
 function simAns(id){
-  if(!simMulti() || ['dias','igual','obs','resumo'].indexOf(id)>=0) return simAns1(id);
+  if(!simMulti() || ['dias','igual','obs','fone','resumo'].indexOf(id)>=0) return simAns1(id);
   const keep = CD; const r = SIM.dias.map((d,k)=>{ CD = k; return '<b>Dia '+(k+1)+':</b> '+simAns1(id).replace(/<br>/g,' · '); }).join('<br>'); CD = keep; return r;
 }
 function simTime(f){
@@ -203,6 +206,7 @@ function simControls(id){
   if(id==='igual') return '<div class="sim-chips"><div class="sim-chip" onclick="I2.simIgual(1)"><span>Sim, igual — duplicar tudo</span></div><div class="sim-chip" onclick="I2.simIgual(0)"><span>Não, vou escolher dia a dia</span></div></div>';
   if(id==='dias'){ const mx = Math.min(7, Math.max(5,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
+  if(id==='fone') return '<input type="tel" class="sim-fone" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" value="'+esc(SIM.fone||'')+'" oninput="I2.simFone(this.value)" onkeydown="if(event.key===\'Enter\'){I2.simNext()}">'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
   const keep = CD; let h = '';
   if(simMulti()){
@@ -219,7 +223,7 @@ function simSummary(){
   const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
   const dts = (SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR')).join(' e ');
-  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados');
+  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('WhatsApp',esc(SIM.fone)):'');
   const keep = CD; const list = SIM.igual ? [0] : SIM.dias.map((_,k)=>k);
   list.forEach(k=>{ CD = k;
     h += (SIM.dias.length>1 ? '<div class="sim-dh">'+(SIM.igual ? 'Todos os '+SIM.dias.length+' dias (iguais)' : esc(simDayHead(k)))+'</div>' : '')
@@ -260,6 +264,7 @@ Object.assign(I2,{
   simOne(id,n){ const g='gast', was=!!SIM[g][n]; simItems(id).forEach(x=>delete SIM[g][x]); if(!was){ SIM[g][n]=true; if(!simMulti()) SIM.step=Math.min(simSteps().length-1,SIM.step+1); } simRender(simMulti()); },
   simQty(g,n,d){ SIM[g][n] = Math.min(simMax(n),Math.max(1,(SIM[g][n]||1)+d)); simRender(true); },
   simObs(v){ SIM.obs = v; },
+  simFone(v){ SIM.fone = v; simPersist(); },
   simND(k){ SIM.ndias = k; SIM.igual = undefined; while(SIM.dias.length<k){ const dn = simDayNew((SIM.datas||[])[SIM.dias.length]||''); if(!window.SIM_CFG){ dn.chegada = '08:00'; dn.inicio = '09:00'; dn.termino = '17:00'; } SIM.dias.push(dn); } SIM.dias.length = k; SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simIgual(yes){ SIM.igual = !!yes; if(yes) simSync(); SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simPrint(){ const w = window.open('','_blank'); if(!w){ say('Libere os pop-ups para baixar o resumo'); return; } w.document.write('<html><head><meta charset="utf-8"><title>Resumo — Espaço Vista</title><style>body{font:14px Arial,sans-serif;padding:30px;color:#222;max-width:720px;margin:auto}h1{font-size:18px;color:#9B3A41}.sim-s{margin:10px 0}.sim-s small{display:block;font-size:10px;text-transform:uppercase;color:#888;letter-spacing:.06em}.sim-dh{margin-top:16px;font-weight:800;color:#9B3A41;border-top:1px dashed #ccc;padding-top:8px}.sim-hint{color:#888;font-size:11px}</style></head><body><h1>Espaço Vista — resumo da sua simulação</h1>'+simSummary()+'</body></html>'); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },500); },
@@ -271,18 +276,19 @@ Object.assign(I2,{
   simNext(){ const id = simSteps()[SIM.step], keep = CD, days = simMulti() ? SIM.dias.map((_,k)=>k) : [0]; let err = '';
     if(id==='hor'){ if(SIM.igual) SIM.dias.forEach((d,k)=>{ if(!err && !d.data) err = 'Informe a data do Dia '+(k+1); }); days.forEach(k=>{ CD = k; const p = simMulti() ? 'do Dia '+(k+1) : ''; if(!err && !SIM.data) err = 'Informe a data '+p; if(!err && (!SIM.chegada || !SIM.termino)) err = 'Informe o horário de chegada e o de saída '+p; }); }
     if(id==='coffee') days.forEach(k=>{ CD = k; const p = simMulti() ? ' (Dia '+(k+1)+')' : ''; if(err) return; if(SIM.coffee.some(c=>!c.cat)) err = 'Escolha a categoria de cada momento de coffee break'+p; else if(SIM.coffee.some(c=>{ const h = parseInt((c.hora||'').split(':')[0]); return !isNaN(h) && h>=11 && h<14; })) err = 'Coffee break não é servido entre 11h e 14h — ajuste o horário'+p; });
+    if(id==='fone' && !simFoneOk()) err = 'Informe um WhatsApp válido, com DDD. Ex.: (31) 99999-9999';
     CD = keep; if(err){ say(err); return; }
     SIM.step = Math.min(simSteps().length-1, SIM.step+1); simRender(); },
   simGo(i){ SIM.step = i; simRender(); },
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
-  simSend(){ const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
+  simSend(){ if(!simFoneOk()){ say('Informe o seu WhatsApp (com DDD) antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
     SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); p.cliente = x.cli; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const p = newProposal(); p.cliente = x.cli; p.fone = x.fone||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
       Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
@@ -299,8 +305,9 @@ Object.assign(I2,{
 
   SIM_ST = 'sim_' + token;
   I2.simSend = function(){
+    if(!simFoneOk()){ say('Informe o seu WhatsApp (com DDD) antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; }
     var b = document.querySelector('.sim-ctl .btn-w'); if(b){ b.disabled = true; b.textContent = 'Enviando…'; }
-    var p = {cli:SIM.cli, n:SIM.n, obs:SIM.obs, dias:SIM.dias};
+    var p = {cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, dias:SIM.dias};
     fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/enviar_orcamento',{method:'POST',headers:{'apikey':CFG.SUPABASE_ANON_KEY,'Authorization':'Bearer '+CFG.SUPABASE_ANON_KEY,'Content-Type':'application/json'},body:JSON.stringify({t:token,p:p})})
     .then(function(r){ if(!r.ok) throw 0; return r.json(); })
     .then(function(j){ if(!j||!j.ok) throw j; SIM.sent = true; simRender(); })
