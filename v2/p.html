@@ -39,6 +39,7 @@ fetch(CFG.SUPABASE_URL+'/rest/v1/rpc/get_public_proposal',{method:'POST',headers
   show(j);
 }).catch(function(){ msg('Não foi possível abrir','Verifique sua conexão e tente novamente em instantes.'); });
 
+window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vistaGo!=='number') return; var f=[].slice.call(document.querySelectorAll('iframe')).find(function(x){return x.contentWindow===ev.source}); if(!f) return; var r=f.getBoundingClientRect(), k=r.width/(f.offsetWidth||1920), off=(document.querySelector('header')?document.querySelector('header').offsetHeight:0)+(document.querySelector('.tabs')?document.querySelector('.tabs').offsetHeight:0)+8; window.scrollTo({top:r.top+window.pageYOffset+ev.data.vistaGo*k-off,behavior:'smooth'}); });
 function show(j){
   var parts = (j.html||'').split('<!--VISTA-SPLIT-->'); H = parts.join('');
   var names = parts.length>1 ? ['Proposta do Espaço','Proposta de Buffet'] : [''];

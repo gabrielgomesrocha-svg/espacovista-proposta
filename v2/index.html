@@ -1776,7 +1776,7 @@ h2.t b{font-weight:800;color:var(--w)}
 .p2 .sp{position:absolute;left:150px;right:150px;bottom:92px}
 .p2 .sp h2{margin-bottom:26px}
 .p2 .chips{display:grid;grid-template-columns:repeat(6,1fr);gap:18px}
-.p2 .chips span{background:#fff;color:var(--wd);font:800 19px 'Montserrat',sans-serif;text-transform:uppercase;text-align:center;padding:17px 6px;border-radius:9px;letter-spacing:.01em}
+.p2 .chips a,.p2 .chips span{text-decoration:none;display:block;background:#fff;color:var(--wd);font:800 19px 'Montserrat',sans-serif;text-transform:uppercase;text-align:center;padding:17px 6px;border-radius:9px;letter-spacing:.01em}
 /* páginas claras */
 .pg .in{position:absolute;left:100px;right:100px;top:64px;bottom:50px}
 .hd{display:flex;gap:56px;align-items:flex-start;margin-bottom:26px}
@@ -1867,9 +1867,9 @@ function espPages(c){
    <div><h3>Sem taxas e impostos</h3><p>O Espaço Vista oferece uma proposta facilitada e diferenciada, sem cobrança de impostos ou taxas adicionais.</p></div>
    <div><h3>Equipamentos inclusos</h3><p>Painel de led, microfone Sennheiser, sonorização TurboSound, mesa digital e mobiliário ergonômico.</p></div>
    <div><h3>Estacionamento próprio</h3><p>Estacionamento interno e amplo com a capacidade de até 30 carros com serviço de manobrista.</p></div></div></div>
-  <div class="sp z"><h2 class="t">Conheça <b>nossos espaços</b></h2><div class="chips"><span>Salão Vista</span><span>Salão Real</span><span>Serra do Curral</span><span>Sala Ouro Preto</span><span>Sala Mariana</span><span>Sala Tiradentes</span></div></div></section>`);
+  <div class="sp z"><h2 class="t">Conheça <b>nossos espaços</b></h2><div class="chips">${[['Salão Vista','vista'],['Salão Real','vista'],['Serra do Curral','vista'],['Sala Ouro Preto','salas'],['Sala Mariana','salas'],['Sala Tiradentes','salas']].map(x=>{const on = x[1]==='vista' ? c.show.vista : (c.show.ouro||c.show.tira); return on ? '<a href="#e-'+x[1]+'">'+x[0]+'</a>' : '<span>'+x[0]+'</span>';}).join('')}</div></div></section>`);
   // 3 salões
-  if(c.show.vista) pages.push(`<section class="page pg">${bg('esp_fundo','light')}<div class="in z">
+  if(c.show.vista) pages.push(`<section class="page pg" id="e-vista">${bg('esp_fundo','light')}<div class="in z">
    <div class="hd" style="margin-bottom:20px"><h2 class="t">Salão <b>Vista</b> • Salão <b>Real</b><br>Espaço <b>Serra do Curral</b></h2><p>O espaço destaca-se pela vista panorâmica da cidade e arquitetura planejada para proporcionar conforto e privacidade em diversos tipos de eventos. Equipado com tecnologia de ponta, como painel de LED de 200 polegadas, mesa digital, sonorização, microfones e mobiliário, já inclusos no valor da locação. Inclui também o Salão Real e o Espaço Serra do Curral.</p></div>
    <div class="sc" style="height:350px">${c.foto('esp_vista','Salão Vista',640,350)}<div class="tx"><div class="cols2"><div><h4>Características e itens inclusos</h4>${li(['Área: 160m²','Pé direito duplo: 4,80m','Painel de Led Full HD (4,50m x 2,60m)','1 Microfone sem fio (Sennheiser)','Sonorização (2 caixas Turbosound)','Mobiliário ergonômico','Wi-fi banda larga','Climatizado','Coffee point para serviço de sala','Vista panorâmica'])}</div>
     <div class="fmt"><h4>Formatos e capacidades</h4><div><span>Auditório</span><b>200 pessoas</b></div><div><span>Escolar</span><b>102 pessoas</b></div><div><span>"U" cadeiras</span><b>48 pessoas</b></div><div><span>"U" mesas e cadeiras</span><b>38 pessoas</b></div><div><span>Mesas redondas</span><b>90 pessoas</b></div><div><span>Coquetel</span><b>250 pessoas</b></div><small>A capacidade da plenária pode aumentar quando integrada ao Salão Real.</small></div></div></div></div>
@@ -1878,7 +1878,7 @@ function espPages(c){
    <div class="pb" style="margin-top:22px">${price('vista')}</div></div></section>`);
   // 4 salas
   if(c.show.ouro || c.show.tira){
-    let h = `<section class="page pg">${bg('esp_fundo','light')}<div class="in z">`;
+    let h = `<section class="page pg" id="e-salas">${bg('esp_fundo','light')}<div class="in z">`;
     if(c.show.ouro) h += `<div class="hd" style="margin-bottom:18px"><h2 class="t" style="font-size:46px">Sala <b>Ouro Preto</b> • Sala <b>Mariana</b></h2><p>A Sala Ouro Preto impressiona com sua arquitetura sofisticada e funcional, ideal para reuniões de médio e pequeno porte, proporcionando uma experiência imersiva. Equipamentos modernos e mobiliário estão inclusos na locação. A Sala Mariana serve como sala de apoio e foyer, complementando o espaço.</p></div>
     <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:22px"><div class="sc" style="height:290px">${c.foto('esp_ouro','Sala Ouro Preto',360,290)}<div class="tx" style="padding:18px 24px"><div class="cols2" style="grid-template-columns:1.2fr 1fr;gap:20px"><div><h4>Características e itens inclusos</h4>${li(['Área: 80m²','Pé direito: 2,70m','Projetor a laser de 4.000 lumens','Telão de 110 polegadas','1 microfone sem fio / Sonorização','Coffee Point','Wi-fi banda larga','Climatizado','Mobiliário executivo'])}</div><div class="fmt"><h4>Formatos</h4><div><span>"U" mesas e cadeiras</span><b>23</b></div><div><span>Escolar</span><b>20</b></div><div><span>Outros formatos</span><b style="font-weight:500">Sob consulta</b></div></div></div></div></div>
      <div class="sc" style="height:290px">${c.foto('esp_mariana','Sala Mariana',230,290)}<div class="tx" style="padding:18px 22px"><h4>Características</h4>${li(['Área: 45m²','Pé direito: 2,50m','Mobiliário','Wi-fi banda larga','Climatizado'])}<p style="font-size:14.5px;color:#666;margin-top:12px">Sala integrada à Sala Ouro Preto</p></div></div></div>
@@ -1888,7 +1888,7 @@ function espPages(c){
     pages.push(h+'</div></section>');
   }
   // 5 exclusivo + buffet
-  if(c.show.excl) pages.push(`<section class="page pg">${bg('esp_fundo','light')}<div class="in z">
+  if(c.show.excl) pages.push(`<section class="page pg" id="e-excl">${bg('esp_fundo','light')}<div class="in z">
    <div class="hd"><h2 class="t">Espaço Vista <b>Exclusivo</b><br><span style="font-size:34px">Todos os ambientes</span></h2><p>Garanta a exclusividade do Espaço Vista para o seu evento. Perfeito para atividades simultâneas em diferentes ambientes e para eventos que exigem total privacidade. Os seis espaços estão incluídos, assim como os respectivos equipamentos e mobiliário.</p></div>
    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;height:260px">${[['esp_vista','Salão Vista'],['esp_real','Salão Real'],['esp_serra','Serra do Curral'],['esp_ouro','Sala Ouro Preto'],['esp_mariana','Sala Mariana'],['esp_tira','Sala Tiradentes']].map(a=>c.foto(a[0],a[1],'100%',260)).join('')}</div>
    <div class="pb" style="margin:28px 0 40px">${price('excl')}</div>
@@ -1936,6 +1936,7 @@ const BUF_STYLE = `
 .bx2 .nt{font-size:15.5px;line-height:1.45;color:#555}
 .bx2 .nt li{list-style:none;padding:1px 0}
 .row2{display:grid;grid-template-columns:1fr 1.1fr;gap:26px;align-items:stretch}
+ul.nt{list-style:none;padding-left:0}
 .vc{display:inline-block;margin-top:10px;background:#fff;border:1.5px solid var(--w);color:var(--w);font:800 15px 'Montserrat',sans-serif;padding:7px 16px;border-radius:6px;text-decoration:none;letter-spacing:.03em}
 .phs{position:absolute;right:100px;top:56px;bottom:40px;width:520px;display:flex;flex-direction:column;gap:14px}
 .phs .ph{flex:1;border-radius:16px}
@@ -1995,7 +1996,7 @@ function bufPages(c){
    <h3 class="s">Serviço de <b>Sala</b></h3><div class="row2"><div class="bx2">${BUF_SERV.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' '+s[2]+'</span></div>').join('')}</div><ul class="nt" style="padding-top:8px"><li>• Inclusos mão de obra, materiais e insumos.</li><li>• Café ilimitado e servido em garrafa. Valor por pessoa durante o evento.</li><li>• Água mineral e com gás, sob consumo.</li></ul></div>
    <h3 class="s" style="margin-top:14px">Categorias <b>Coffee Break</b></h3><div class="row2"><div class="bx2">${BUF_CB.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' por pessoa</span></div>').join('')}</div><div><ul class="nt"><li>• Duração de até 30 minutos.</li><li>• Valor por pessoa para cada categoria.</li><li>• Cobrança mínima referente a 15 pessoas.</li></ul><a class="vc" href="#b4">Ver cardápio</a></div></div>
    <h3 class="s" style="margin-top:14px">Categorias <b>Almoço</b></h3><div class="row2"><div class="bx2">${BUF_AL.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' por pessoa</span></div>').join('')}</div><div><ul class="nt"><li>• Duração de até 1 hora e 30 minutos.</li><li>• Valor por pessoa para cada categoria.</li><li>• Cobrança mínima referente a 15 pessoas.</li></ul><a class="vc" href="#b5">Ver cardápio</a></div></div>
-   <div class="row2" style="margin-top:16px;gap:30px"><div><h3 class="s">Happy Hour <b>Comida de Buteco</b></h3><div class="bx2 nt" style="padding:12px 20px">O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de petit gourmet, petiscos e pratos quentes. Inclui cerveja, refrigerante e água.</div><a class="vc" href="#b7">Ver cardápio</a></div><div><h3 class="s">Happy Hour <b>Coquetel</b></h3><div class="bx2 nt" style="padding:12px 20px">O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha opções entre petit gourmet, frios, assados, fritos, prato quente e pratos principais. Inclui cerveja, refrigerante e água.</div><a class="vc" href="#b8">Ver cardápio</a></div></div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:30px;row-gap:0;margin-top:16px;align-items:stretch"><h3 class="s" style="font-size:34px;white-space:nowrap">Happy Hour <b>Comida de Buteco</b></h3><h3 class="s" style="font-size:34px;white-space:nowrap">Happy Hour <b>Coquetel</b></h3><div class="bx2 nt" style="padding:12px 20px">O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de petit gourmet, petiscos e pratos quentes. Inclui cerveja, refrigerante e água.</div><div class="bx2 nt" style="padding:12px 20px">O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha opções entre petit gourmet, frios, assados, fritos, prato quente e pratos principais. Inclui cerveja, refrigerante e água.</div><div><a class="vc" href="#b7">Ver cardápio</a></div><div><a class="vc" href="#b8">Ver cardápio</a></div></div>
   </div><div class="phs z">${c.foto('bz_p3','','100%','100%').replace(/<span class="tag">.*?<\/span>/,'').replace('class="ph f"','class="ph f" style="flex:1;border-radius:16px;width:100%"')}</div></section>`);
   // 4 coffee break
   const cb = (t,price,al,beb,extra) => '<div style="margin-bottom:18px"><h3 class="ttl">Coffee Break <b>'+t+'</b><small>'+price+' por pessoa</small></h3><div class="bx2"><div style="display:flex;gap:50px"><div><h4 style="font:700 16px Montserrat">Alimentos</h4>'+ul(al)+'</div>'+extra+'<div style="margin-left:auto"><h4 style="font:700 16px Montserrat">Bebidas</h4>'+ul(beb[0])+(beb[1]?'<p style="font-size:15px;color:#444;margin-top:6px">'+beb[1]+'</p>':'')+'</div></div></div></div>';
@@ -2082,7 +2083,7 @@ function espParts(e,fotos){
     mapa:()=> F0.mapa ? (L.mapa ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:block;color:inherit">' : '')+'<div class="map ph f"><img src="'+F0.mapa+'" style="'+hhImgStyle('mapa')+'" alt=""></div>'+(L.mapa ? '</a>' : '') : '<div class="ph map" data-l="mapa · localização"></div>',
     btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</a>' : '<div class="btn"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</div>'
   };
-  const head = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(e.cliente||'Eventos')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet"><style>'+ESP_STYLE+BUF_STYLE+'</style></head><body>';
+  const head = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><script>document.addEventListener(\'click\',function(ev){var a=ev.target.closest&&ev.target.closest(\'a[href^="#"]\');if(!a)return;var t=document.getElementById(a.getAttribute(\'href\').slice(1));if(!t)return;ev.preventDefault();parent.postMessage({vistaGo:t.getBoundingClientRect().top+window.pageYOffset},\'*\');});<\/script><title>Proposta Espaço Vista — '+esc(e.cliente||'Eventos')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet"><style>'+ESP_STYLE+BUF_STYLE+'</style></head><body>';
   const out = {head:head}; if(espEspOn(e)) out.esp = espPages(c); if(espBufOn(e)) out.buf = bufPages(c); return out;
 }
 function espPageCount(e){ const p = espParts(e); return ((p.esp||'')+(p.buf||'')).split('class="page').length-1; }
@@ -2143,6 +2144,8 @@ Object.assign(I2,{
     }catch(e){ delete ESPS.meta.token; say('Erro ao gerar o link: '+e.message); }
     ESP_BUSY = false; }
 });
+
+window.addEventListener('message',function(ev){ if(!ev.data||typeof ev.data.vistaGo!=='number') return; var f=[].slice.call(document.querySelectorAll('iframe')).find(function(x){return x.contentWindow===ev.source}); if(!f) return; var r=f.getBoundingClientRect(), k=r.width/(f.offsetWidth||1920); window.scrollTo({top:r.top+window.pageYOffset+ev.data.vistaGo*k-70,behavior:'smooth'}); });
 
 window.I2 = I2;
 window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
