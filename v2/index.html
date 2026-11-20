@@ -347,6 +347,17 @@ body.sb-off .main{margin-left:0}
   .i2-ln .grab{display:none}.i2-ln td.nm{padding-left:0}
 }
 @media(max-width:700px){.i2-sug{left:8px!important;right:8px!important;width:auto!important;max-width:calc(100vw - 16px);max-height:45vh}.i2-sug div{gap:8px}.i2-sug div span:first-child{min-width:0;overflow-wrap:anywhere}}
+
+.cli-tabs{display:flex;gap:6px;border-bottom:2px solid var(--ru);margin:-4px 0 14px}
+.cli-t{border:0;background:none;padding:10px 18px;font-size:13.5px;font-weight:700;color:#777;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.cli-t span{display:inline-block;background:#eee;color:#555;border-radius:999px;padding:1px 8px;font-size:11px;margin-left:4px}
+.cli-t.on{color:var(--w);border-bottom-color:var(--w)}.cli-t.on span{background:var(--w);color:#fff}
+.cli-g{border:1px solid var(--ru);border-radius:10px;margin-bottom:10px;background:#fff;overflow:hidden}
+.cli-gh{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#F7F3F3;cursor:pointer;flex-wrap:wrap}
+.cli-gh:hover{background:#F2ECEC}.cli-gh .car{color:#999;width:12px}.cli-gh .gn{font-size:15px;color:#1a1a1a}
+.cli-gh .gc{font-size:12px;color:#666;flex:1;min-width:140px}.cli-gh .gl{font-size:12px;color:#444;font-weight:600}
+.cli-gb{padding:8px 10px 2px}.cli-gb .i2-pl.cli-r{margin-bottom:8px}
+.cli-gh .i2-ck{margin:0!important;flex:none;width:18px;height:18px;position:static!important}.cli-gh{flex-wrap:nowrap}.cli-gh .gc{flex:1}@media(max-width:700px){.cli-gh{flex-wrap:wrap}}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -581,7 +592,7 @@ body.sb-off .main{margin-left:0}
   <div class="view" id="view-clientes">
     <div class="card">
       <div class="card-hdr"><span class="card-title">Propostas salvas</span></div>
-      <div class="card-body"><div class="cli-tools"><input id="i2-cli-q" type="text" placeholder="🔍  Buscar cliente…" oninput="I2.cliDraw()">
+      <div class="card-body"><div class="cli-tabs"><button class="cli-t on" data-t="act" onclick="I2.cliTab('act')">Ativos <span id="cli-n-act">0</span></button><button class="cli-t" data-t="arq" onclick="I2.cliTab('arq')">📦 Arquivados <span id="cli-n-arq">0</span></button></div><div class="cli-tools"><input id="i2-cli-q" type="text" placeholder="🔍  Buscar cliente…" oninput="I2.cliDraw()">
         <div class="cli-fs"><button class="cli-f on" data-f="all" onclick="I2.cliFilt('all')">Todos</button><button class="cli-f" data-f="inv" onclick="I2.cliFilt('inv')">Investimento</button><button class="cli-f" data-f="esp" onclick="I2.cliFilt('esp')">Espaço</button><button class="cli-f" data-f="coq" onclick="I2.cliFilt('coq')">Coquetel</button></div></div>
         <p style="font-size:11px;color:var(--gr);margin:6px 0 12px;text-align:center">Toda proposta salva aparece aqui. Clique para abrir e editar.</p><div id="i2-cli-list"></div></div>
     </div>
@@ -895,7 +906,7 @@ const Store = {
   },
   email(){ return CLOUD ? (this.sess&&this.sess.email)||'' : 'modo local'; },
   async list(){
-    if(CLOUD) return await this.api('proposals?select=id,cliente,total,updated_at,updated_by_email,tipo:data->>tipo,links:data->meta->links&order=updated_at.desc&limit=500');
+    if(CLOUD) return await this.api('proposals?select=id,cliente,total,updated_at,updated_by_email,tipo:data->>tipo,links:data->meta->links,arquivado&order=updated_at.desc&limit=500');
     let idx = []; try{ idx = JSON.parse(LS.get('inv2_index')||'[]'); }catch(e){}
     return idx.sort((a,b)=>(b.updated_at||'').localeCompare(a.updated_at||''));
   },
@@ -915,6 +926,9 @@ const Store = {
       LS.set('inv2_index',JSON.stringify(idx));
     }
   },
+  async setArq(ids,on){ if(!ids.length) return;
+    if(CLOUD){ await this.api('proposals?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{'Prefer':'return=minimal'},body:{arquivado:!!on}}); return; }
+    let idx = []; try{ idx = JSON.parse(LS.get('inv2_index')||'[]'); }catch(e){} idx.forEach(x=>{ if(ids.indexOf(x.id)>=0) x.arquivado = !!on; }); LS.set('inv2_index',JSON.stringify(idx)); },
   async remove(id){
     if(CLOUD){ await this.api('proposals?id=eq.'+encodeURIComponent(id),{method:'DELETE'}); return; }
     LS.del('inv2_p_'+id); let idx=[]; try{ idx = JSON.parse(LS.get('inv2_index')||'[]'); }catch(e){}
@@ -1295,7 +1309,7 @@ const I2 = {
   },
   async openList(){ $('i2-modal-list').classList.add('on'); $('i2-q').value=''; $('i2-plist').innerHTML='<p style="color:var(--gr)">Carregando…</p>'; try{ I2._list = await Store.list(); }catch(e){ $('i2-plist').innerHTML='<p style="color:var(--w)">'+esc(e.message)+'</p>'; return; } I2.renderList(); },
   renderList(){
-    const q = norm(($('i2-q')||{}).value||''), l = (I2._list||[]).filter(x=>!q || norm(x.cliente).indexOf(q)>=0);
+    const q = norm(($('i2-q')||{}).value||''), l = (I2._list||[]).filter(x=>!x.arquivado && (!q || norm(x.cliente).indexOf(q)>=0));
     $('i2-plist').innerHTML = l.length ? l.map(x=>`<div class="i2-pl" onclick="I2.open('${esc(x.id)}')"><div><div class="n">${esc(x.cliente||'(sem nome)')}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
       <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.dup('${esc(x.id)}')">Duplicar</button><button class="x-btn" onclick="event.stopPropagation();I2.del('${esc(x.id)}')" title="Excluir">×</button></div>`).join('') : '<p style="color:var(--gr)">Nenhuma proposta salva.</p>';
   },
@@ -1305,16 +1319,29 @@ const I2 = {
       try{ I2._list = await Store.list(); }catch(e){ el.innerHTML = '<p style="color:var(--w);font-size:12px">'+esc(e.message)+'</p>'; return; } }
     I2.cliDraw();
   },
-  cliVisible(){ const q = norm(($('i2-cli-q')||{}).value||''), f = I2._cf||'all';
-    return (I2._list||[]).filter(x=>{ const t = x.tipo==='esp'?'esp':x.tipo==='coq'?'coq':'inv'; return (f==='all'||f===t) && (!q || norm(x.cliente).indexOf(q)>=0); }); },
+  cliVisible(){ const q = norm(($('i2-cli-q')||{}).value||''), f = I2._cf||'all', arq = (I2._ct||'act')==='arq';
+    return (I2._list||[]).filter(x=>{ const t = x.tipo==='esp'?'esp':x.tipo==='coq'?'coq':'inv'; return !!x.arquivado===arq && (f==='all'||f===t) && (!q || norm(x.cliente).indexOf(q)>=0); }); },
   cliFilt(f){ I2._cf = f; document.querySelectorAll('.cli-f').forEach(b=>b.classList.toggle('on',b.dataset.f===f)); I2.cliDraw(); },
+  cliTab(t){ I2._ct = t; I2._sel = new Set(); document.querySelectorAll('.cli-t').forEach(b=>b.classList.toggle('on',b.dataset.t===t)); I2.cliDraw(); },
+  cliTog(i){ const k = I2._gk[i]; I2._col = I2._col || new Set(); I2._col.has(k) ? I2._col.delete(k) : I2._col.add(k); I2.cliDraw(); },
+  cliGSel(i,on){ I2._sel = I2._sel || new Set(); (I2._gm[i]||[]).forEach(x=>{ on ? I2._sel.add(x.id) : I2._sel.delete(x.id); }); I2.cliDraw(); },
+  async cliArq(ids,on){ try{ await Store.setArq(ids,on); (I2._list||[]).forEach(x=>{ if(ids.indexOf(x.id)>=0) x.arquivado = on; }); ids.forEach(i=>I2._sel&&I2._sel.delete(i)); say(ids.length+(on?' arquivada(s) — veja na aba Arquivados':' desarquivada(s)')); I2.cliDraw(); }catch(e){ say('Erro: '+e.message); } },
+  cliArqG(i,on){ I2.cliArq((I2._gm[i]||[]).map(x=>x.id),on); },
+  async cliArqSel(){ const arq = (I2._ct||'act')==='arq'; I2.cliArq(Array.from(I2._sel||[]),!arq); },
   cliDraw(){
-    const el = $('i2-cli-list'); if(!el) return; const l = I2.cliVisible();
+    const el = $('i2-cli-list'); if(!el) return; const l = I2.cliVisible(), arq = (I2._ct||'act')==='arq';
+    const cnt = a => (I2._list||[]).filter(x=>!!x.arquivado===a).length; const n1 = $('cli-n-act'), n2 = $('cli-n-arq'); if(n1) n1.textContent = cnt(false); if(n2) n2.textContent = cnt(true);
     I2._sel = I2._sel || new Set(); const ids = new Set((I2._list||[]).map(x=>x.id)); I2._sel.forEach(i=>{ if(!ids.has(i)) I2._sel.delete(i); });
     const nSel = l.filter(x=>I2._sel.has(x.id)).length, all = l.length>0 && nSel===l.length;
-    const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"><span>Selecionar todos (${l.length})</span></label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
-    el.innerHTML = bar + (l.length ? l.map(x=>`<div class="i2-pl${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1;min-width:0"><div class="n"><span class="nm">${esc(x.cliente||'(sem nome)')}</span>${I2.cliTags(x)}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
-      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`).join('') : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">Nenhuma proposta encontrada.</p>');
+    const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"><span>Selecionar todos (${l.length})</span></label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-o btn-sm" onclick="I2.cliArqSel()">${arq?'📤 Desarquivar':'📦 Arquivar'} selecionados</button><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
+    const G = new Map(); l.forEach(x=>{ const k = norm(String(x.cliente||'').replace(/\s+/g,' ').trim()) || '(sem nome)'; if(!G.has(k)) G.set(k,{name:String(x.cliente||'').replace(/\s+/g,' ').trim()||'(sem nome)',items:[]}); G.get(k).items.push(x); });
+    I2._gk = []; I2._gm = []; I2._col = I2._col || new Set();
+    const rows = x => `<div class="i2-pl cli-r${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1;min-width:0"><div class="n">${I2.cliTags(x)}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
+      <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.cliArq(['${esc(x.id)}'],${!arq})">${arq?'Desarquivar':'Arquivar'}</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`;
+    let h = ''; G.forEach((g,k)=>{ const i = I2._gk.length; I2._gk.push(k); I2._gm.push(g.items); const open = !I2._col.has(k), last = g.items[0], c = {inv:0,esp:0,coq:0}; g.items.forEach(x=>{ c[x.tipo==='esp'?'esp':x.tipo==='coq'?'coq':'inv']++; });
+      const sel = g.items.every(x=>I2._sel.has(x.id)), parts = [c.inv?c.inv+' Investimento':'',c.esp?c.esp+' Espaço':'',c.coq?c.coq+' Coquetel':''].filter(Boolean).join(' · ');
+      h += `<div class="cli-g"><div class="cli-gh" onclick="I2.cliTog(${i})"><input type="checkbox" class="i2-ck" ${sel?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliGSel(${i},this.checked)"><span class="car">${open?'▾':'▸'}</span><b class="gn">${esc(g.name)}</b><span class="gc">${g.items.length} proposta${g.items.length>1?'s':''} · ${parts}</span><span class="gl">Última: ${last.updated_at?new Date(last.updated_at).toLocaleDateString('pt-BR'):''} · ${money(last.total)}</span><button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.cliArqG(${i},${!arq})">${arq?'📤 Desarquivar':'📦 Arquivar'} cliente</button></div>${open?'<div class="cli-gb">'+g.items.map(rows).join('')+'</div>':''}</div>`; });
+    el.innerHTML = bar + (l.length ? h : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(arq?'Nenhuma proposta arquivada.':'Nenhuma proposta encontrada.')+'</p>');
   },
   async openFromClientes(id,copy){ const l = document.querySelector('.sb-link[data-view=inv2]'); if(l) l.click(); await I2.open(id,copy); },
   cliTags(x){ const T = x.tipo==='esp' ? ['Espaço','#7a1712'] : x.tipo==='coq' ? ['Coquetel','#b25b00'] : ['Investimento','#444'];
