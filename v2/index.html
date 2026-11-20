@@ -330,6 +330,9 @@ body.sb-off .main{margin-left:0}
 .hh-sls{display:flex;flex-direction:column;gap:2px}.hh-sl{display:flex;align-items:center;gap:8px;font-size:11px;color:#666}.hh-sl span{width:96px;flex:none}.hh-sl input{flex:1;padding:0}
 .hh-ph .th{position:relative}
 .hh-links{margin-top:12px;border-top:1px solid #eee;padding-top:10px;font-size:12px}.hh-links b{display:block;margin-bottom:6px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#666}.hh-lk{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}.hh-lk span{flex:1;min-width:180px}
+.esp-sw{display:flex;flex-wrap:wrap;gap:6px}
+.esp-sw button{border:1px solid var(--bd,#d9d4d4);background:#fff;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;color:#555;white-space:nowrap}
+.esp-sw button.on{background:var(--w,#8B0000);border-color:var(--w,#8B0000);color:#fff}
 
 </style>
 </head>
@@ -422,8 +425,8 @@ body.sb-off .main{margin-left:0}
         <div class="fg" style="flex:1;min-width:200px"><label class="fl">Cliente</label><input id="esp-cli" placeholder="Nome do cliente / empresa" oninput="I2.espField('cliente',this.value)"></div>
         <div class="fg" style="width:130px"><label class="fl">Nº de convidados</label><input id="esp-n" type="number" min="0" step="1" oninput="I2.espField('convidados',this.value)"></div>
         <div class="fg" style="width:200px"><label class="fl">Tabela de preços</label><select id="esp-tab" onchange="I2.espField('tabela',this.value)"></select></div>
-        <div class="fg"><label class="fl">Propostas no link</label><div id="esp-docs" class="hh-sw"></div></div>
-        <div class="fg" style="flex:2;min-width:320px"><label class="fl">Salas que aparecem na proposta</label><div id="esp-salas" class="hh-sw" style="flex-wrap:wrap"></div></div>
+        <div class="fg"><label class="fl">Propostas no link</label><div id="esp-docs" class="esp-sw"></div></div>
+        <div class="fg" style="flex:2;min-width:320px"><label class="fl">Salas que aparecem na proposta</label><div id="esp-salas" class="esp-sw"></div></div>
       </div>
       <div class="hh-acts"><button id="esp-save" class="btn btn-w" onclick="I2.espSave()">💾 Salvar</button><button class="btn btn-o" onclick="I2.espPdf()">⬇ Exportar PDF</button><button class="btn btn-o" onclick="I2.espMarkSent()" title="Registra a data do envio: a proposta vale por 10 dias a partir dela">🔗 Gerar link (marcar como enviada)</button><button class="btn btn-o" onclick="I2.espOpenNew()">＋ Nova proposta</button></div>
       <div id="esp-info"></div><div id="esp-links"></div>
@@ -1737,7 +1740,7 @@ function hhpSet(d){ hhpDirty = d; const b = $('hhp-save'); if(b){ b.textContent 
 const ESP_STYLE = `
 :root{--w:#8B0000;--wd:#5C0000;--k:#141414;--g1:#F3F1F1;--g2:#DCD8D8;--g3:#8A8585}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#777;margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--k)}
+body{background:#e8e5e5;margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--k)}
 .page{width:1920px;height:1080px;position:relative;overflow:hidden;background:#fff;margin:0 auto 40px}
 .ph{position:relative;overflow:hidden;background:linear-gradient(135deg,#cfc9c9,#a9a2a2)}
 .ph::after{content:attr(data-l);position:absolute;left:14px;bottom:10px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.85)}
