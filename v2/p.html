@@ -301,7 +301,7 @@ Object.assign(I2,{
       (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
       grp(/^Almoço:/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
       gk.filter(n=>!/^(Serviço de sala:|Red Bull|Almoço:|Coffee Break:|Butiquim Vista:|Coquetel Vista:)/.test(n)).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
-      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; l.desc = 'Happy hour escolhido pelo cliente. O valor é calculado no menu Coquetel (para '+x.n+' convidados) — lance aqui o valor correspondente.'; d.gast.push(l); });
+      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; d.gast.push(l); });
       Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
       Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;

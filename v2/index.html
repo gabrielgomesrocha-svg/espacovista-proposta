@@ -388,6 +388,14 @@ body.sb-off .main{margin-left:0}
 .mid-tabs button i{font-style:normal;font-weight:600;color:var(--gr);margin-left:4px}
 .mid-tabs button:hover{border-color:var(--w)}
 .mid-tabs button.on{background:var(--w);border-color:var(--w);color:#fff}.mid-tabs button.on i{color:#fff;opacity:.85}
+
+.cdw{position:relative}.cdw textarea.cds{width:100%;height:34px;min-height:34px;padding:7px 26px 7px 8px;resize:none;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:inherit}
+.cdw textarea.cds.open{height:150px;white-space:normal;overflow:auto;resize:vertical}
+.cdw .cdx{position:absolute;right:3px;top:5px;border:0;background:transparent;cursor:pointer;color:#888;font-size:14px;line-height:1;padding:2px 3px}.cdw .cdx:hover{color:var(--w)}
+
+.i2-pkg{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:11.5px;color:var(--gr)}.i2-pkg select{font-size:11.5px;padding:2px 6px;border:1px solid var(--w);border-radius:4px;color:var(--w);font-weight:600}.i2-pkg span{font-size:11px}
+.i2-pkgnote{background:#FFF6E0;border:1px solid #E0A800;color:#6b4a00;font-size:12px;padding:6px 10px;border-radius:6px;margin-bottom:8px}
+.i2-pkg select{width:auto!important;flex:none}.i2-pkg span{flex:1}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -724,6 +732,16 @@ function itemPrice(src,base,tabela){
   const info = tableInfo(tabela); if(!info || !base) return 0;
   const it = DATA[src].find(i=>i.name===base); return it ? num(it.prices[info.key]) : 0;
 }
+/* pacote Happy Hour / Confraternização (Butiquim ou Coquetel Vista, Opção 1-3): valor vem das tabelas HH pela Tabela da proposta + nº de convidados */
+function pkgInfo(l){ const m = /^(Butiquim|Coquetel) Vista: Opção ([123])$/.exec((l&&l.base)||''); return m ? {prod:m[1]==='Butiquim'?'but':'coq', idx:+m[2]-1} : null; }
+function pkgPrice(l){
+  const pi = pkgInfo(l); if(!pi || !HH_PRECOS) return 0;
+  const info = tableInfo(P.tabela), tm = info && /Tabela (\d)/.exec(info.key), n = Math.floor(num(P.convidados)); if(!tm || !(n>0)) return 0;
+  const t = hhTier(pi.prod, tm[1], n); if(!t) return 0;
+  return r2(num(t.row[(l.hhm==='hh' ? 1 : 4) + pi.idx]));
+}
+const unitFor = (src,l) => pkgInfo(l) ? pkgPrice(l) : itemPrice(src, l.base, P.tabela);
+const dayPkg = d => (d.gast||[]).some(l=>pkgInfo(l));
 
 
 /* ───────── catálogo (Espaços · Gastronomia · Equipamentos) ───────── */
@@ -820,7 +838,7 @@ function catGast(){
   let h = '<div class="i2-cbar"><input id="cat-q" placeholder="Buscar item…" oninput="I2.catFilter()" value="'+esc(($('cat-q')||{}).value||'')+'"><button class="btn btn-o btn-sm" onclick="I2.catAdd(\'gast\')">＋ Novo item</button></div>';
   h += '<div class="tw"><table class="i2-ct3"><thead><tr><th rowspan="2" style="min-width:200px">Item</th><th rowspan="2" style="min-width:200px">Descrição</th><th colspan="3" class="g">Até 50 pessoas</th><th colspan="3" class="g c51 c51s">A partir de 51 pessoas</th><th rowspan="2"></th></tr><tr>'
     + ['a','m'].map(f=>TN.map(n=>'<th class="'+(f==='m'?'c51'+(n===1?' c51s':''):'')+'">T'+n+'</th>').join('')).join('') + '</tr></thead><tbody id="cat-gast-tb">';
-  CAT.gast.forEach((x,i)=>{ h += '<tr data-q="'+esc(norm(x.name))+'"'+(q && norm(x.name).indexOf(q)<0 ? ' style="display:none"' : '')+'><td><input value="'+esc(x.name)+'" onchange="I2.catF(\'gast\','+i+',\'name\',this.value)"></td><td><input value="'+esc(x.desc)+'" onchange="I2.catF(\'gast\','+i+',\'desc\',this.value)"></td>'
+  CAT.gast.forEach((x,i)=>{ h += '<tr data-q="'+esc(norm(x.name))+'"'+(q && norm(x.name).indexOf(q)<0 ? ' style="display:none"' : '')+'><td><input value="'+esc(x.name)+'" onchange="I2.catF(\'gast\','+i+',\'name\',this.value)"></td><td><div class="cdw"><textarea class="cds" rows="1" onchange="I2.catF(\'gast\','+i+',\'desc\',this.value)">'+esc(x.desc)+'</textarea><button type="button" class="cdx" title="Expandir / recolher o texto" onclick="this.previousElementSibling.classList.toggle(\'open\')">⤢</button></div></td>'
     + ['a','m'].map(f=>TN.map(n=>'<td class="'+(f==='m'?'c51'+(n===1?' c51s':''):'')+'">'+numIn(x.p[n+f],'I2.catP(\'gast\','+i+',\''+n+f+'\',this.value)')+'</td>').join('')).join('')
     + '<td><button class="x-btn" onclick="I2.catDel(\'gast\','+i+')">×</button></td></tr>'; });
   return h + '</tbody></table></div><button class="btn btn-o" style="margin-top:10px" onclick="I2.catAdd(\'gast\')">＋ Novo item de gastronomia</button>';
@@ -886,7 +904,8 @@ function newLine(cat,pick){
     hor:'', desc: it ? (it.desc||'') : '', qtd:1, qtdMan:false, unit:0, man:false };
   if(cat==='gast'){ l.qtd = isSobConsumo(l) ? 0 : num(P.convidados); }
   if(cat==='extras'){ l.data = (P.dias[0]||{}).data || ''; }
-  l.unit = itemPrice(src, l.base, P.tabela);
+  if(pkgInfo(l)){ l.qtd = 1; l.hhm = 'conf'; }
+  l.unit = unitFor(src, l);
   return l;
 }
 
@@ -904,6 +923,7 @@ const heValor = e => (e.he && e.he.on) ? r2(num(e.he.qtd) * num(e.he.vh)) : 0;
 function calcDay(d){
   let esp = 0, teto = 0, he = 0;
   d.espacos.forEach(e=>{ if(!e.nome) return; esp += num(e.valor); teto += num(e.teto); he += heValor(e); });
+  if(dayPkg(d)){ esp = 0; teto = 0; }   // pacote fechado: espaço já incluso no valor do pacote
   esp = r2(esp); teto = r2(teto); he = r2(he);
   const gast = sumL(d.gast), equip = sumL(d.equip), serv = sumL(d.serv);
   const elig = r2(gast + equip);              // serviços NUNCA entram na consumação
@@ -1035,7 +1055,7 @@ function lineRow(dId,cat,l){
   const n = (k,v)=>`I2.ln('${dId}','${cat}','${l.id}','${k}',${v})`;
   return `<tr data-l="${l.id}" data-d="${dId}" data-cat="${cat}">
     <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
-      <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea></td>
+      <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea>${pkgInfo(l) ? `<div class="i2-pkg">Pacote:<select onchange="I2.hhm('${dId}','${l.id}',this.value)"><option value="conf" ${l.hhm!=='hh'?'selected':''}>Confraternização</option><option value="hh" ${l.hhm==='hh'?'selected':''}>Happy Hour</option></select><span>valor pela Tabela e nº de convidados · espaço incluso</span></div>` : ''}</td>
     <td class="hr">${cat==='gast' ? `<input class="i2-hor" autocomplete="off" data-d="${dId}" data-l="${l.id}" value="${esc(l.hor)}" placeholder="Escolha ou escreva…" oninput="${n('hor','this.value')}">` : ''}</td>
     <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('qtd','this.value')}"></td>
     <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
@@ -1082,7 +1102,7 @@ function espBlock(d,e,k){
   const mOpts = '<option value="">— Montagem —</option>' + DATA.montagem.map(m=>`<option ${m===e.montagem?'selected':''}>${esc(m)}</option>`).join('');
   const multi = d.espacos.length > 1, manS = 'border-color:#E0A800;background:#FFFBEA';
   const heRow = heRowHtml(d,e);
-  return `<div class="i2-esp-box">
+  return `<div class="i2-esp-box">${dayPkg(d) ? '<div class="i2-pkgnote">📦 Pacote fechado (Happy Hour / Confraternização): o espaço já está incluso no valor do pacote e não é somado ao total.</div>' : ''}
     <div class="i2-esp">
       <div class="fg"><label class="fl">${multi?'Espaço '+(k+1):'Espaço'}</label><select onchange="I2.espSel('${d.id}','${e.id}',this.value)">${spOpts}</select></div>
       <div class="fg"><label class="fl">Montagem</label><select onchange="I2.esp('${d.id}','${e.id}','montagem',this.value)">${mOpts}</select></div>
@@ -1301,7 +1321,7 @@ function applyTable(){
   const info = tableInfo(P.tabela);
   P.dias.forEach(d=>{
     d.espacos.forEach(e=>{ if(e.nome && info){ const t = info.esp(e.nome); if(!e.man) e.valor = t.total; if(!e.manTeto) e.teto = t.teto; } });
-    ['gast','equip','serv'].forEach(k=>d[k].forEach(l=>{ if(!l.man && l.base) l.unit = itemPrice(l.src||k,l.base,P.tabela); }));
+    ['gast','equip','serv'].forEach(k=>d[k].forEach(l=>{ if(!l.man && l.base) l.unit = unitFor(l.src||k,l); }));
   });
   P.extras.forEach(l=>{ if(!l.man && l.base) l.unit = itemPrice(l.src,l.base,P.tabela); });
 }
@@ -1309,7 +1329,7 @@ const I2 = {
   top(k,v){ P[k] = v; touch(); },
   setTabela(v){ P.tabela = v; applyTable(); touch(); renderTabelaSelect(); renderDays(); renderExtras(); if(v) say('Tabela aplicada — preços atualizados'); },
   conv(v){ P.convidados = v; const n = num(v);
-    P.dias.forEach(d=>d.gast.forEach(l=>{ if(!l.qtdMan && l.base && !isSobConsumo(l)) l.qtd = n; }));
+    P.dias.forEach(d=>d.gast.forEach(l=>{ if(pkgInfo(l)){ if(!l.man) l.unit = pkgPrice(l); return; } if(!l.qtdMan && l.base && !isSobConsumo(l)) l.qtd = n; }));
     touch(); renderDays(); },
   day(id,k,v){ const d = dayOf(id); if(!d) return; d[k] = v; if(k==='chegada'||k==='inicio'||k==='termino') syncHE(d); touch(); },
   dateChanged(){ P.dias.forEach((d,i)=>{ const e = $('dl-'+d.id); if(e) e.innerHTML = dayLab(d,i); }); renderExtras(); refresh(); },
@@ -1343,7 +1363,8 @@ const I2 = {
     else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; const i = document.querySelector('[data-k=unit][data-l="'+id+'"]'); if(i) i.classList.add('man'); }
     else l[k] = v;
     touch(); },
-  resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = itemPrice(l.src||cat,l.base,P.tabela); touch(); renderDay(dId); },
+  resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = unitFor(l.src||cat,l); touch(); renderDay(dId); },
+  hhm(dId,id,v){ const l = lineOf(dId,'gast',id); if(!l) return; l.hhm = v; if(!l.man) l.unit = pkgPrice(l); touch(); renderDay(dId); },
   mvLine(dId,cat,id,dir){ const d = dayOf(dId); if(!d) return; const a = d[cat], i = a.findIndex(l=>l.id===id), j = i+dir; if(i<0 || j<0 || j>=a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+id+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   dropLine(dId,cat,from,to,after){ const d = dayOf(dId); if(!d || from===to) return; const a = d[cat], i = a.findIndex(l=>l.id===from); if(i<0) return; const it = a.splice(i,1)[0]; let j = a.findIndex(l=>l.id===to); if(j<0){ a.push(it); } else a.splice(after?j+1:j,0,it); touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+from+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   delLine(dId,cat,id){ const d = dayOf(dId); if(!d) return; d[cat] = d[cat].filter(l=>l.id!==id); touch(); renderDay(dId); },
@@ -1522,7 +1543,7 @@ function buildPrint(p,R,autoPrint){
   let espRows = '';
   const hnum = n => String(num(n)).replace('.',',');
   days.forEach(d=>{ const c = R.days[idxOf(d)]; d.espacos.forEach(e=>{ if(!e.nome) return;
-    espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>${esc(e.obs)}</td><td class="r nw"><b>${m(num(e.valor))}</b></td></tr>`;
+    espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>${esc(e.obs)}</td><td class="r nw"><b>${dayPkg(d) ? 'Incluso no pacote' : m(num(e.valor))}</b></td></tr>`;
     if(e.he.on && heValor(e)>0) espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>Hora extra de locação: ${hnum(e.he.qtd)} h × ${m(num(e.he.vh))}</td><td class="r nw"><b>${m(heValor(e))}</b></td></tr>`; }); });
     const rowsOf = (cat,withHor) => { let h=''; days.forEach(d=>d[cat].forEach(l=>{ const t = lineTotal(l); if(!(l.nome||l.base||t)) return;
     h += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td><b>${esc(l.nome)}</b></td>${withHor?`<td>${esc(l.hor)}</td>`:''}<td>${esc(l.desc)}</td><td class="r nw">${num(l.qtd)||'—'}</td><td class="r nw">${num(l.unit)?m(l.unit):'—'}</td><td class="r nw"><b>${num(l.qtd)&&num(l.unit)?m(t):'—'}</b></td></tr>`; })); return h; };
@@ -2863,7 +2884,7 @@ Object.assign(I2,{
       (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
       grp(/^Almoço:/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
       gk.filter(n=>!/^(Serviço de sala:|Red Bull|Almoço:|Coffee Break:|Butiquim Vista:|Coquetel Vista:)/.test(n)).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
-      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; l.desc = 'Happy hour escolhido pelo cliente. O valor é calculado no menu Coquetel (para '+x.n+' convidados) — lance aqui o valor correspondente.'; d.gast.push(l); });
+      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; d.gast.push(l); });
       Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
       Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
