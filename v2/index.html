@@ -409,6 +409,15 @@ body.sb-off .main{margin-left:0}
 .i2-dt-row .fg{min-width:0}
 .i2-dt-row .sp{margin-left:auto;display:flex;gap:6px;padding-bottom:2px}
 .i2-day-t{font-weight:800;font-size:13px;color:var(--w);padding:10px 14px 0;letter-spacing:.04em;text-transform:uppercase}
+
+#i2-ld{position:fixed;inset:0;background:rgba(255,255,255,.82);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+#i2-ld.on{display:flex}
+#i2-ld .ld-b{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e3dcdc;border-radius:8px;padding:16px 22px;font:600 14px Inter,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.ld-s{width:16px;height:16px;border:2.5px solid #d9cfcf;border-top-color:#8B1A10;border-radius:50%;display:inline-block;animation:ldsp .8s linear infinite}
+@keyframes ldsp{to{transform:rotate(360deg)}}
+#i2-chip{position:fixed;right:16px;bottom:16px;z-index:950;background:#1c1a1a;color:#fff;font:600 12.5px Inter,sans-serif;padding:9px 14px;border-radius:20px;display:none;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#i2-chip.on{display:flex}
+#i2-chip .ld-s{width:12px;height:12px;border-width:2px;border-color:#666;border-top-color:#fff}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -1752,17 +1761,47 @@ if(window.__AUDIT){ I2._a = { get:()=>({DATA:JSON.parse(JSON.stringify(DATA)), P
   document.addEventListener('drop',e=>{ if(!drag) return; const tr = e.target.closest && e.target.closest('tr[data-l]'); if(!tr || tr.dataset.d!==drag.d || tr.dataset.cat!==drag.cat){ clr(); drag = null; return; } e.preventDefault(); const r = tr.getBoundingClientRect(), after = e.clientY > r.top + r.height/2, f = drag; clr(); drag = null; I2.dropLine(f.d,f.cat,f.l,tr.dataset.l,after); });
   document.addEventListener('dragend',()=>{ clr(); drag = null; });
 })();
+// ── carregamento: tela de espera + fotos em segundo plano (com cache no navegador)
+let MIDIA_OK = false, MIDIA_P = Promise.resolve();
+function ldShow(msg){ let e = $('i2-ld'); if(!e){ e = document.createElement('div'); e.id = 'i2-ld'; e.innerHTML = '<div class="ld-b"><i class="ld-s"></i><span id="i2-ld-t"></span></div>'; document.body.appendChild(e); } $('i2-ld-t').textContent = msg||'Carregando…'; e.classList.add('on'); }
+function ldHide(){ const e = $('i2-ld'); if(e) e.classList.remove('on'); }
+function ldChip(on,msg){ let e = $('i2-chip'); if(!e){ e = document.createElement('div'); e.id = 'i2-chip'; document.body.appendChild(e); } e.innerHTML = '<i class="ld-s"></i> '+(msg||'Carregando fotos…'); e.classList.toggle('on',!!on); }
+const IDB = { open(){ return new Promise((ok,no)=>{ try{ const r = indexedDB.open('inv2_cache',1); r.onupgradeneeded = ()=>r.result.createObjectStore('kv'); r.onsuccess = ()=>ok(r.result); r.onerror = ()=>no(r.error); }catch(e){ no(e); } }); },
+  async get(k){ try{ const d = await this.open(); return await new Promise(ok=>{ const q = d.transaction('kv').objectStore('kv').get(k); q.onsuccess = ()=>ok(q.result||null); q.onerror = ()=>ok(null); }); }catch(e){ return null; } },
+  async set(k,v){ try{ const d = await this.open(); await new Promise(ok=>{ const t = d.transaction('kv','readwrite'); t.objectStore('kv').put(v,k); t.oncomplete = ()=>ok(); t.onerror = ()=>ok(); }); }catch(e){} } };
+function midiaApply(m){ MIDIA = {fotos:(m&&m.fotos)||{},links:(m&&m.links)||{},aj:(m&&m.aj)||{}};
+  Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; }); }
+function midiaRefreshViews(){ try{ const v = document.querySelector('.view.active'); const id = v ? v.id : '';
+  if(id==='view-catalogo') renderCatalogo(); else if(id==='view-hh' && HHS) hhRender(); else if(id==='view-esp' && ESPS) espRender(); }catch(e){} }
+function midiaStart(){
+  MIDIA_OK = false; midiaApply(null); ldChip(true);
+  MIDIA_P = (async()=>{
+    try{
+      let ts = null, m = null;
+      if(CLOUD){ try{ const r = await Store.api('settings?key=eq.midia&select=updated_at'); ts = r && r[0] && r[0].updated_at; }catch(e){} }
+      const c = ts ? await IDB.get('midia') : null;
+      if(c && c.ts===ts && c.v) m = c.v;
+      else { m = await Store.getSetting('midia'); if(ts && m) IDB.set('midia',{ts:ts,v:m}); }
+      midiaApply(m); MIDIA_OK = true;
+    }catch(e){ MIDIA_OK = false; try{ say('Não consegui carregar as fotos. Recarregue a página antes de salvar ou enviar propostas.'); }catch(x){} }
+    ldChip(false); if(MIDIA_OK) midiaRefreshViews();
+  })();
+}
+async function midiaWait(){ await MIDIA_P; if(!MIDIA_OK) throw new Error('As fotos não carregaram. Recarregue a página.'); }
 async function boot(){
-  try{ const t = await Store.getSetting('tabelas_personalizadas'); custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
+  ldShow('Carregando o sistema…');
+  midiaStart();
+  const G = k => Store.getSetting(k).catch(()=>null);
+  const R = await Promise.all([G('tabelas_personalizadas'),G('catalogo'),hhLoadCfg().catch(()=>{}),G('espaco_obs_padrao'),G('whats_msg'),G('email_msg'),G('condicoes_inv2')]);
+  const t = R[0], k = R[1], o = R[3], w = R[4], em = R[5], c = R[6];
+  try{ custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
-  try{ const k = await Store.getSetting('catalogo'); if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); if(patchCat(CAT)) applyCat(CAT); } }catch(e){ CAT = catFromData(); }
-  try{ await hhLoadCfg(); }catch(e){}
-  try{ const m = await Store.getSetting('midia'); if(m && typeof m==='object') MIDIA = {fotos:m.fotos||{},links:m.links||{},aj:m.aj||{}}; }catch(e){}
-  Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; });
-  try{ const o = await Store.getSetting('espaco_obs_padrao'); if(o && typeof o==='object') espObsPadrao = o; }catch(e){}
-  try{ const w = await Store.getSetting('whats_msg'); if(w && typeof w.t==='string' && w.t.trim()) WA_MSG = w.t; }catch(e){}
-  try{ const w = await Store.getSetting('email_msg'); if(w && typeof w.s==='string' && typeof w.b==='string' && w.b.trim()) EM_MSG = {s:w.s,b:w.b}; }catch(e){}
-  try{ const c = await Store.getSetting('condicoes_inv2'); if(Array.isArray(c) && c.length) conds = c; }catch(e){}
+  try{ if(k && Array.isArray(k.spaces) && k.spaces.length){ if(patchCat(k)) Store.setSetting('catalogo',k).catch(function(){}); applyCat(k); k.spaces.forEach(x=>{ x._o = x.name; }); CAT = k; } else { CAT = catFromData(); if(patchCat(CAT)) applyCat(CAT); } }catch(e){ CAT = catFromData(); }
+  try{ if(o && typeof o==='object') espObsPadrao = o; }catch(e){}
+  try{ if(w && typeof w.t==='string' && w.t.trim()) WA_MSG = w.t; }catch(e){}
+  try{ if(em && typeof em.s==='string' && typeof em.b==='string' && em.b.trim()) EM_MSG = {s:em.s,b:em.b}; }catch(e){}
+  try{ if(Array.isArray(c) && c.length) conds = c; }catch(e){}
+  ldHide();
   let draft = null; try{ draft = JSON.parse(LS.get('inv2_draft')||'null'); }catch(e){}
   P = newProposal(); dirty = false;
   renderTabelaSelect(); renderBody();
@@ -2126,6 +2165,7 @@ function hhLinkUrl(t){ return /^https?:/.test(t||'') ? t : new URL('p.html?t='+e
 /* fotos vão para o armazenamento (nome = hash do conteúdo): a versão enviada fica congelada mesmo se a foto do catálogo mudar */
 const PUB_CACHE = {};
 async function hhPublishMedia(){
+  await midiaWait();
   const out = {}, F = MIDIA.fotos||{};
   await Promise.all(Object.keys(F).map(async k=>{ const d = F[k]; if(!d) return; if(!/^data:/.test(d)){ out[k] = d; return; }
     const c = PUB_CACHE[k]; if(c && c.d === d){ out[k] = c.url; return; }
@@ -2369,7 +2409,7 @@ function renderMidia(){
   setTimeout(midiaPrevInit,0);
   return h;
 }
-async function midiaSave(){ try{ await Store.setSetting('midia',MIDIA); say('Mídia salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } }
+async function midiaSave(){ try{ await midiaWait(); await Store.setSetting('midia',MIDIA); say('Mídia salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } }
 Object.assign(I2,{
   hhOpenNew(){ HHS = hhNew(); hhSet(false); hhRender(); },
   hhDtAdd(v){ if(!v) return; HHS.datas = dtsAdd(HHS.datas,v); hhSet(true); hhRender(); },
@@ -2385,6 +2425,7 @@ Object.assign(I2,{
     if(!HHS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     if(!hhAnyDoc(HHS)){ say('Informe o nº de convidados, a tabela e marque ao menos uma proposta'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
+    try{ await midiaWait(); }catch(e){ try{ w.close(); }catch(x){} say(e.message); return; }
     try{ HHS.meta.salvoEm = new Date().toISOString(); await Store.save(HHS, hhFirstTotal(HHS)); hhSet(false); say('Proposta salva ✔ e PDF gerado.'); }catch(er){ say('PDF gerado, mas não foi possível salvar: '+er.message); }
     w.document.open(); w.document.write(hhPrintView(hhHtml(HHS))); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(x){} },700); },
   async hhMarkSent(){
@@ -2854,6 +2895,7 @@ Object.assign(I2,{
     if(!ESPS.cliente.trim()){ say('Informe o nome do cliente'); return; }
     if(!espReady(ESPS)){ say('Escolha a tabela e ao menos uma sala'); return; }
     const w = window.open('','_blank'); if(!w){ say('Libere pop-ups para gerar o PDF'); return; }
+    try{ await midiaWait(); }catch(e){ try{ w.close(); }catch(x){} say(e.message); return; }
     try{ ESPS.meta.salvoEm = new Date().toISOString(); await Store.save(ESPS, espTotal(ESPS)); espSet(false); say('Proposta salva ✔ e PDF gerado.'); }catch(er){ say('PDF gerado, mas não foi possível salvar: '+er.message); }
     w.document.open(); w.document.write(hhPrintView(espHtml(ESPS))); w.document.close(); setTimeout(()=>{ try{ w.focus(); w.print(); }catch(x){} },1200); },
   async espMarkSent(){
