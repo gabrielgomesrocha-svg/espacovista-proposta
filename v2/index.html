@@ -398,6 +398,11 @@ body.sb-off .main{margin-left:0}
 .i2-pkg select{width:auto!important;flex:none}.i2-pkg span{flex:1}
 .cdw textarea.cds:focus{height:150px;white-space:normal;overflow:auto;resize:vertical;position:relative;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .cdw .cdx{font-size:16px;background:#f1eded;border-radius:4px;padding:2px 6px;z-index:6}
+
+.i2-modes{display:flex;gap:0;margin:0 0 12px;border-bottom:2px solid #e5dede}
+.i2-modes button{border:0;background:transparent;padding:10px 22px;font:700 14px Montserrat,Inter,sans-serif;color:#888;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
+.i2-modes button.on{color:var(--w);border-bottom-color:var(--w)}
+.i2-pkgnote.ok{background:#EEF6EE;border-color:#7bb07b;color:#245a24}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -736,14 +741,24 @@ function itemPrice(src,base,tabela){
 }
 /* pacote Happy Hour / Confraternização (Butiquim ou Coquetel Vista, Opção 1-3): valor vem das tabelas HH pela Tabela da proposta + nº de convidados */
 function pkgInfo(l){ const m = /^(Butiquim|Coquetel) Vista: Opção ([123])$/.exec((l&&l.base)||''); return m ? {prod:m[1]==='Butiquim'?'but':'coq', idx:+m[2]-1} : null; }
-function pkgPrice(l){
-  const pi = pkgInfo(l); if(!pi || !HH_PRECOS) return 0;
+const isConf = () => !!P && P.modo==='conf';
+const LIMH = () => isConf() ? 5 : 10;
+const CONF_ESP = 'Salão Vista, Salão Real e Espaço Serra do Curral';
+const pkgLabel = n => { const m = /^(Butiquim|Coquetel) Vista: Opção (\d)$/.exec(n); return m ? (m[1]==='Butiquim'?'Comida de Buteco':'Salgados Finos')+' · Opção '+m[2] : n; };
+const pkgValue = d => r2((d.gast||[]).filter(l=>pkgInfo(l)).reduce((s,l)=>s+lineTotal(l),0));
+function confSync(d){
+  let e = d.espacos[0]; if(!e){ e = newEsp(); d.espacos = [e]; } d.espacos.length = 1;
+  e.nome = CONF_ESP; e.valor = 0; e.teto = 0; e.man = false; e.manTeto = false; e.obs = 'Incluso: buffet completo, painel de LED, sonorização, mobiliário e decoração básica.';
+  if(!e.he.vhMan) e.he.vh = r2(0.2 * pkgValue(d));      // hora extra = 20% do valor do pacote, por hora
+}
+function pkgPriceBase(base, conf){
+  const pi = pkgInfo({base:base}); if(!pi || !HH_PRECOS) return 0;
   const info = tableInfo(P.tabela), tm = info && /Tabela (\d)/.exec(info.key), n = Math.floor(num(P.convidados)); if(!tm || !(n>0)) return 0;
   const t = hhTier(pi.prod, tm[1], n); if(!t) return 0;
-  return r2(num(t.row[(l.hhm==='hh' ? 1 : 4) + pi.idx]));
+  return r2(num(t.row[(conf ? 4 : 1) + pi.idx]));
 }
+function pkgPrice(l){ return pkgPriceBase(l.base, isConf()); }
 const unitFor = (src,l) => pkgInfo(l) ? pkgPrice(l) : itemPrice(src, l.base, P.tabela);
-const dayPkg = d => (d.gast||[]).some(l=>pkgInfo(l));
 
 
 /* ───────── catálogo (Espaços · Gastronomia · Equipamentos) ───────── */
@@ -892,7 +907,7 @@ function syncCat(){
   CATMODE = want; rebuildAll();
 }
 function newProposal(){
-  return { id:uid(), cliente:'', contato:'', fone:'', email:'', convidados:'', tabela:'',
+  return { id:uid(), cliente:'', contato:'', fone:'', email:'', convidados:'', tabela:'', modo:'evento',
     obs:'Forma de pagamento: 50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.',
     dias:[newDay()], extras:[], hide:{credito:false,extras:false}, meta:{catV:2} };
 }
@@ -906,7 +921,7 @@ function newLine(cat,pick){
     hor:'', desc: it ? (it.desc||'') : '', qtd:1, qtdMan:false, unit:0, man:false };
   if(cat==='gast'){ l.qtd = isSobConsumo(l) ? 0 : num(P.convidados); }
   if(cat==='extras'){ l.data = (P.dias[0]||{}).data || ''; }
-  if(pkgInfo(l)){ l.qtd = 1; l.hhm = 'conf'; }
+  if(pkgInfo(l)) l.qtd = 1;
   l.unit = unitFor(src, l);
   return l;
 }
@@ -925,7 +940,7 @@ const heValor = e => (e.he && e.he.on) ? r2(num(e.he.qtd) * num(e.he.vh)) : 0;
 function calcDay(d){
   let esp = 0, teto = 0, he = 0;
   d.espacos.forEach(e=>{ if(!e.nome) return; esp += num(e.valor); teto += num(e.teto); he += heValor(e); });
-  if(dayPkg(d)){ esp = 0; teto = 0; }   // pacote fechado: espaço já incluso no valor do pacote
+  if(isConf()){ esp = 0; teto = 0; }   // Confraternização: espaço incluso no pacote, sem retorno de consumação
   esp = r2(esp); teto = r2(teto); he = r2(he);
   const gast = sumL(d.gast), equip = sumL(d.equip), serv = sumL(d.serv);
   const elig = r2(gast + equip);              // serviços NUNCA entram na consumação
@@ -1057,7 +1072,7 @@ function lineRow(dId,cat,l){
   const n = (k,v)=>`I2.ln('${dId}','${cat}','${l.id}','${k}',${v})`;
   return `<tr data-l="${l.id}" data-d="${dId}" data-cat="${cat}">
     <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
-      <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea>${pkgInfo(l) ? `<div class="i2-pkg">Pacote:<select onchange="I2.hhm('${dId}','${l.id}',this.value)"><option value="conf" ${l.hhm!=='hh'?'selected':''}>Confraternização</option><option value="hh" ${l.hhm==='hh'?'selected':''}>Happy Hour</option></select><span>valor pela Tabela e nº de convidados · espaço incluso</span></div>` : ''}</td>
+      <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea>${pkgInfo(l) ? `<div class="i2-pkg">${isConf() ? 'Pacote Confraternização' : 'Happy Hour'}<span>valor pela Tabela e nº de convidados</span></div>` : ''}</td>
     <td class="hr">${cat==='gast' ? `<input class="i2-hor" autocomplete="off" data-d="${dId}" data-l="${l.id}" value="${esc(l.hor)}" placeholder="Escolha ou escreva…" oninput="${n('hor','this.value')}">` : ''}</td>
     <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('qtd','this.value')}"></td>
     <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
@@ -1067,7 +1082,7 @@ function lineRow(dId,cat,l){
 function catBlock(d,cat){
   const rows = d[cat].map(l=>lineRow(d.id,cat,l)).join('');
   const head = `<thead><tr><th>Item</th><th>${cat==='gast'?'Horário / período':''}</th><th class="r" style="text-align:right">Qtd.</th><th class="r" style="text-align:right">Vlr. unit.</th><th class="r" style="text-align:right">Subtotal</th><th></th></tr></thead>`;
-  const sub = cat==='serv' ? '<span class="sub">não entram na consumação</span>' : '<span class="sub">entram na consumação</span>';
+  const sub = isConf() ? '' : cat==='serv' ? '<span class="sub">não entram na consumação</span>' : '<span class="sub">entram na consumação</span>';
   return `<div class="i2-sec"><div class="i2-sec-t"><span>${CATS[cat]}</span>${sub}</div>
     ${d[cat].length ? `<table class="i2-ln">${COLS2}${head}<tbody>${rows}</tbody></table>` : ''}
     <div class="i2-addrow"><input class="i2-add" id="add-${d.id}-${cat}" data-d="${d.id}" data-cat="${cat}" autocomplete="off" placeholder="＋ Adicionar em ${CATS[cat]} — digite para buscar${cat==='gast'?' (ex.: coffee, almoço, brownie)':cat==='equip'?' (ex.: microfone, palco, tv)':' (ex.: estacionamento, gerador)'}…">
@@ -1076,24 +1091,24 @@ function catBlock(d,cat){
 function heRowHtml(d,e){
   const he = e.he, manS = 'border-color:#E0A800;background:#FFFBEA';
   if(!e.nome) return `<div id="herow-${e.id}"></div>`;
-  const m = hoursMin(d), over = (m!=null && m>600) ? m-600 : 0;
+  const m = hoursMin(d), over = (m!=null && m>LIMH()*60) ? m-LIMH()*60 : 0;
   const body = he.on
     ? `<div class="i2-he"><span class="lbl">Hora extra</span>
         <div class="fg"><label class="fl">Nº de horas</label><input type="number" step="any" min="0" value="${esc(he.qtd)}" placeholder="Ex.: 3,5" oninput="I2.he('${d.id}','${e.id}','qtd',this.value)"></div>
         <span class="mul">×</span>
         <div class="fg"><label class="fl">Valor da hora (R$)</label><input type="number" step="any" min="0" value="${he.vh}" style="${he.vhMan?manS:''}" oninput="I2.he('${d.id}','${e.id}','vh',this.value)"></div>
         <span class="mul">=</span><b class="tot" id="he-${e.id}">${money(heValor(e))}</b>
-        ${over ? `<span class="i2-hint">${fmtH(over)} acima das 10h contratadas${he.qtdMan?'':' · preenchido automaticamente'}</span>` : ''}
+        ${over ? `<span class="i2-hint">${fmtH(over)} acima das ${LIMH()}h contratadas${he.qtdMan?'':' · preenchido automaticamente'}</span>` : ''}
         <button class="i2-eye" title="Ocultar hora extra" onclick="I2.heEye('${d.id}','${e.id}')">${eyeSvg(false)}</button></div>`
-    : `<div class="i2-he off"><span class="lbl">Hora extra — oculta (${money(horaPadrao(e.nome))}/h)</span><button class="i2-eye hid" title="Mostrar hora extra" onclick="I2.heEye('${d.id}','${e.id}')">${eyeSvg(true)}</button></div>`;
+    : `<div class="i2-he off"><span class="lbl">Hora extra — oculta (${money(isConf() ? r2(0.2*pkgValue(d)) : horaPadrao(e.nome))}/h)</span><button class="i2-eye hid" title="Mostrar hora extra" onclick="I2.heEye('${d.id}','${e.id}')">${eyeSvg(true)}</button></div>`;
   return `<div id="herow-${e.id}">${body}</div>`;
 }
 // passou de 10h → abre a linha da hora extra do (primeiro) espaço; volta a 10h ou menos → fecha se foi aberta sozinha e está vazia
 function syncHE(d){
-  const m = hoursMin(d), first = d.espacos.find(x=>x.nome), ex = (m!=null && m>600) ? r2((m-600)/60) : 0;
+  const m = hoursMin(d), first = d.espacos.find(x=>x.nome), ex = (m!=null && m>LIMH()*60) ? r2((m-LIMH()*60)/60) : 0;
   if(ex>0){
     if(first && !first.he.manual){
-      if(!first.he.on){ first.he.on = true; first.he.auto = true; if(!first.he.vhMan) first.he.vh = horaPadrao(first.nome); }
+      if(!first.he.on){ first.he.on = true; first.he.auto = true; if(!first.he.vhMan) first.he.vh = isConf() ? r2(0.2*pkgValue(d)) : horaPadrao(first.nome); }
       if(first.he.auto && !first.he.qtdMan) first.he.qtd = ex;          // já vem preenchido: horas acima das 10h
     }
   } else d.espacos.forEach(x=>{ if(x.he.on && x.he.auto && !x.he.qtdMan){ x.he.on = false; x.he.auto = false; x.he.qtd = ''; } });
@@ -1104,7 +1119,7 @@ function espBlock(d,e,k){
   const mOpts = '<option value="">— Montagem —</option>' + DATA.montagem.map(m=>`<option ${m===e.montagem?'selected':''}>${esc(m)}</option>`).join('');
   const multi = d.espacos.length > 1, manS = 'border-color:#E0A800;background:#FFFBEA';
   const heRow = heRowHtml(d,e);
-  return `<div class="i2-esp-box">${dayPkg(d) ? '<div class="i2-pkgnote">📦 Pacote fechado (Happy Hour / Confraternização): o espaço já está incluso no valor do pacote e não é somado ao total.</div>' : ''}
+  return `<div class="i2-esp-box">
     <div class="i2-esp">
       <div class="fg"><label class="fl">${multi?'Espaço '+(k+1):'Espaço'}</label><select onchange="I2.espSel('${d.id}','${e.id}',this.value)">${spOpts}</select></div>
       <div class="fg"><label class="fl">Montagem</label><select onchange="I2.esp('${d.id}','${e.id}','montagem',this.value)">${mOpts}</select></div>
@@ -1115,6 +1130,17 @@ function espBlock(d,e,k){
     <div class="fg" style="margin-top:8px"><label class="fl">Incluso / observações do espaço</label><textarea rows="2" style="min-height:44px" oninput="I2.esp('${d.id}','${e.id}','obs',this.value)">${esc(e.obs)}</textarea></div>
     ${heRow}
   </div>`;
+}
+function confBlock(d){
+  confSync(d);
+  const e = d.espacos[0], cur = d.gast.find(l=>pkgInfo(l));
+  const names = DATA.gast.map(i=>i.name).filter(n=>pkgInfo({base:n}));
+  const opts = '<option value="">— Selecione o cardápio —</option>' + names.map(n=>`<option value="${esc(n)}" ${cur&&cur.base===n?'selected':''}>${esc(pkgLabel(n))}</option>`).join('');
+  return `<div class="i2-sec"><div class="i2-sec-t"><span>Pacote Confraternização</span><span class="sub">espaço + buffet + estrutura · valor pela Tabela e nº de convidados</span></div>
+    <div class="i2-esp-box"><div class="i2-pkgnote ok">✔ Incluso: Salão Vista, Salão Real e Espaço Serra do Curral · Buffet completo · Painel de LED · Sonorização · Mobiliário · Decoração básica</div>
+      <div class="i2-esp" style="grid-template-columns:1fr 220px"><div class="fg"><label class="fl">Cardápio</label><select onchange="I2.confPkg('${d.id}',this.value)">${opts}</select></div>
+        <div class="fg"><label class="fl">Valor do pacote</label><input readonly value="${cur ? money(lineTotal(cur)) : '—'}"></div></div>
+      ${heRowHtml(d,e)}</div></div>`;
 }
 function dayCard(d,i){
   const multi = P.dias.length > 1;
@@ -1127,10 +1153,10 @@ function dayCard(d,i){
       <div class="i2-hrs" id="hrs-${d.id}"></div>
       <div class="sp"><button class="btn btn-o btn-sm" onclick="I2.dupDay('${d.id}')" title="Copia espaço e itens para o dia seguinte">⧉ Duplicar dia</button>${multi?`<button class="btn btn-o btn-sm" onclick="I2.delDay('${d.id}')">🗑 Remover dia</button>`:''}</div>
     </div>
-    <div class="i2-sec"><div class="i2-sec-t"><span>Espaço</span><span class="sub">valor já inclui o retorno de consumação</span></div>
+    ${isConf() ? confBlock(d) : `<div class="i2-sec"><div class="i2-sec-t"><span>Espaço</span><span class="sub">valor já inclui o retorno de consumação</span></div>
       ${d.espacos.map((e,k)=>espBlock(d,e,k)).join('')}
       <button class="btn btn-o btn-sm" style="margin:2px 0 8px" onclick="I2.addEsp('${d.id}')">＋ Adicionar outro espaço neste dia</button>
-    </div>
+    </div>`}
     ${catBlock(d,'gast')}${catBlock(d,'equip')}${catBlock(d,'serv')}
     <div class="i2-dayinfo" id="di-${d.id}"></div></div>`;
 }
@@ -1162,6 +1188,7 @@ function renderBody(){
   syncCat();
   const b = $('i2-body'); if(!b) return;
   b.innerHTML = `
+  <div class="i2-modes"><button class="${isConf()?'':'on'}" onclick="I2.setModo('evento')">Evento</button><button class="${isConf()?'on':''}" onclick="I2.setModo('conf')">Confraternização</button></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Cliente e evento</span></div><div class="card-body">
     <div class="top-contact">
       <div class="fg"><label class="fl">Empresa</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome da empresa" oninput="I2.top('cliente',this.value)"></div>
@@ -1219,10 +1246,11 @@ function refresh(){
     const c = R.days[i];
     const hr = $('hrs-'+d.id);
     if(hr){ const h = c.horas; let t = '', cl = 'i2-hrs';
-      if(h!=null){ if(h<=600){ t = '⏱ '+fmtH(h)+' contratadas · dentro das 10h'; cl += ' ok'; } else { t = '⏱ '+fmtH(h)+' contratadas · '+fmtH(h-600)+' acima das 10h'; cl += ' over'; } }
+      if(h!=null){ if(h<=LIMH()*60){ t = '⏱ '+fmtH(h)+' contratadas · dentro das '+LIMH()+'h'; cl += ' ok'; } else { t = '⏱ '+fmtH(h)+' contratadas · '+fmtH(h-LIMH()*60)+' acima das '+LIMH()+'h'; cl += ' over'; } }
       if(hr.textContent!==t) hr.textContent = t; if(hr.className!==cl) hr.className = cl; }
     const di = $('di-'+d.id);
     if(di){
+      if(isConf()) di.innerHTML = `<span class="gd">Total do dia: <b>${money(r2(c.esp+c.he+c.elig+c.serv))}</b></span>`; else
       di.innerHTML = `<span>Consumação elegível: <b>${money(c.elig)}</b></span><span>Retorno do espaço: <b>${money(c.teto)}</b></span>`
         + `<span>Desconto: <span class="neg">− ${money(c.desconto)}</span></span>`
         + (c.excedente>0 ? `<span class="over">Passou do retorno em ${money(c.excedente)} (cobrado a mais)</span>` : `<span>Crédito disponível: <b>${money(c.credito)}</b></span>`)
@@ -1271,13 +1299,13 @@ function sugOpen(inp){
   if(inp.classList.contains('i2-hor')) return horOpen(inp);
   const cat = inp.dataset.cat, q = norm(inp.value.trim()), words = q.split(/\s+/).filter(Boolean);
   const src = cat==='extras' ? ALL : DATA[cat].map(i=>Object.assign({src:cat},i));
-  let res = src.filter(i=>{ const n = norm(i.name); return words.every(w=>n.indexOf(w)>=0); }).slice(0,40);
+  let res = src.filter(i=>{ const n = norm(i.name); if((isConf() || cat==='extras') && pkgInfo({base:i.name})) return false; return words.every(w=>n.indexOf(w)>=0); }).slice(0,200);
   if(inp.value.trim()) res.push({manual:true,name:inp.value.trim(),src:cat==='extras'?'gast':cat});
   sug.list = res; sug.idx = 0; sug.inp = inp;
   const b = sugBox(), r = inp.getBoundingClientRect();
   b.innerHTML = res.map((it,i)=> it.manual
     ? `<div class="man ${i===0?'on':''}" data-i="${i}">＋ Adicionar “${esc(it.name)}” como item manual</div>`
-    : `<div class="${i===0?'on':''}" data-i="${i}"><span>${esc(it.name.trim())}</span><span class="pr">${P.tabela? money(itemPrice(it.src,it.name,P.tabela)) : ''}</span></div>`).join('') || '<div style="color:var(--gr)">Nada encontrado</div>';
+    : `<div class="${i===0?'on':''}" data-i="${i}"><span>${esc(it.name.trim())}</span><span class="pr">${P.tabela? money(pkgInfo({base:it.name}) ? pkgPriceBase(it.name,false) : itemPrice(it.src,it.name,P.tabela)) : ''}</span></div>`).join('') || '<div style="color:var(--gr)">Nada encontrado</div>';
   b.style.left = r.left+'px'; b.style.top = (r.bottom+2)+'px'; b.style.width = Math.max(r.width,440)+'px';
   b.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 20)+'px'; b.style.display = 'block';
 }
@@ -1322,16 +1350,24 @@ const lineOf = (dId,cat,id) => { const d = dayOf(dId); return d ? d[cat].find(l=
 function applyTable(){
   const info = tableInfo(P.tabela);
   P.dias.forEach(d=>{
-    d.espacos.forEach(e=>{ if(e.nome && info){ const t = info.esp(e.nome); if(!e.man) e.valor = t.total; if(!e.manTeto) e.teto = t.teto; } });
+    d.espacos.forEach(e=>{ if(e.nome && info && !isConf()){ const t = info.esp(e.nome); if(!e.man) e.valor = t.total; if(!e.manTeto) e.teto = t.teto; } });
     ['gast','equip','serv'].forEach(k=>d[k].forEach(l=>{ if(!l.man && l.base) l.unit = unitFor(l.src||k,l); }));
+    if(isConf()) confSync(d);
   });
   P.extras.forEach(l=>{ if(!l.man && l.base) l.unit = itemPrice(l.src,l.base,P.tabela); });
 }
 const I2 = {
   top(k,v){ P[k] = v; touch(); },
+  confPkg(dId,v){ const d = dayOf(dId); if(!d) return; d.gast = d.gast.filter(l=>!pkgInfo(l)); if(v) d.gast.unshift(newLine('gast',{name:v,src:'gast'})); confSync(d); touch(); renderDay(dId); },
+  async setModo(m){ if((P.modo||'evento')===m) return;
+    const has = P.dias.some(d=>d.gast.some(l=>pkgInfo(l)) || d.espacos.some(e=>e.nome));
+    if(has && !(await ask('Trocar o tipo desmonta o espaço e o pacote já lançados (os demais itens são mantidos). Continuar?','Trocar'))) return;
+    P.modo = m; P.dias.forEach(d=>{ d.gast = d.gast.filter(l=>!pkgInfo(l)); d.espacos = [newEsp()]; if(m==='conf') confSync(d); });
+    touch(); renderBody(); },
   setTabela(v){ P.tabela = v; applyTable(); touch(); renderTabelaSelect(); renderDays(); renderExtras(); if(v) say('Tabela aplicada — preços atualizados'); },
   conv(v){ P.convidados = v; const n = num(v);
     P.dias.forEach(d=>d.gast.forEach(l=>{ if(pkgInfo(l)){ if(!l.man) l.unit = pkgPrice(l); return; } if(!l.qtdMan && l.base && !isSobConsumo(l)) l.qtd = n; }));
+    if(isConf()) P.dias.forEach(confSync);
     touch(); renderDays(); },
   day(id,k,v){ const d = dayOf(id); if(!d) return; d[k] = v; if(k==='chegada'||k==='inicio'||k==='termino') syncHE(d); touch(); },
   dateChanged(){ P.dias.forEach((d,i)=>{ const e = $('dl-'+d.id); if(e) e.innerHTML = dayLab(d,i); }); renderExtras(); refresh(); },
@@ -1366,7 +1402,6 @@ const I2 = {
     else l[k] = v;
     touch(); },
   resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = unitFor(l.src||cat,l); touch(); renderDay(dId); },
-  hhm(dId,id,v){ const l = lineOf(dId,'gast',id); if(!l) return; l.hhm = v; if(!l.man) l.unit = pkgPrice(l); touch(); renderDay(dId); },
   mvLine(dId,cat,id,dir){ const d = dayOf(dId); if(!d) return; const a = d[cat], i = a.findIndex(l=>l.id===id), j = i+dir; if(i<0 || j<0 || j>=a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+id+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   dropLine(dId,cat,from,to,after){ const d = dayOf(dId); if(!d || from===to) return; const a = d[cat], i = a.findIndex(l=>l.id===from); if(i<0) return; const it = a.splice(i,1)[0]; let j = a.findIndex(l=>l.id===to); if(j<0){ a.push(it); } else a.splice(after?j+1:j,0,it); touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+from+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   delLine(dId,cat,id){ const d = dayOf(dId); if(!d) return; d[cat] = d[cat].filter(l=>l.id!==id); touch(); renderDay(dId); },
@@ -1545,7 +1580,7 @@ function buildPrint(p,R,autoPrint){
   let espRows = '';
   const hnum = n => String(num(n)).replace('.',',');
   days.forEach(d=>{ const c = R.days[idxOf(d)]; d.espacos.forEach(e=>{ if(!e.nome) return;
-    espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>${esc(e.obs)}</td><td class="r nw"><b>${dayPkg(d) ? 'Incluso no pacote' : m(num(e.valor))}</b></td></tr>`;
+    espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>${esc(e.obs)}</td><td class="r nw"><b>${p.modo==='conf' ? 'Incluso no pacote' : m(num(e.valor))}</b></td></tr>`;
     if(e.he.on && heValor(e)>0) espRows += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td>${esc(e.nome)}</td><td>${esc(e.montagem||'—')}</td><td>Hora extra de locação: ${hnum(e.he.qtd)} h × ${m(num(e.he.vh))}</td><td class="r nw"><b>${m(heValor(e))}</b></td></tr>`; }); });
     const rowsOf = (cat,withHor) => { let h=''; days.forEach(d=>d[cat].forEach(l=>{ const t = lineTotal(l); if(!(l.nome||l.base||t)) return;
     h += `<tr><td class="nw">${fdate(d.data)||'—'}</td><td><b>${esc(l.nome)}</b></td>${withHor?`<td>${esc(l.hor)}</td>`:''}<td>${esc(l.desc)}</td><td class="r nw">${num(l.qtd)||'—'}</td><td class="r nw">${num(l.unit)?m(l.unit):'—'}</td><td class="r nw"><b>${num(l.qtd)&&num(l.unit)?m(t):'—'}</b></td></tr>`; })); return h; };
