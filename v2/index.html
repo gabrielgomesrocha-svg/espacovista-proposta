@@ -211,7 +211,7 @@ body.inv2-on .tb-acts{display:none}
 .i2-sr.disc .l,.i2-sr.disc .v{color:var(--w);font-weight:700}
 .i2-sr.off .l,.i2-sr.off .v{opacity:.42;text-decoration:line-through}
 .i2-sr.off .eye{color:var(--w)}
-.i2-sr.grand{background:var(--dk);border-radius:4px;margin-top:5px;padding:9px 10px}
+.i2-sr.grand{background:#8B1A10;border-radius:4px;margin-top:5px;padding:9px 10px}
 .i2-sr.grand .l,.i2-sr.grand .v{color:#fff;font-weight:700;font-size:14px}
 .i2-eye{background:none;border:1px solid var(--ru);border-radius:4px;cursor:pointer;width:26px;height:24px;display:inline-flex;align-items:center;justify-content:center;color:var(--gr);padding:0}
 .i2-eye:hover{border-color:var(--w);color:var(--w)}
@@ -403,6 +403,12 @@ body.sb-off .main{margin-left:0}
 .i2-modes button{border:0;background:transparent;padding:10px 22px;font:700 14px Montserrat,Inter,sans-serif;color:#888;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px}
 .i2-modes button.on{color:var(--w);border-bottom-color:var(--w)}
 .i2-pkgnote.ok{background:#EEF6EE;border-color:#7bb07b;color:#245a24}
+
+.i2-dtimes{margin-top:12px}
+.i2-dt-row{background:var(--wl);border:1px solid var(--ru);border-radius:8px;padding:9px 14px;display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:8px}
+.i2-dt-row .fg{min-width:0}
+.i2-dt-row .sp{margin-left:auto;display:flex;gap:6px;padding-bottom:2px}
+.i2-day-t{font-weight:800;font-size:13px;color:var(--w);padding:10px 14px 0;letter-spacing:.04em;text-transform:uppercase}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -719,6 +725,11 @@ DATA.spaces.forEach((sp,i)=>{ if(sp.hora==null) sp.hora = HORA_EXTRA[i]||0; });
 let espObsPadrao = {};   // texto padrão 'Incluso / Observações' salvo por espaço
 let custom = [];     // tabelas personalizadas
 let conds = DATA.conds.slice();
+function foneFmt(v,mask){
+  const dg = String(v||'').replace(/\D/g,'').slice(0,11); if(!dg && !mask) return '';
+  const t = '(__) _____-____'; let i = 0;
+  return t.replace(/_/g,()=> i<dg.length ? dg[i++] : '_');
+}
 function timeSel(d,f){
   const v = d[f]||'', p = v.split(':'), h = p[0]||'', m = p[1]||'';
   let ho = '<option value="">--</option>', mo = '<option value="">--</option>';
@@ -1145,14 +1156,7 @@ function confBlock(d){
 function dayCard(d,i){
   const multi = P.dias.length > 1;
   return `<div class="i2-day" id="day-${d.id}">
-    <div class="i2-day-h">
-      <div class="fg"><label class="fl">Dia do evento</label><div class="i2-dlab" id="dl-${d.id}">${dayLab(d,i)}</div></div>
-      <div class="fg"><label class="fl">Chegada</label>${timeSel(d,'chegada')}</div>
-      <div class="fg"><label class="fl">Início</label>${timeSel(d,'inicio')}</div>
-      <div class="fg"><label class="fl">Término</label>${timeSel(d,'termino')}</div>
-      <div class="i2-hrs" id="hrs-${d.id}"></div>
-      <div class="sp"><button class="btn btn-o btn-sm" onclick="I2.dupDay('${d.id}')" title="Copia espaço e itens para o dia seguinte">⧉ Duplicar dia</button>${multi?`<button class="btn btn-o btn-sm" onclick="I2.delDay('${d.id}')">🗑 Remover dia</button>`:''}</div>
-    </div>
+    ${multi?`<div class="i2-day-t">Dia ${i+1}${d.data?' · '+fdate(d.data):''}</div>`:''}
     ${isConf() ? confBlock(d) : `<div class="i2-sec"><div class="i2-sec-t"><span>Espaço</span><span class="sub">valor já inclui o retorno de consumação</span></div>
       ${d.espacos.map((e,k)=>espBlock(d,e,k)).join('')}
       <button class="btn btn-o btn-sm" style="margin:2px 0 8px" onclick="I2.addEsp('${d.id}')">＋ Adicionar outro espaço neste dia</button>
@@ -1160,8 +1164,19 @@ function dayCard(d,i){
     ${catBlock(d,'gast')}${catBlock(d,'equip')}${catBlock(d,'serv')}
     <div class="i2-dayinfo" id="di-${d.id}"></div></div>`;
 }
+function dayTimes(d,i){
+  const multi = P.dias.length > 1;
+  return `<div class="i2-dt-row" id="dtr-${d.id}">
+    <div class="fg"><label class="fl">Dia do evento</label><div class="i2-dlab" id="dl-${d.id}">${dayLab(d,i)}</div></div>
+    <div class="fg"><label class="fl">Chegada</label>${timeSel(d,'chegada')}</div>
+    <div class="fg"><label class="fl">Início</label>${timeSel(d,'inicio')}</div>
+    <div class="fg"><label class="fl">Término</label>${timeSel(d,'termino')}</div>
+    <div class="i2-hrs" id="hrs-${d.id}"></div>
+    <div class="sp"><button class="btn btn-o btn-sm" onclick="I2.dupDay('${d.id}')" title="Copia espaço e itens para o dia seguinte">⧉ Duplicar dia</button>${multi?`<button class="btn btn-o btn-sm" onclick="I2.delDay('${d.id}')">🗑 Remover dia</button>`:''}</div>
+  </div>`;
+}
 function dayLab(d,i){ return (P.dias.length>1?'Dia '+(i+1)+' · ':'')+(d.data?fdate(d.data):'<span style="color:var(--w)">escolha a data lá em cima</span>'); }
-function renderDts(){ const el = $('i2-dts'); if(!el||!P) return; const m = P.dias.length>1;
+function renderDts(){ const el = $('i2-dts'); if(!el||!P) return; const tm = $('i2-dtimes'); if(tm) tm.innerHTML = P.dias.map(dayTimes).join(''); const m = P.dias.length>1;
   el.innerHTML = P.dias.map((d,i)=>'<span class="dt-in">'+(m?'<small>Dia '+(i+1)+'</small>':'')+'<input type="date" value="'+esc(d.data)+'" oninput="I2.day(\''+d.id+'\',\'data\',this.value)" onchange="I2.dateChanged()">'+(m?'<b title="Remover este dia" onclick="I2.delDay(\''+d.id+'\')">×</b>':'')+'</span>').join('')+'<button class="btn btn-o btn-sm" onclick="I2.addDay()">＋ Adicionar data</button>'; }
 function renderDays(){ const el = $('i2-days'); if(!el) return; el.innerHTML = P.dias.map(dayCard).join(''); renderDts(); refresh(); }
 function renderDay(id){
@@ -1193,13 +1208,14 @@ function renderBody(){
     <div class="top-contact">
       <div class="fg"><label class="fl">Empresa</label><input id="i2-cliente" value="${esc(P.cliente)}" placeholder="Nome da empresa" oninput="I2.top('cliente',this.value)"></div>
       <div class="fg"><label class="fl">Cliente (contato)</label><input id="i2-contato" value="${esc(P.contato||'')}" placeholder="Nome do contato" oninput="I2.top('contato',this.value)"></div>
-      <div class="fg"><label class="fl">WhatsApp</label><input id="i2-fone" type="tel" value="${esc(P.fone||'')}" placeholder="(31) 99999-9999" oninput="I2.top('fone',this.value)"></div>
+      <div class="fg"><label class="fl">WhatsApp</label><input id="i2-fone" type="tel" inputmode="numeric" value="${esc(foneFmt(P.fone,false))}" placeholder="(31) 99999-9999" onfocus="I2.foneIn(this)" oninput="I2.foneIn(this)" onblur="I2.foneOut(this)"></div>
       <div class="fg"><label class="fl">E-mail</label><input id="i2-email" type="email" value="${esc(P.email||'')}" placeholder="nome@empresa.com.br" oninput="I2.top('email',this.value)"></div>
     </div>
     <div class="top-event">
       <div class="fg"><label class="fl">Nº de convidados</label><input id="i2-conv" type="number" min="0" value="${esc(P.convidados)}" oninput="I2.conv(this.value)"></div>
       <div class="fg"><label class="fl">Data(s) do evento</label><div class="dts" id="i2-dts"></div></div>
     </div>
+    <div class="i2-dtimes" id="i2-dtimes"></div>
     </div></div></div>
   <div id="i2-gate" class="i2-gate"></div>
   <div id="i2-rest">
@@ -1209,7 +1225,7 @@ function renderBody(){
   <div class="card"><div class="card-hdr"><span class="card-title">Observações gerais</span></div><div class="card-body">
     <div class="fg"><label class="fl">Aparecem no PDF (a forma de pagamento já vem escrita aqui — edite à vontade)</label><textarea rows="3" oninput="I2.top('obs',this.value)">${esc(P.obs)}</textarea></div></div></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Resumo do investimento</span></div><div class="card-body"><div class="i2-sumwrap" id="sm-wrap"><div id="sm-days"></div><div class="i2-sum"><div class="i2-sum-h">Total do evento (todos os dias)</div>
-    <div class="i2-sr"><span class="l">Valor do Espaço</span><span class="v" id="sm-esp"></span></div>
+    <div class="i2-sr" id="smr-esp"><span class="l">Valor do Espaço</span><span class="v" id="sm-esp"></span></div>
     <div class="i2-sr" id="smr-he"><span class="l">Hora Extra do espaço</span><span class="v" id="sm-he"></span></div>
     <div class="i2-sr"><span class="l">Investimento (gastronomia e equipamentos)</span><span class="v" id="sm-inv"></span></div>
     <div class="i2-sr"><span class="l">Serviços / Outros</span><span class="v" id="sm-serv"></span></div>
@@ -1266,6 +1282,7 @@ function refresh(){
       +(c.serv>0?'<div class="i2-sr"><span class="l">Serviços / Outros</span><span class="v">'+money(c.serv)+'</span></div>':'')
       +(c.desconto>0?'<div class="i2-sr disc"><span class="l">Desconto de consumação</span><span class="v">− '+money(c.desconto)+'</span></div>':'')
       +'<div class="i2-sr bold"><span class="l">Total do Dia '+(k+1)+'</span><span class="v">'+money(r2(c.esp+c.he+c.elig+c.serv-c.desconto))+'</span></div></div>'; }).join('') : ''; const sw = $('sm-wrap'); if(sw) sw.classList.toggle('multi', P.dias.length>1); }
+  { const re = $('smr-esp'); if(re) re.style.display = (isConf() && !(R.esp>0)) ? 'none' : ''; }
   setIf('sm-esp',money(R.esp)); setIf('sm-he',money(R.he)); setIf('sm-inv',money(R.inv)); setIf('sm-serv',money(R.serv));
   setIf('sm-ev',money(R.evento)); setIf('sm-desc','− '+money(R.desconto)); setIf('sm-cred',money(R.credito)); setIf('sm-ext',money(R.extras));
   setIf('sm-tot',money(R.total)); setIf('i2-live',money(R.total));
@@ -1358,6 +1375,14 @@ function applyTable(){
 }
 const I2 = {
   top(k,v){ P[k] = v; touch(); },
+  foneIn(el){
+    const dg = el.value.replace(/\D/g,'').slice(0,11);
+    el.value = foneFmt(dg,true);
+    const pos = el.value.indexOf('_'); const p = pos<0 ? el.value.length : pos;
+    try{ el.setSelectionRange(p,p); setTimeout(()=>{ try{ el.setSelectionRange(p,p); }catch(e){} },0); }catch(e){}
+    P.fone = dg ? el.value.split('_')[0].replace(/[\s\-(]+$/,'') : ''; touch();
+  },
+  foneOut(el){ if(!el.value.replace(/\D/g,'')) el.value = ''; },
   confPkg(dId,v){ const d = dayOf(dId); if(!d) return; d.gast = d.gast.filter(l=>!pkgInfo(l)); if(v) d.gast.unshift(newLine('gast',{name:v,src:'gast'})); confSync(d); touch(); renderDay(dId); },
   async setModo(m){ if((P.modo||'evento')===m) return;
     const has = P.dias.some(d=>d.gast.some(l=>pkgInfo(l)) || d.espacos.some(e=>e.nome));
@@ -1605,7 +1630,7 @@ function buildPrint(p,R,autoPrint){
     if(c.desconto>0) rs.push(sr('Desconto de consumação','− '+m(c.desconto),'disc'));
     rs.push(sr('Total do Dia '+(k+1),m(r2(c.esp+c.he+c.elig+c.serv-c.desconto)),'sub'));
     dayCards.push('<table class="sum dc"><tr class="dh"><td colspan="2">Dia '+(k+1)+(d.data?' · '+fdate(d.data):'')+'</td></tr>'+rs.join('')+'</table>'); });
-  tot.push(sr('Valor do Espaço',m(R.esp)));
+  if(!(p.modo==='conf' && !(R.esp>0))) tot.push(sr('Valor do Espaço',m(R.esp)));
   if(R.he>0) tot.push(sr('Hora Extra do espaço',m(R.he)));
   tot.push(sr('Investimento (gastronomia e equipamentos)',m(R.inv)));
   if(R.serv>0) tot.push(sr('Serviços / Outros',m(R.serv)));
@@ -1656,7 +1681,7 @@ function buildPrint(p,R,autoPrint){
   table.sum .disc td{color:#8B0000;font-weight:700}
   table.sum .dh td{text-align:left;padding:6px 8px;color:#8B0000;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#F2EEEE;border-bottom:.75px solid #8B0000}
   table.sum .cred td{color:#8B0000}
-  table.sum .grand td{background:#1A1A1A;color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px 8px!important}
+  table.sum .grand td{background:#8B1A10;color:#fff!important;font-weight:700!important;font-size:10px!important;padding:8px 8px!important}
   .pay{background:#F9F4F4;padding:6px 10px;font-size:8px;color:#555;margin-top:7px;border-radius:3px;break-inside:avoid}
   .obs{font-size:8.5px;color:#555;white-space:pre-wrap;line-height:1.5;break-inside:avoid}
   table.c{width:100%;border-collapse:collapse}
