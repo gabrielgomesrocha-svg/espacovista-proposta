@@ -2780,16 +2780,7 @@ async function homeRender(){
   const row = (a,b,c)=>'<div class="hm-r"'+(c?' onclick="'+c+'"':'')+'><div><b>'+a+'</b></div><div class="m">'+b+'</div></div>';
   const empty = t=>'<p class="hm-e">'+t+'</p>';
   el.innerHTML =
-    '<div class="hm-sh">'
-    + sc('🏛️','Proposta Espaço','Salas e exclusividade','esp')
-    + sc('🍸','Proposta Coquetel','Coquetel e confraternização','hh')
-    + sc('📋','Planilha de Investimento','Proposta completa por dia','inv2')
-    + sc('📥','Orçamentos Recebidos','Pedidos vindos do link','orc', novos.length||'')
-    + sc('💼','Clientes','Histórico e arquivados','clientes')
-    + sc('🧪','Chat Simulador','Teste a experiência do cliente','sim')
-    + sc('📚','Catálogo','Preços, mensagens e mídia','catalogo')
-    + '</div>'
-    + '<div class="hm-kp">'
+    '<div class="hm-kp">'
     + kpi(novos.length,'Orçamentos novos','a atender', novos.length?'hot':'','orc')
     + kpi(sentMonth.length,'Propostas enviadas no mês','link gerado em '+now.toLocaleDateString('pt-BR',{month:'long'}),'','clientes')
     + kpi(money(valMonth),'Valor enviado no mês','soma das propostas enviadas','','clientes')
