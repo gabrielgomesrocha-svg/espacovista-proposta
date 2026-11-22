@@ -1823,6 +1823,9 @@ body{background:#777;margin:0;font-family:'Inter',sans-serif;color:var(--k)}
 .cols section h4{font:700 15px 'Montserrat';letter-spacing:.2em;text-transform:uppercase;color:#fff;padding-bottom:12px;border-bottom:2px solid var(--w);margin-bottom:14px}
 .cols li{list-style:none;font-size:15.5px;line-height:1.38;color:#CFCACA;padding:3px 0 3px 14px;position:relative}
 .cols li::before{content:'';position:absolute;left:0;top:11px;width:5px;height:5px;background:var(--w)}
+.cols.sf section h4{padding-bottom:9px;margin-bottom:9px;font-size:14px}
+.cols.sf li{font-size:13.6px;line-height:1.28;padding:2px 0 2px 13px}.cols.sf li::before{top:8px}
+.cols.sf .note{margin-top:10px;font-size:12.5px}
 .cols .note{margin-top:14px;font-size:14px;color:#9d9797;line-height:1.45;padding-left:14px}
 .inv{position:absolute;left:0;right:0;bottom:0;height:372px;background:#fff;color:var(--k);padding:36px 80px 0}
 .inv .h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
@@ -2064,7 +2067,7 @@ function hhCoqFull(c){
   const p1 = '<!-- PÁGINA 2 -->\n'+body(1).replace('<section class="page p1">','<section class="page p1 pb">')
     .replace('<div class="left">','<div class="left">'+im(6,1,'bgi')+'<div class="shade"></div>')
     .replace(/<div class="strip">[\s\S]*?(?=\n?\s*<p class="intro">)/,'<div class="strip"><div class="ph">'+im(5,3)+'</div></div>\n  ');
-  let p2 = body(2).replace(/<div class="top">[\s\S]*?<\/div>\n/,'<div class="top" style="left:0;right:0;top:0;height:140px"><div class="mband"><div class="ph">'+c.img(1)+'</div><div class="ph">'+c.img(2)+'</div><div class="ph">'+c.img(3)+'</div></div><div class="mshade"></div><h2 style="position:absolute;left:80px;bottom:18px;font-size:54px"><em>Salgados</em> <b>Finos</b></h2><img class="logo" style="position:absolute;right:80px;top:28px;width:130px" src="'+c.logo+'" alt=""></div>\n').replace('<div class="cols">','<div class="cols" style="top:168px">');
+  let p2 = body(2).replace(/<div class="top">[\s\S]*?<\/div>\n/,'<div class="top" style="left:0;right:0;top:0;height:268px"><div class="mband"><div class="ph">'+c.img(1)+'</div><div class="ph">'+c.img(2)+'</div><div class="ph">'+c.img(3)+'</div></div><div class="mshade"></div><h2 style="position:absolute;left:80px;bottom:30px;font-size:64px"><em>Salgados</em> <b>Finos</b></h2><img class="logo" style="position:absolute;right:80px;top:28px;width:140px" src="'+c.logo+'" alt=""></div>\n').replace('<div class="cols">','<div class="cols sf" style="top:292px">');
   p2 = '<!-- PÁGINA 3 -->\n'+p2;
   const pk = `<div class="card pk"><div><h3>Estacionamento com manobrista</h3><div class="sub">Estacionamento próprio para até 30 carros. Manobrista obrigatório e já incluso, tarifado à parte. Sem cobrança individual no dia do evento.</div></div><div>
    <div class="r"><span>Até 20 carros</span><span>${c.park[0]}</span></div><div class="r"><span>Até 30 carros</span><span>${c.park[1]}</span></div></div></div>`;
