@@ -2286,8 +2286,17 @@ function hhRender(){ if(HHS) HHS.modo = 'conf';
 }
 function hhAj(k){ const a = (MIDIA.aj||{})[k]||{}; return {z:Math.max(1,Math.min(3,num(a.z)||1)), x:(a.x==null?50:num(a.x)), y:(a.y==null?50:num(a.y)), b:(a.b==null?100:Math.max(30,Math.min(180,num(a.b))))}; }
 function hhImgStyle(k){ const a = hhAj(k); return 'object-position:'+a.x+'% '+a.y+'%;'+(a.b!==100?'filter:brightness('+(a.b/100)+');':'')+(a.z>1?'transform:scale('+a.z+');transform-origin:'+a.x+'% '+a.y+'%;':''); }
-function hhFile(file,max){
-  return new Promise((ok,no)=>{ const fr = new FileReader(); fr.onload = ()=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1,max/Math.max(im.width,im.height)); const cv = document.createElement('canvas'); cv.width = Math.round(im.width*k); cv.height = Math.round(im.height*k); cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height); ok(cv.toDataURL('image/jpeg',0.85)); }; im.onerror = no; im.src = fr.result; }; fr.onerror = no; fr.readAsDataURL(file); });
+async function hhFile(file,max){
+  const draw = (src,w,h)=>{ const k = Math.min(1,max/Math.max(w,h)); const cv = document.createElement('canvas'); cv.width = Math.max(1,Math.round(w*k)); cv.height = Math.max(1,Math.round(h*k)); const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(src,0,0,cv.width,cv.height); return cv.toDataURL('image/jpeg',0.85); };
+  if(!file) throw new Error('nenhum arquivo');
+  if(file.size > 60*1024*1024) throw new Error('arquivo muito grande (máx. 60 MB)');
+  let bmp = null; try{ if(window.createImageBitmap) bmp = await createImageBitmap(file,{imageOrientation:'from-image'}); }catch(e){ bmp = null; }
+  if(bmp){ try{ return draw(bmp,bmp.width,bmp.height); } finally{ try{ bmp.close(); }catch(e){} } }
+  const url = URL.createObjectURL(file);
+  try{
+    const im = await new Promise((ok,no)=>{ const m = new Image(); m.onload = ()=>ok(m); m.onerror = ()=>no(new Error('formato não suportado pelo navegador — salve a foto como JPG ou PNG e tente de novo')); m.src = url; });
+    return draw(im,im.naturalWidth||im.width,im.naturalHeight||im.height);
+  } finally { URL.revokeObjectURL(url); }
 }
 
 // ── Referência de uso de cada foto (onde aparece na proposta publicada hoje) ──
@@ -2457,7 +2466,7 @@ Object.assign(I2,{
   hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='inv'){ LINK_CTX = 'hh'; return; } if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
   hhDoc(k){ if(!HHS.docs) HHS.docs = {coq:true,but:false}; HHS.docs[k] = !HHS.docs[k]; hhSet(true); hhRender(); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; if(!HHS.docs) HHS.docs = {coq:true,but:false}; hhSet(false); hhRender(); },
-  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
+  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui carregar a foto: '+(e&&e.message||e)); } },
   midiaGo(pg){ if(pg===midiaPg) return; midiaGoNow(pg,true); },
   midiaPg(d){ midiaGoNow(midiaPg+d,true); },
   midiaSel(id){ midiaSec = id; $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
