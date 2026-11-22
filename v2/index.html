@@ -756,6 +756,12 @@ function patchCat(cat){
   const pf = g('Serviço de sala: petit four'); if(pf) ['1a','2a','3a'].forEach(k=>{ if(num(pf.p[k])===8){ pf.p[k] = 0; ch = true; } });
   if(!g('Red Bull (unidade)')){ const i = cat.gast.findIndex(x=>x.name==='Serviço de sala: petit four'); cat.gast.splice(i>=0?i+1:cat.gast.length,0,{name:'Red Bull (unidade)',desc:'',p:{'1a':13,'2a':14.5,'3a':16,'1m':13,'2m':14.5,'3m':16}}); ch = true; }
   if(!cat.serv.find(x=>x.name==='Diária de montagem / desmontagem')){ cat.serv.push({name:'Diária de montagem / desmontagem',desc:'',p:{1:8970,2:8970,3:8970}}); ch = true; }
+  // descrições do serviço de sala (nov/2026): só troca se ainda estiver o texto antigo
+  const dsc = (n,old,nw)=>{ const it = g(n); if(it && (it.desc||'')===old){ it.desc = nw; ch = true; } };
+  dsc('Serviço de sala: água em jarra','Água mineral em jarra servido de forma ilimitada. *Valor cobrado por pessoa.','Serviço de água mineral em jarra, ilimitado durante todo o evento. Inclui garçom dedicado, louças e reposição contínua. *Valor cobrado por pessoa.');
+  dsc('Serviço de sala: café','Café servido em garrafa durante todo o evento. Inclui garçom e vasilhames de louça. *Valor cobrado por pessoa.','Serviço de café em garrafa, ilimitado durante todo o evento. Inclui garçom dedicado, louças e reposição contínua. *Valor cobrado por pessoa.');
+  dsc('Serviço de sala: café expresso (cápsula)','Máquina de café expresso cobrado por cápsula. Inclui garçom e vasilhames de louça.','Serviço de café expresso na máquina, cobrado por cápsula consumida. Inclui garçom dedicado, louças e reposição.');
+  dsc('Serviço de sala: petit four','Petit four (2 variedades) servido durante o evento. *Valor cobrado por pessoa.','Serviço de petit four (2 variedades) durante o evento. Inclui garçom, louças e reposição. *Valor cobrado por pessoa.');
   const mp = cat.equip.find(x=>x.name==='Monitor de palco 28 polegadas'); if(mp){ mp.name = 'Monitor de palco 27 polegadas'; ch = true; }
   return ch;
 }
@@ -1812,14 +1818,15 @@ a.btn{color:inherit;text-decoration:none;display:block}
 .pgs .num{position:absolute;right:90px;top:56px;font:600 15px 'Inter';letter-spacing:.2em;text-transform:uppercase;opacity:.9}
 .p1.pb .left{background:#1b1717;color:#fff;overflow:hidden}
 .p1.pb .left>img.bgi{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.p1.pb .left .shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(15,10,10,.92) 0%,rgba(15,10,10,.55) 45%,rgba(15,10,10,.25) 100%)}
+.p1.pb .left .shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(15,10,10,.92) 0%,rgba(15,10,10,.55) 50%,rgba(15,10,10,.3) 100%)}
 .p1.pb .left>*:not(.bgi):not(.shade){position:relative}
 .p1.pb .left .logo{filter:brightness(0) invert(1)}
-.p1.pb .left h1{font:300 64px/1.02 'Montserrat';letter-spacing:-.02em;text-transform:uppercase}
-.p1.pb .left h1 b{font-weight:800}.p1.pb .left h1 em{font-style:normal;font-weight:800;color:#E04040}
-.p1.pb .left .sub{font:400 24px/1.45 'Inter';margin-top:26px;color:#f1eaea}
-.p1.pb .strip{grid-template-columns:repeat(4,1fr);gap:6px;height:420px}
+.p1.pb .left h1 em{color:#E04040!important}
+.p1.pb .left .meta{border-top-color:rgba(255,255,255,.35)}
+.p1.pb .strip{grid-template-columns:1fr}
 .p1.pb .strip .ph{position:relative}.p1.pb .strip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mband{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}.mband .ph{position:relative}.mband img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mshade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(15,10,10,.85),rgba(15,10,10,.1) 70%)}
 .p3 .card.pk{grid-column:1/3;display:grid;grid-template-columns:1fr 1fr;gap:0 50px;align-items:center}
 .p3 .card.pk h3::after{margin:7px 0}
 .grid4.up{top:150px;gap:34px 26px}
@@ -1924,21 +1931,9 @@ function hhCoqPages(c){return `
 function hhButPages(c){
   const parts = hhCoqPages(c).split('<!-- PÁGINA '); // [pré, '1 -->…', '2 -->…', '3 -->…', '4 -->…']
   const body = i => parts[i].replace(/^\d -->\n/,'');
-  const dif = body(1).match(/<div class="dif">[\s\S]*?\n  <\/div>/)[0];
-  const ph = n => `<div class="ph">${c.img(n)}</div>`;
-  const p1 = `<!-- PÁGINA 2 -->
-<section class="page p1 pb">
- <div class="left">${c.img(6,'bgi')}<div class="shade"></div>
-  <img class="logo" src="${c.logo}" alt="Espaço Vista">
-  <h1 style="margin-top:auto"><em>Comida</em> mineira<br><b>de verdade</b></h1>
-  <p class="sub">Feita com tempero caseiro, servida com a vista da Serra do Curral.</p>
- </div>
- <div class="right">
-  <div class="strip">${ph(1)}${ph(2)}${ph(3)}${ph(5)}</div>
-  <p class="intro">Cantinho mineiro, petiscos e petit gourmet servidos em ponto fixo e volante, preparados pelo <b>Buffet Vista</b> para a sua equipe aproveitar o evento do começo ao fim, com a <b>vista da Serra do Curral</b> e uma área externa acolhedora.</p>
-  ${dif}
- </div>
-</section>`;
+  const p1 = '<!-- PÁGINA 2 -->\n'+body(1).replace('<section class="page p1">','<section class="page p1 pb">')
+    .replace('<div class="left">','<div class="left">'+c.img(6,'bgi')+'<div class="shade"></div>')
+    .replace(/<div class="strip">[\s\S]*?(?=\n?\s*<p class="intro">)/,'<div class="strip"><div class="ph">'+c.img(5)+'</div></div>\n  ');
   const bg = c.img(4,'bg');
   const p0 = `<!-- CAPA -->
 <section class="page pcv">${bg}<div class="shade"></div><img class="logo" src="${c.logo}" alt="Espaço Vista">
@@ -1951,8 +1946,8 @@ function hhButPages(c){
   const li = a => a.map(x=>'<li>'+x+'</li>').join('');
   const p2 = `<!-- PÁGINA 4 -->
 <section class="page p2">
- <div class="top"><h2><em>Comida</em> <b>de</b> Buteco</h2><img class="logo" src="${c.logo}" alt=""></div>
- <div class="cols" style="grid-template-columns:1fr 2.2fr 1fr 1fr 1fr">
+ <div class="top" style="left:0;right:0;top:0;height:215px"><div class="mband"><div class="ph">${c.img(1)}</div><div class="ph">${c.img(2)}</div><div class="ph">${c.img(3)}</div></div><div class="mshade"></div><h2 style="position:absolute;left:80px;bottom:26px"><em>Comida</em> <b>de</b> Buteco</h2><img class="logo" style="position:absolute;right:80px;top:36px" src="${c.logo}" alt=""></div>
+ <div class="cols" style="top:245px;grid-template-columns:1fr 2.2fr 1fr 1fr 1fr">
   <section><h4>Cantinho Mineiro</h4><ul>${li(['Mandioquinha noisette','Torresminho crocante','Carne de panela ao molho servida com pães','Linguiça calabresa defumada','Mini tonel de cachaça'])}</ul><p class="note">Todos os itens estão inclusos. Servido em ponto fixo.</p></section>
   <section><h4>Petiscos e Petit Gourmet</h4><ul class="c2" style="column-count:2;column-gap:28px">${li(['Caeser salad','Bruschetta marguerita / berinjela','Espetinho caprese','Pão de queijo com lombinho canadense e catupiry','Trouxinha de alho poró','Escondidinho de frango com catupiry','Coxinha de frango com catupiry','Mini quibe ao molho de limão','Rolê de frango com bacon','Cubinho de lombo ao molho de abacaxi','Espetado de frango empanado ao molho da casa','Filet aperitivo ao molho gorgonzola','Pastel de feira','Shot de batatinha frita','Empanado de peixe ao gergelim negro','Pirulito de polpetone ao molho de tomate','Brochetinho','Carne de sol na mandioca cozida c/ manteiga de garrafa'])}</ul><p class="note">Serviço volante. Escolha até 7 opções.</p></section>
   <section><h4>Prato Quente</h4><ul>${li(['Mexido gourmet','Tropeiro gourmet','Macarrão na chapa','Yakisoba','Caldos (até 2 opções): mandioca, feijão, alho poró e mineiro'])}</ul><p class="note">Serviço volante. Escolha até 1 variedade (item opcional).</p></section>
