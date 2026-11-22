@@ -837,7 +837,7 @@ function patchCat(cat){
   return ch;
 }
 let CAT = null, catTab = 'sp', catDirty = false;
-function catSet(d){ catDirty = d; const b = $('cat-save'); if(b){ b.disabled = !d; b.textContent = d ? '💾 Salvar alterações' : '✔ Salvo'; } const h = $('cat-hint'); if(h) h.textContent = d ? 'Há alterações não salvas.' : ''; }
+function catSet(d){ catDirty = d; const dd = catTab==='md' ? !!(typeof midiaDirty!=='undefined' && midiaDirty) : d; const b = $('cat-save'); if(b){ b.disabled = !dd; b.textContent = dd ? '💾 Salvar alterações' : '✔ Salvo'; } const h = $('cat-hint'); if(h) h.textContent = dd ? 'Há alterações não salvas.' : ''; }
 function numIn(v,onch){ return '<input type="number" step="0.01" min="0" value="'+(v||0)+'" style="text-align:right" onchange="'+onch+'">'; }
 function catTabsHtml(){
   const tabs = [['sp','🏛️ Espaços'],['gast','🍴 Gastronomia'],['eq','🎙️ Equipamentos e serviços'],['hhp','🍸 Preços HH / Confraternização'],['md','🖼️ Mídia e links'],['wa','💬 Mensagens (WhatsApp e e-mail)']];
@@ -1817,7 +1817,7 @@ async function boot(){
 
 Object.assign(I2, {
   openCatalogo(){ renderCatalogo(); },
-  catTab(t){ catTab = t; renderCatalogo(); },
+  async catTab(t){ if(catTab==='md' && t!=='md' && typeof midiaDirty!=='undefined' && midiaDirty){ if(await ask('Há alterações de mídia não salvas. Salvar agora?','Salvar')){ if(!(await I2.midiaSaveNow())) return; } } catTab = t; renderCatalogo(); },
   catF(k,i,f,v){ CAT[k][i][f] = (f==='hora') ? num(v) : v; catSet(true); },
   catT(i,n,f,v){ CAT.spaces[i].t[n][f] = num(v); const c = $('cs-'+i+'-'+n); if(c) c.textContent = money(num(CAT.spaces[i].t[n].base)+num(CAT.spaces[i].t[n].teto)); catSet(true); },
   catP(k,i,f,v){ CAT[k][i].p[f] = num(v); catSet(true); },
@@ -1830,6 +1830,7 @@ Object.assign(I2, {
     const el = k==='spaces' ? document.querySelector('.i2-cs:last-of-type input') : (k==='gast' ? document.querySelector('#cat-gast-tb tr input') : null); if(el){ el.focus(); el.select(); } },
   async catDel(k,i){ const x = CAT[k][i]; if(!(await ask('Excluir "'+x.name+'" do catálogo? As propostas já salvas mantêm os valores e os nomes que têm hoje.','Excluir item'))) return; CAT[k].splice(i,1); catSet(true); renderCatalogo(); },
   async catSave(){
+    if(catTab==='md'){ await I2.midiaSaveNow(); return; }
     const err = catValidate(); if(err){ say(err); return; }
     const ren = {}; CAT.spaces.forEach(x=>{ if(x._o && x._o!==x.name) ren[x._o] = x.name; });
     try{
@@ -1840,7 +1841,7 @@ Object.assign(I2, {
     CAT.spaces.forEach(x=>{ x._o = x.name; }); applyCat(CAT);
     if(P) (P.dias||[]).forEach(d=>(d.espacos||[]).forEach(e=>{ const nn = ren[e.nome]||e.nome; if(e.nome && (!e.obs || e.obs===oldD[e.nome])){ e.nome = nn; e.obs = obsPadrao(nn); } }));
     catSet(false); renderTabelaSelect(); if(P) renderBody(); say('Catálogo salvo ✔'); },
-  async catDiscard(){ if(catDirty && !(await ask('Descartar as alterações não salvas do catálogo?','Descartar'))) return; CAT = catFromData(); catSet(false); renderCatalogo(); }
+  async catDiscard(){ if(catTab==='md'){ await I2.midiaDiscard(); return; } if(catDirty && !(await ask('Descartar as alterações não salvas do catálogo?','Descartar'))) return; CAT = catFromData(); catSet(false); renderCatalogo(); }
 });
 const HH_COQ_STYLE=`
 :root{--w:#8B0000;--wd:#5C0000;--k:#141414;--g1:#F3F1F1;--g2:#DCD8D8;--g3:#8A8585;--wh:#fff}
@@ -2409,7 +2410,10 @@ function renderMidia(){
   setTimeout(midiaPrevInit,0);
   return h;
 }
-async function midiaSave(){ try{ await midiaWait(); await Store.setSetting('midia',MIDIA); say('Mídia salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } }
+let midiaDirty = false;
+function midiaMark(){ midiaDirty = true; catSet(catDirty); }
+async function midiaSave(){ try{ await midiaWait(); await Store.setSetting('midia',MIDIA); midiaDirty = false; catSet(catDirty); try{ IDB.set('midia',{ts:null,v:null}); }catch(e){} say('Mídia salva ✔'); return true; }catch(e){ say('Erro ao salvar: '+e.message+' — suas alterações continuam na tela; clique em Salvar para tentar de novo.'); return false; } }
+window.addEventListener('beforeunload',function(ev){ if(midiaDirty){ ev.preventDefault(); ev.returnValue = ''; } });
 Object.assign(I2,{
   hhOpenNew(){ HHS = hhNew(); hhSet(false); hhRender(); },
   hhDtAdd(v){ if(!v) return; HHS.datas = dtsAdd(HHS.datas,v); hhSet(true); hhRender(); },
@@ -2453,15 +2457,17 @@ Object.assign(I2,{
   hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='inv'){ LINK_CTX = 'hh'; return; } if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
   hhDoc(k){ if(!HHS.docs) HHS.docs = {coq:true,but:false}; HHS.docs[k] = !HHS.docs[k]; hhSet(true); hhRender(); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; if(!HHS.docs) HHS.docs = {coq:true,but:false}; hhSet(false); hhRender(); },
-  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
+  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
   midiaGo(pg){ if(pg===midiaPg) return; midiaGoNow(pg,true); },
   midiaPg(d){ midiaGoNow(midiaPg+d,true); },
   midiaSel(id){ midiaSec = id; $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
-  async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
+  async midiaDel(k){ delete MIDIA.fotos[k]; midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   midiaAj(k,f,v,save){ MIDIA.aj = MIDIA.aj||{}; const a = MIDIA.aj[k] = Object.assign({z:1,x:50,y:50,b:100}, MIDIA.aj[k]); a[f] = +v;
-    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); midiaPrevSoon(); if(save) midiaSave(); },
-  async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
-  async midiaLink(k,v){ MIDIA.links[k] = v.trim(); await midiaSave(); }
+    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); midiaPrevSoon(); if(save) midiaMark(); },
+  async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
+  async midiaLink(k,v){ MIDIA.links[k] = v.trim(); midiaMark(); },
+  midiaSaveNow(){ return midiaSave(); },
+  async midiaDiscard(){ if(midiaDirty && !(await ask('Descartar as alterações de mídia não salvas?','Descartar'))) return; try{ const m = await Store.getSetting('midia'); midiaApply(m); }catch(e){ say('Não consegui recarregar: '+e.message); return; } midiaDirty = false; catSet(catDirty); renderCatalogo(); }
 });
 Object.assign(I2,{ hhOpenNewIfEmpty(){ if(!HHS) I2.hhOpenNew(); else hhRender(); } });
 
@@ -3165,24 +3171,40 @@ Object.assign(I2,{
 });
 /* ═════════ ORÇAMENTOS RECEBIDOS (reais — vindos da aba "Monte sua proposta" do link) ═════════ */
 let ORC = [];
-function orcBadge(){ const n = ORC.filter(o=>o.status==='novo').length, l = document.querySelector('.sb-link[data-view=orc]'); if(!l) return; let b = l.querySelector('.sb-n'); if(!b){ b = document.createElement('span'); b.className = 'sb-n'; b.style.cssText = 'margin-left:auto;background:#d33;color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px'; l.appendChild(b); } b.textContent = n; b.style.display = n ? '' : 'none'; }
+function orcBadge(){ const n = ORC.filter(o=>o.status==='novo' && !o.arquivado).length, l = document.querySelector('.sb-link[data-view=orc]'); if(!l) return; let b = l.querySelector('.sb-n'); if(!b){ b = document.createElement('span'); b.className = 'sb-n'; b.style.cssText = 'margin-left:auto;background:#d33;color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px'; l.appendChild(b); } b.textContent = n; b.style.display = n ? '' : 'none'; }
 async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } orcBadge(); }
-function orcRender(){
-  const el = $('orc-list'); if(!el) return;
-  orcLoad().then(()=>{
-    el.innerHTML = ORC.length ? ORC.map(o=>{ const x = o.payload||{}, u = simSum(x);
-      const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
-      return '<div class="i2-pl"><div style="flex:1"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.contato?' · '+esc(x.contato):'')+(x.fone?' · WhatsApp '+esc(x.fone):'')+(x.email?' · '+esc(x.email):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
-        +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('')
-      : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(CLOUD?'Nenhum orçamento recebido ainda.':'Disponível no sistema online (com login).')+'</p>';
-  });
+let ORC_TAB = 'act', ORC_SEL = new Set();
+function orcVisible(){ const arq = ORC_TAB==='arq'; return ORC.filter(o=>!!o.arquivado===arq); }
+function orcDraw(){
+  const el = $('orc-list'); if(!el) return; const arq = ORC_TAB==='arq', l = orcVisible();
+  const ids = new Set(ORC.map(o=>o.id)); ORC_SEL.forEach(i=>{ if(!ids.has(i)) ORC_SEL.delete(i); });
+  const nSel = l.filter(o=>ORC_SEL.has(o.id)).length, all = l.length>0 && nSel===l.length;
+  const cnt = a => ORC.filter(o=>!!o.arquivado===a).length;
+  const tabs = '<div class="cli-tabs"><button class="cli-t'+(arq?'':' on')+'" onclick="I2.orcTab(\'act\')">Ativos <span>'+cnt(false)+'</span></button><button class="cli-t'+(arq?' on':'')+'" onclick="I2.orcTab(\'arq\')">📦 Arquivados <span>'+cnt(true)+'</span></button></div>';
+  const bar = l.length ? '<div class="i2-bulk"><label><input type="checkbox" '+(all?'checked':'')+' onchange="I2.orcSelAll(this.checked)"><span>Selecionar todos ('+l.length+')</span></label>'
+    +(nSel?'<span class="n">'+nSel+' selecionado(s)</span><button class="btn btn-o btn-sm" onclick="I2.orcArqSel()">'+(arq?'📤 Desarquivar':'📦 Arquivar')+' selecionados</button><button class="btn btn-sm i2-bulk-del" onclick="I2.orcDelSel()">🗑 Excluir selecionados</button>':'')
+    +'<button class="btn btn-sm i2-bulk-del" style="margin-left:auto" onclick="I2.orcDelAll()">🗑 Excluir todos ('+l.length+')</button></div>' : '';
+  const rows = l.map(o=>{ const x = o.payload||{}, u = simSum(x), sel = ORC_SEL.has(o.id);
+    const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
+    return '<div class="i2-pl cli-r'+(sel?' sel':'')+'"><input type="checkbox" class="i2-ck" '+(sel?'checked':'')+' onchange="I2.orcSel(\''+o.id+'\',this.checked)"><div style="flex:1;min-width:0"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.contato?' · '+esc(x.contato):'')+(x.fone?' · WhatsApp '+esc(x.fone):'')+(x.email?' · '+esc(x.email):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
+      +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.orcArq([\''+o.id+'\'],'+(!arq)+')">'+(arq?'Desarquivar':'Arquivar')+'</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('');
+  el.innerHTML = tabs + bar + (l.length ? rows : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(!CLOUD?'Disponível no sistema online (com login).':arq?'Nenhum orçamento arquivado.':'Nenhum orçamento recebido ainda.')+'</p>');
 }
+function orcRender(){ if(!$('orc-list')) return; orcLoad().then(orcDraw); }
 Object.assign(I2,{
-  orcRender, orcBadge, orcLoad,
+  orcRender, orcBadge, orcLoad, orcDraw,
   async orcOpen(id){ const o = ORC.find(z=>z.id===id); if(!o) return; const x = Object.assign({}, o.payload); if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
     await I2.simOpenRec(x);
     try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{status:'aberto',visto_por:Store.email(),visto_em:new Date().toISOString()}}); o.status = 'aberto'; o.visto_por = Store.email(); orcBadge(); }catch(e){} },
-  async orcDel(id){ if(!(await ask('Excluir este orçamento recebido? Não dá para desfazer.','Excluir'))) return; try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'DELETE'}); }catch(e){ say('Erro ao excluir: '+e.message); return; } ORC = ORC.filter(z=>z.id!==id); orcBadge(); orcRender(); }
+  orcTab(t){ ORC_TAB = t; ORC_SEL.clear(); orcDraw(); },
+  orcSel(id,on){ on ? ORC_SEL.add(id) : ORC_SEL.delete(id); orcDraw(); },
+  orcSelAll(on){ orcVisible().forEach(o=>{ on ? ORC_SEL.add(o.id) : ORC_SEL.delete(o.id); }); orcDraw(); },
+  async orcArq(ids,on){ try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{Prefer:'return=minimal'},body:{arquivado:!!on}}); }catch(e){ say('Erro: '+e.message); return; } ORC.forEach(o=>{ if(ids.indexOf(o.id)>=0) o.arquivado = !!on; }); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+(on?' arquivado(s) — veja na aba Arquivados':' desarquivado(s)')); orcBadge(); orcDraw(); },
+  orcArqSel(){ I2.orcArq(Array.from(ORC_SEL),ORC_TAB!=='arq'); },
+  async orcDelIds(ids,msg){ if(!ids.length) return; if(!(await ask(msg,'Excluir'))) return; try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'DELETE'}); }catch(e){ say('Erro ao excluir: '+e.message); return; } ORC = ORC.filter(z=>ids.indexOf(z.id)<0); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+' excluído(s)'); orcBadge(); orcDraw(); },
+  orcDel(id){ return I2.orcDelIds([id],'Excluir este orçamento recebido? Não dá para desfazer.'); },
+  orcDelSel(){ const ids = Array.from(ORC_SEL); return I2.orcDelIds(ids,'Excluir '+ids.length+' orçamento(s) selecionado(s)? Não dá para desfazer.'); },
+  orcDelAll(){ const ids = orcVisible().map(o=>o.id); return I2.orcDelIds(ids,'Excluir TODOS os '+ids.length+' orçamentos '+(ORC_TAB==='arq'?'arquivados':'ativos')+'? Não dá para desfazer.'); }
 });
 
 /* ═════════ HOME — VISÃO GERAL ═════════ */
@@ -3224,11 +3246,13 @@ async function homeRender(){
     + '</div>';
 }
 Object.assign(I2,{homeRender});
+if(window.__AUDIT){ I2._orc = { get:()=>ORC, set:v=>{ ORC = v; }, store:Store }; }
 
 window.I2 = I2;
 window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
 document.querySelectorAll('.sb-link').forEach(el=>el.addEventListener('click',()=>{
   const v = el.dataset.view;
+  if(typeof midiaDirty!=='undefined' && midiaDirty && v!=='catalogo'){ say('Há alterações de mídia não salvas — clique em Salvar (ou Descartar) em Catálogo antes de sair.'); return; }
   document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   el.classList.add('active'); $('view-'+v).classList.add('active'); $('topbar-title').textContent = Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
   document.body.classList.toggle('inv2-on', v==='inv2');
