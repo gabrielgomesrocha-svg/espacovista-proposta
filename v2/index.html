@@ -2087,15 +2087,18 @@ function hhRender(){ if(HHS) HHS.modo = 'conf';
   if(dd.coq) info += sumH('Salgados Finos',c,true);
   if(dd.but) info += sumH('Comida de Buteco',cb,false);
   if($('hh-links')) $('hh-links').innerHTML = hhLinksHtml(h);
-  $('hh-info').innerHTML = info || '<div class="hh-jan">Informe o <b>nº de convidados</b> e escolha a <b>tabela</b> para calcular os valores.</div>';
+  // prévia: com a tabela escolhida já mostra o layout (usa a menor faixa até o nº de convidados ser informado)
+  let hp = h; if(!any && h.tabela){ const r0 = ((HH_PRECOS.coq||{})[String(h.tabela)]||[])[0]; if(r0) hp = Object.assign({}, h, {convidados:r0[0]}); }
+  const prevOnly = !any && hp!==h && hhAnyDoc(hp);
+  $('hh-info').innerHTML = info || (prevOnly ? '<div class="hh-jan">Prévia do layout com a menor faixa da tabela ('+hp.convidados+' pessoas). Informe o <b>nº de convidados</b> para calcular os valores reais.</div>' : '<div class="hh-jan">Escolha a <b>tabela</b> para abrir o layout da proposta e informe o <b>nº de convidados</b> para calcular os valores.</div>');
   const fr = $('hh-frame');
-  if(!any && h.modo!=='hh'){ fr.style.display='none'; $('hh-wait').style.display='none'; $('hh-prev').style.height='0px'; return; }
+  if(!any && !prevOnly && h.modo!=='hh'){ fr.style.display='none'; $('hh-wait').style.display='none'; $('hh-prev').style.height='0px'; return; }
   if(h.modo==='hh'){ fr.style.display='none'; $('hh-wait').style.display='block'; return; }
   fr.style.display='block'; $('hh-wait').style.display='none';
   const wrap = $('hh-prev'), w = Math.max(320, wrap.clientWidth), k = w/1920;
-  fr.setAttribute('scrolling','no'); const pc = hhPageCount(h); fr.style.cssText = 'display:block;width:1920px;height:'+(pc*1080+(pc-1)*40+20)+'px;border:0;pointer-events:none;transform:scale('+k+');transform-origin:0 0';
+  fr.setAttribute('scrolling','no'); const pc = hhPageCount(hp); fr.style.cssText = 'display:block;width:1920px;height:'+(pc*1080+(pc-1)*40+20)+'px;border:0;pointer-events:none;transform:scale('+k+');transform-origin:0 0';
   wrap.style.height = Math.round((pc*1080+(pc-1)*40)*k)+'px';
-  fr.srcdoc = hhHtml(h);
+  fr.srcdoc = hhHtml(hp);
 }
 function hhAj(k){ const a = (MIDIA.aj||{})[k]||{}; return {z:Math.max(1,Math.min(3,num(a.z)||1)), x:(a.x==null?50:num(a.x)), y:(a.y==null?50:num(a.y))}; }
 function hhImgStyle(k){ const a = hhAj(k); return 'object-position:'+a.x+'% '+a.y+'%;'+(a.z>1?'transform:scale('+a.z+');transform-origin:'+a.x+'% '+a.y+'%;':''); }
