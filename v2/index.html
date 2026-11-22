@@ -513,6 +513,16 @@ body.sb-off .main{margin-left:0}
 .mref .mm i{position:absolute;background:rgba(139,0,0,.35);border:1.5px solid #8B0000;box-sizing:border-box}
 .mref .mt{display:flex;flex-direction:column;gap:2px;font-size:11.5px;line-height:1.35;color:#444}.mref .mt b{font-size:12px;color:#222}.mref .mt em{font-style:normal;color:#888;font-size:11px}
 
+.mid-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+.mid-l .hh-mid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.mid-r{position:sticky;top:12px;background:#fff;border:1px solid #e3dede;border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.mid-rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.mid-nav{display:flex;align-items:center;gap:8px;font-size:12px;color:#555}
+.mid-rw{overflow-y:auto;overflow-x:hidden;background:#777;border-radius:4px;position:relative}
+.mid-in{position:relative;width:100%}
+.mid-rn{font-size:11.5px;color:#777;margin-top:8px;line-height:1.4}
+@media(max-width:1100px){.mid-split{grid-template-columns:1fr}.mid-r{position:static}}
+
 </style>
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 </head>
@@ -2295,6 +2305,38 @@ function midiaRefHtml(k){
   return '<div class="mref"><div class="mm" title="Posição aproximada na página"><i style="left:'+bx[0]+'%;top:'+bx[1]+'%;width:'+bx[2]+'%;height:'+bx[3]+'%"></i></div>'
     +'<div class="mt"><b>Pág. '+r.pg+' · '+r.tit+'</b><span>'+r.pos+'</span>'+(r.extra?'<em>'+r.extra.trim()+'</em>':'')+'</div></div>';
 }
+
+// ── Simulação ao lado da Mídia ──
+let midiaPg = 1, midiaPrevT = null, midiaPrevSec = null;
+function midiaPrevDoc(sec){
+  try{
+    if(sec==='coq' || sec==='geral'){ const h = hhNew(); h.cliente = 'Cliente Exemplo'; h.docs = {coq:true,but:false}; const tb = Object.keys(HH_PRECOS.coq||{})[0]; h.tabela = +(tb||3); const r0 = ((HH_PRECOS.coq||{})[String(h.tabela)]||[])[0]; h.convidados = r0 ? r0[0] : 100; return hhHtml(h); }
+    if(sec==='but'){ const h = hhNew(); h.cliente = 'Cliente Exemplo'; h.docs = {coq:false,but:true}; const tb = Object.keys(HH_PRECOS.but||{})[0]; h.tabela = +(tb||3); const r0 = ((HH_PRECOS.but||{})[String(h.tabela)]||[])[0]; h.convidados = r0 ? r0[0] : 100; return hhHtml(h); }
+    if(sec==='esp' || sec==='buf'){ const e = espNew(); e.cliente = 'Cliente Exemplo'; e.convidados = 100; e.tabela = (typeof custom!=='undefined' && custom.length ? custom[0].name : (DATA.tables||[])[0]); e.docs = {esp:sec==='esp', buf:sec==='buf'}; return espHtml(e); }
+  }catch(err){}
+  return '';
+}
+function midiaPrevInit(){
+  const fr = $('mp-frame'); if(!fr) return;
+  midiaPrevSec = midiaSec; midiaPrevRender();
+}
+function midiaPrevRender(){
+  const fr = $('mp-frame'), wrap = $('mp-wrap'), inn = $('mp-in'); if(!fr||!wrap) return;
+  const html = midiaPrevDoc(midiaSec);
+  if(!html){ wrap.innerHTML = '<div class="mid-rn" style="padding:20px">Simulação indisponível para esta aba. Informe tabela e número de convidados em uma proposta para visualizar.</div>'; return; }
+  const w = Math.max(280, wrap.clientWidth), k = w/1920; const n = (html.split('class="page').length-1) || 1; const H = n*1080 + (n-1)*40;
+  fr.style.cssText = 'width:1920px;height:'+H+'px;border:0;pointer-events:none;transform:scale('+k+');transform-origin:0 0;display:block';
+  inn.style.height = Math.round(H*k)+'px'; wrap.style.height = Math.round(1080*k)+2+'px'; wrap.dataset.k = k; wrap.dataset.n = n;
+  fr.onload = () => { midiaGoNow(midiaPg, false); };
+  fr.srcdoc = html;
+}
+function midiaGoNow(pg,smooth){
+  const wrap = $('mp-wrap'); if(!wrap) return; const n = +wrap.dataset.n || 1, k = +wrap.dataset.k || .3;
+  pg = Math.max(1,Math.min(n,pg)); midiaPg = pg;
+  wrap.scrollTo({top:Math.round((pg-1)*1120*k), behavior: smooth?'smooth':'auto'});
+  const l = $('mp-pg'); if(l) l.textContent = 'Pág. '+pg+' de '+n;
+}
+function midiaPrevSoon(){ clearTimeout(midiaPrevT); midiaPrevT = setTimeout(midiaPrevRender, 450); }
 let midiaSec = 'geral';
 const MIDIA_BUT_KEYS = [['but_foto1','Foto 1 — salão (Buteco)'],['but_foto2','Foto 2 — vista (Buteco)'],['but_foto3','Foto 3 — buffet (Buteco)'],['but_foto4','Foto 4 — nova (Buteco)'],['but_foto5','Foto 5 — nova (Buteco)'],['but_foto6','Foto 6 — nova (Buteco)']];
 HH_MIDIA_KEYS.push(['foto4','Foto 4 — nova'],['foto5','Foto 5 — nova'],['foto6','Foto 6 — nova']);
@@ -2315,13 +2357,16 @@ function renderMidia(){
   const cnt = x => { const n = x.keys.filter(k=>MIDIA.fotos[k[0]]).length; return x.keys.length ? ' <i>'+n+'/'+x.keys.length+'</i>' : ''; };
   let h = '<div class="adm-tabs mid-tabs">'+secs.map(x=>'<button class="'+(x.id===cur.id?'on':'')+'" onclick="I2.midiaSel(\''+x.id+'\')">'+x.t+cnt(x)+'</button>').join('')+'</div>';
   h += '<p class="i2-cnote">'+cur.note+' Use <b>Zoom</b>, <b>posição</b> e <b>Brilho</b> para enquadrar e clarear/escurecer cada foto.'+(cur.id==='geral'?' <b>Mapa:</b> o Google não gera a imagem a partir do link — suba um print do mapa e cadastre o link do Google Maps abaixo; no PDF e no link a imagem do mapa vira clicável.':'')+'</p>';
+  h += '<div class="mid-split"><div class="mid-l">';
   const keys = cur.keys.slice().sort((x,y)=>{ const rx = MIDIA_REF[x[0]], ry = MIDIA_REF[y[0]]; const px = rx ? (rx.ord||parseInt(rx.pg,10)) : 99, py = ry ? (ry.ord||parseInt(ry.pg,10)) : 99; return px-py; });
   let lastPg = null;
   keys.forEach(k=>{ const rf = MIDIA_REF[k[0]]; const gk = rf ? 'Página '+rf.pg+' · '+rf.tit : 'Outras fotos'; if(gk!==lastPg){ h += (lastPg===null?'':'</div>')+'<div class="mid-grp">'+gk+'</div><div class="hh-mid">'; lastPg = gk; } const v = MIDIA.fotos[k[0]]; const ai = hhAj(k[0]); const sl = (lbl,f,mn,mx,st,val)=>'<label class="hh-sl"><span>'+lbl+'</span><input type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+val+'" oninput="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,false)" onchange="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,true)"></label>';
-    h += '<div class="hh-ph"><div class="th" id="th-'+k[0]+'">'+(v?'<img src="'+v+'" style="'+hhImgStyle(k[0])+'">':'<span>sem foto</span>')+'</div>'+(v?'<div class="hh-sls">'+sl('Zoom','z',1,3,0.05,ai.z)+sl('← Horizontal →','x',0,100,1,ai.x)+sl('↑ Vertical ↓','y',0,100,1,ai.y)+sl('☼ Brilho (mais escura ← → mais clara)','b',30,180,1,ai.b)+'<button class="btn btn-o btn-sm" onclick="I2.midiaAjReset(\''+k[0]+'\')">Centralizar</button></div>':'')+'<b>'+k[1]+'</b>'+midiaRefHtml(k[0])+'<label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'</div>'; });
+    h += '<div class="hh-ph" data-pg="'+(rf?parseInt(rf.pg,10):1)+'" onmouseenter="I2.midiaGo('+(rf?parseInt(rf.pg,10):1)+')" onfocusin="I2.midiaGo('+(rf?parseInt(rf.pg,10):1)+')"><div class="th" id="th-'+k[0]+'">'+(v?'<img src="'+v+'" style="'+hhImgStyle(k[0])+'">':'<span>sem foto</span>')+'</div>'+(v?'<div class="hh-sls">'+sl('Zoom','z',1,3,0.05,ai.z)+sl('← Horizontal →','x',0,100,1,ai.x)+sl('↑ Vertical ↓','y',0,100,1,ai.y)+sl('☼ Brilho (mais escura ← → mais clara)','b',30,180,1,ai.b)+'<button class="btn btn-o btn-sm" onclick="I2.midiaAjReset(\''+k[0]+'\')">Centralizar</button></div>':'')+'<b>'+k[1]+'</b>'+midiaRefHtml(k[0])+'<label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'</div>'; });
 
-  h += '</div>';
+  h += '</div></div>'; /* fecha grupo + coluna esquerda */
+  h += '<div class="mid-r"><div class="mid-rh"><b>Simulação da proposta</b><span class="mid-nav"><button class="btn btn-o btn-sm" onclick="I2.midiaPg(-1)">‹</button><span id="mp-pg">Pág. 1</span><button class="btn btn-o btn-sm" onclick="I2.midiaPg(1)">›</button></span></div><div class="mid-rw" id="mp-wrap"><div class="mid-in" id="mp-in"><iframe id="mp-frame" scrolling="no"></iframe></div></div><div class="mid-rn">Mostra a página onde a foto aparece, com dados de exemplo. Passe o mouse sobre uma foto para ver a página dela. As trocas aparecem aqui na hora.</div></div></div>';
   if(cur.links) h += '<div class="i2-cs" style="margin-top:14px"><div class="i2-cs-h"><b>Links</b></div>'+HH_LINKS.map(k=>'<div class="fg"><label class="fl">'+k[1]+'</label><input value="'+esc(MIDIA.links[k[0]]||'')+'" placeholder="https://…" onchange="I2.midiaLink(\''+k[0]+'\',this.value)"></div>').join('')+'</div>';
+  setTimeout(midiaPrevInit,0);
   return h;
 }
 async function midiaSave(){ try{ await Store.setSetting('midia',MIDIA); say('Mídia salva ✔'); }catch(e){ say('Erro ao salvar: '+e.message); } }
@@ -2368,10 +2413,12 @@ Object.assign(I2,{
   hhDoc(k){ if(!HHS.docs) HHS.docs = {coq:true,but:false}; HHS.docs[k] = !HHS.docs[k]; hhSet(true); hhRender(); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; if(!HHS.docs) HHS.docs = {coq:true,but:false}; hhSet(false); hhRender(); },
   async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui ler a imagem'); } },
+  midiaGo(pg){ if(pg===midiaPg) return; midiaGoNow(pg,true); },
+  midiaPg(d){ midiaGoNow(midiaPg+d,true); },
   midiaSel(id){ midiaSec = id; $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   async midiaDel(k){ delete MIDIA.fotos[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   midiaAj(k,f,v,save){ MIDIA.aj = MIDIA.aj||{}; const a = MIDIA.aj[k] = Object.assign({z:1,x:50,y:50,b:100}, MIDIA.aj[k]); a[f] = +v;
-    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); if(save) midiaSave(); },
+    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); midiaPrevSoon(); if(save) midiaSave(); },
   async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; await midiaSave(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   async midiaLink(k,v){ MIDIA.links[k] = v.trim(); await midiaSave(); }
 });
