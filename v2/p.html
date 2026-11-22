@@ -323,7 +323,7 @@ Object.assign(I2,{
 function show(j){
   var parts = (j.html||'').split('<!--VISTA-SPLIT-->'); H = parts.join('');
   var INV = j.tipo === 'inv';
-  var names = parts.length>1 ? (j.tipo==='coq' ? ['Salgados Finos','Comida di Buteco'] : ['Proposta do Espaço','Proposta de Buffet']) : ['']; if(j.sim) names = names.length>1 ? names.concat(['Monte sua proposta']) : ['Proposta do Espaço','Monte sua proposta'];
+  var names = parts.length>1 ? (j.tipo==='coq' ? ['Salgados Finos','Comida de Buteco'] : ['Proposta do Espaço','Proposta de Buffet']) : ['']; if(j.sim) names = names.length>1 ? names.concat(['Monte sua proposta']) : ['Proposta do Espaço','Monte sua proposta'];
   document.title = j.titulo || 'Proposta — Espaço Vista';
   var tabs = names.length>1 ? '<div class="tabs">'+names.map(function(n,i){ var isS = !!j.sim && i===names.length-1; return '<button data-i="'+i+'" class="'+(i?'':'on')+(isS?' simgo':'')+'">'+(isS?'✨ ':'')+n+'</button>'; }).join('')+'</div>' : '';
   app.innerHTML = '<header><div class="t">Espaço Vista<small>'+(j.cliente?('Proposta para '+j.cliente.replace(/</g,'&lt;')):'Proposta comercial')+'</small></div><div class="v">Válida até '+fmt(j.expira_em)+'</div><button id="pdf">⬇ Baixar PDF</button></header>'+tabs+'<div class="hint">Dica: use o gesto de pinça para ampliar a proposta.</div><div id="wrap"></div><div id="simtab" class="sim-tab" style="display:none"><div id="sim-body"></div></div><div id="toast"></div>';

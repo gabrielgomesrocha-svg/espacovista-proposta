@@ -1893,11 +1893,11 @@ function hhButPages(c){
   const parts = hhCoqPages(c).split('<!-- PÁGINA '); // [pré, '1 -->…', '2 -->…', '3 -->…', '4 -->…']
   const body = i => parts[i].replace(/^\d -->\n/,'');
   const p1 = '<!-- PÁGINA 1 -->\n'+body(1);
-  let p3 = body(3).replace(/<div class="jan">[\s\S]*?\n <div class="grid4">/,'<div class="grid4 up">').replace('<section class="page p3">','<section class="page p3 nj">').replace('Jantar / Almoço <em>opcional</em>','Extras <em>opcionais</em>').replace('Acompanhamentos para o seu evento','Complemente a estrutura do seu evento').replace('Espaço Vista · Proposta de confraternização','Espaço Vista · Comida di Buteco');
+  let p3 = body(3).replace(/<div class="jan">[\s\S]*?\n <div class="grid4">/,'<div class="grid4 up">').replace('<section class="page p3">','<section class="page p3 nj">').replace('Jantar / Almoço <em>opcional</em>','Extras <em>opcionais</em>').replace('Acompanhamentos para o seu evento','Complemente a estrutura do seu evento').replace('Espaço Vista · Proposta de confraternização','Espaço Vista · Comida de Buteco');
   const li = a => a.map(x=>'<li>'+x+'</li>').join('');
   const p2 = `<!-- PÁGINA 2 -->
 <section class="page p2">
- <div class="top"><h2><em>Comida</em> <b>di</b> Buteco</h2><img class="logo" src="${c.logo}" alt=""></div>
+ <div class="top"><h2><em>Comida</em> <b>de</b> Buteco</h2><img class="logo" src="${c.logo}" alt=""></div>
  <div class="cols" style="grid-template-columns:1fr 2.2fr 1fr 1fr 1fr">
   <section><h4>Cantinho Mineiro</h4><ul>${li(['Mandioquinha noisette','Torresminho crocante','Carne de panela ao molho servida com pães','Linguiça calabresa defumada','Mini tonel de cachaça'])}</ul><p class="note">Todos os itens estão inclusos. Servido em ponto fixo.</p></section>
   <section><h4>Petiscos e Petit Gourmet</h4><ul class="c2" style="column-count:2;column-gap:28px">${li(['Caeser salad','Bruschetta marguerita / berinjela','Espetinho caprese','Pão de queijo com lombinho canadense e catupiry','Trouxinha de alho poró','Escondidinho de frango com catupiry','Coxinha de frango com catupiry','Mini quibe ao molho de limão','Rolê de frango com bacon','Cubinho de lombo ao molho de abacaxi','Espetado de frango empanado ao molho da casa','Filet aperitivo ao molho gorgonzola','Pastel de feira','Shot de batatinha frita','Empanado de peixe ao gergelim negro','Pirulito de polpetone ao molho de tomate','Brochetinho','Carne de sol na mandioca cozida c/ manteiga de garrafa'])}</ul><p class="note">Serviço volante. Escolha até 7 opções.</p></section>
@@ -2046,14 +2046,14 @@ function hhRender(){ if(HHS) HHS.modo = 'conf';
   syncCat();
   if(!HHS) return;
   const h = HHS; if(!h.docs) h.docs = {coq:true,but:false}; const c = hhCalc(h), cb = hhCalcBut(h), dd = hhDocs(h), any = dd.coq || dd.but;
-  if($('hh-docs')) $('hh-docs').innerHTML = [['coq','Salgados Finos'],['but','Comida di Buteco']].map(d=>'<button class="'+(h.docs[d[0]]?'on':'')+'" onclick="I2.hhDoc(\''+d[0]+'\')">'+(h.docs[d[0]]?'☑ ':'☐ ')+d[1]+'</button>').join('');
+  if($('hh-docs')) $('hh-docs').innerHTML = [['coq','Salgados Finos'],['but','Comida de Buteco']].map(d=>'<button class="'+(h.docs[d[0]]?'on':'')+'" onclick="I2.hhDoc(\''+d[0]+'\')">'+(h.docs[d[0]]?'☑ ':'☐ ')+d[1]+'</button>').join('');
   if(!h.datas) h.datas = []; $('hh-dts').innerHTML = dtsHtml(h.datas,'hhDtAdd','hhDtDel'); $('hh-cli').value = h.cliente; $('hh-contato').value = h.contato||''; $('hh-fone').value = h.fone||''; $('hh-email').value = h.email||''; $('hh-h').value = (h.horas==null?5:h.horas); $('hh-n').value = h.convidados; $('hh-tab').value = h.tabela;
   let info = '';
   const sumH = (t,cc,jan)=>'<div class="hh-sum"><div><small>'+t+' · faixa aplicada</small><b>'+cc.faixa+' pessoas</b>'+(cc.n!==cc.faixa?'<em>'+cc.n+' convidados → tabela de '+cc.faixa+'</em>':'')+(cc.below?'<em style="color:var(--w)">abaixo do mínimo da tabela</em>':'')+(cc.above?'<em style="color:var(--w)">acima da última faixa da tabela</em>':'')+'</div>'
       + cc.opcoes.map((v,i)=>'<div><small>Opção '+(i+1)+'</small><b>'+money(v)+'</b></div>').join('')+'</div>'
       + (jan ? '<div class="hh-jan">Jantar opcional (separado): '+cc.jantar.map((v,i)=>'Sugestão '+(i+1)+' '+money(v)).join(' · ')+'</div>' : '');
   if(dd.coq) info += sumH('Salgados Finos',c,true);
-  if(dd.but) info += sumH('Comida di Buteco',cb,false);
+  if(dd.but) info += sumH('Comida de Buteco',cb,false);
   if($('hh-links')) $('hh-links').innerHTML = hhLinksHtml(h);
   $('hh-info').innerHTML = info || '<div class="hh-jan">Informe o <b>nº de convidados</b> e escolha a <b>tabela</b> para calcular os valores.</div>';
   const fr = $('hh-frame');
@@ -2071,15 +2071,16 @@ function hhFile(file,max){
   return new Promise((ok,no)=>{ const fr = new FileReader(); fr.onload = ()=>{ const im = new Image(); im.onload = ()=>{ const k = Math.min(1,max/Math.max(im.width,im.height)); const cv = document.createElement('canvas'); cv.width = Math.round(im.width*k); cv.height = Math.round(im.height*k); cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height); ok(cv.toDataURL('image/jpeg',0.85)); }; im.onerror = no; im.src = fr.result; }; fr.onerror = no; fr.readAsDataURL(file); });
 }
 let midiaSec = 'geral';
-const MIDIA_BUT_KEYS = [['but_foto1','Foto 1 — salão (Butiquim)'],['but_foto2','Foto 2 — vista (Butiquim)'],['but_foto3','Foto 3 — buffet (Butiquim)']];
+const MIDIA_BUT_KEYS = [['but_foto1','Foto 1 — salão (Buteco)'],['but_foto2','Foto 2 — vista (Buteco)'],['but_foto3','Foto 3 — buffet (Buteco)'],['but_foto4','Foto 4 — nova (Buteco)'],['but_foto5','Foto 5 — nova (Buteco)'],['but_foto6','Foto 6 — nova (Buteco)']];
+HH_MIDIA_KEYS.push(['foto4','Foto 4 — nova'],['foto5','Foto 5 — nova'],['foto6','Foto 6 — nova']);
 HH_MIDIA_KEYS.push(...MIDIA_BUT_KEYS);
 function midiaSecs(){
   const K = id => HH_MIDIA_KEYS.find(k=>k[0]===id), pick = ids => ids.map(K).filter(Boolean);
   const esp = HH_MIDIA_KEYS.filter(k=>/^esp_/.test(k[0])), buf = HH_MIDIA_KEYS.filter(k=>/^bz_/.test(k[0]));
   return [
     {id:'geral', t:'Geral e links', keys:pick(['mapa']), links:true, note:'Valem para todas as propostas: mapa e links dos botões (WhatsApp, Instagram, vídeo, tour 360°).'},
-    {id:'coq', t:'Salgados Finos', keys:pick(['foto1','foto2','foto3']), note:'Fotos da capa da Proposta Confraternização · Salgados Finos.'},
-    {id:'but', t:'Comida di Buteco', keys:pick(['but_foto1','but_foto2','but_foto3']), note:'Fotos da capa da Proposta Confraternização · Comida di Buteco. Se uma foto ficar vazia, o sistema usa a foto equivalente de Salgados Finos.'},
+    {id:'coq', t:'Salgados Finos', keys:pick(['foto1','foto2','foto3','foto4','foto5','foto6']), note:'Fotos da Proposta Confraternização · Salgados Finos. As fotos 4 a 6 são novas e serão usadas na capa/valorização da proposta.'},
+    {id:'but', t:'Comida de Buteco', keys:pick(['but_foto1','but_foto2','but_foto3','but_foto4','but_foto5','but_foto6']), note:'Fotos da Proposta Confraternização · Comida de Buteco. Se uma foto ficar vazia, o sistema usa a foto equivalente de Salgados Finos.'},
     {id:'esp', t:'Proposta Espaço', keys:esp, note:'Capa, fundos, salões, salas, buffet e mídia da Proposta Espaço.'},
     {id:'buf', t:'Proposta de Buffet', keys:buf, note:'Capa, fundos e fotos de cardápio da Proposta de Buffet (aba do link do Espaço).'}
   ];
