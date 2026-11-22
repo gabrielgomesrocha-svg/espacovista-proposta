@@ -524,13 +524,14 @@ body.sb-off .main{margin-left:0}
 
 .mid-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
 .mid-l .hh-mid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
-.mid-r{position:sticky;top:12px;background:#fff;border:1px solid #e3dede;border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.mid-r{position:sticky;top:128px;max-height:calc(100vh - 140px);overflow:auto;background:#fff;border:1px solid #e3dede;border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 .mid-rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
 .mid-nav{display:flex;align-items:center;gap:8px;font-size:12px;color:#555}
 .mid-rw{overflow-y:auto;overflow-x:hidden;background:#777;border-radius:4px;position:relative}
 .mid-in{position:relative;width:100%}
 .mid-rn{font-size:11.5px;color:#777;margin-top:8px;line-height:1.4}
 @media(max-width:1100px){.mid-split{grid-template-columns:1fr}.mid-r{position:static}}
+.ms-btn{margin-top:6px}.ms-btn.busy{opacity:.7}.ms-btn[disabled]{cursor:default}
 
 </style>
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
@@ -1773,17 +1774,26 @@ function midiaApply(m){ MIDIA = {fotos:(m&&m.fotos)||{},links:(m&&m.links)||{},a
   Object.keys(HH_LINKS_DEF).forEach(k=>{ if(!MIDIA.links[k] || (k==='instagram' && /espacovistabh/.test(MIDIA.links[k]))) MIDIA.links[k] = HH_LINKS_DEF[k]; }); }
 function midiaRefreshViews(){ try{ const v = document.querySelector('.view.active'); const id = v ? v.id : '';
   if(id==='view-catalogo') renderCatalogo(); else if(id==='view-hh' && HHS) hhRender(); else if(id==='view-esp' && ESPS) espRender(); }catch(e){} }
+async function midiaLoadAll(useCache){
+  let sig = null, rows = null;
+  if(CLOUD){ try{ rows = await Store.api('settings?key=like.midia*&select=key,updated_at'); sig = (rows||[]).map(r=>r.key+'@'+r.updated_at).sort().join('|'); }catch(e){} }
+  if(useCache && sig){ const c = await IDB.get('midia'); if(c && c.ts===sig && c.v) return c.v; }
+  const base = (await Store.getSetting('midia')) || {};
+  const meta = await Store.getSetting('midia_meta');
+  const m = {fotos:Object.assign({},base.fotos||{}), links:Object.assign({},base.links||{}), aj:Object.assign({},base.aj||{})};
+  if(meta){ m.links = meta.links||{}; m.aj = meta.aj||{}; }
+  let fr = [];
+  if(CLOUD){ fr = await Store.api('settings?key=like.midia_f_*&select=key,value'); }
+  else { try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k.indexOf('inv2_s_midia_f_')===0) fr.push({key:k.slice(7), value:JSON.parse(localStorage.getItem(k))}); } }catch(e){} }
+  (fr||[]).forEach(r=>{ const k = r.key.slice(8); if(r.value && r.value.d) m.fotos[k] = r.value.d; else delete m.fotos[k]; });
+  if(sig) IDB.set('midia',{ts:sig,v:m});
+  return m;
+}
 function midiaStart(){
   MIDIA_OK = false; midiaApply(null); ldChip(true);
   MIDIA_P = (async()=>{
-    try{
-      let ts = null, m = null;
-      if(CLOUD){ try{ const r = await Store.api('settings?key=eq.midia&select=updated_at'); ts = r && r[0] && r[0].updated_at; }catch(e){} }
-      const c = ts ? await IDB.get('midia') : null;
-      if(c && c.ts===ts && c.v) m = c.v;
-      else { m = await Store.getSetting('midia'); if(ts && m) IDB.set('midia',{ts:ts,v:m}); }
-      midiaApply(m); MIDIA_OK = true;
-    }catch(e){ MIDIA_OK = false; try{ say('Não consegui carregar as fotos. Recarregue a página antes de salvar ou enviar propostas.'); }catch(x){} }
+    try{ midiaApply(await midiaLoadAll(true)); MIDIA_OK = true; }
+    catch(e){ MIDIA_OK = false; try{ say('Não consegui carregar as fotos. Recarregue a página antes de salvar ou enviar propostas.'); }catch(x){} }
     ldChip(false); if(MIDIA_OK) midiaRefreshViews();
   })();
 }
@@ -2411,17 +2421,32 @@ function renderMidia(){
   const keys = cur.keys.slice().sort((x,y)=>{ const rx = MIDIA_REF[x[0]], ry = MIDIA_REF[y[0]]; const px = rx ? (rx.ord||parseInt(rx.pg,10)) : 99, py = ry ? (ry.ord||parseInt(ry.pg,10)) : 99; return px-py; });
   let lastPg = null;
   keys.forEach(k=>{ const rf = MIDIA_REF[k[0]]; const gk = rf ? (/^\d/.test(String(rf.pg))?'Página '+rf.pg+' · ':'')+rf.tit : 'Outras fotos'; if(gk!==lastPg){ h += (lastPg===null?'':'</div>')+'<div class="mid-grp">'+gk+'</div><div class="hh-mid">'; lastPg = gk; } const v = MIDIA.fotos[k[0]]; const ai = hhAj(k[0]); const sl = (lbl,f,mn,mx,st,val)=>'<label class="hh-sl"><span>'+lbl+'</span><input type="range" min="'+mn+'" max="'+mx+'" step="'+st+'" value="'+val+'" oninput="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,false)" onchange="I2.midiaAj(\''+k[0]+'\',\''+f+'\',this.value,true)"></label>';
-    h += '<div class="hh-ph" data-pg="'+(rf?(parseInt(rf.pg,10)||1):1)+'" onmouseenter="I2.midiaGo('+(rf?(parseInt(rf.pg,10)||1):1)+')" onfocusin="I2.midiaGo('+(rf?(parseInt(rf.pg,10)||1):1)+')"><div class="th" id="th-'+k[0]+'">'+(v?'<img src="'+v+'" style="'+hhImgStyle(k[0])+'">':'<span>sem foto</span>')+'</div>'+(v?'<div class="hh-sls">'+sl('Zoom','z',1,3,0.05,ai.z)+sl('← Horizontal →','x',0,100,1,ai.x)+sl('↑ Vertical ↓','y',0,100,1,ai.y)+sl('☼ Brilho (mais escura ← → mais clara)','b',30,180,1,ai.b)+'<button class="btn btn-o btn-sm" onclick="I2.midiaAjReset(\''+k[0]+'\')">Centralizar</button></div>':'')+'<b>'+k[1]+'</b>'+midiaRefHtml(k[0])+'<label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'</div>'; });
+    h += '<div class="hh-ph" data-pg="'+(rf?(parseInt(rf.pg,10)||1):1)+'" onmouseenter="I2.midiaGo('+(rf?(parseInt(rf.pg,10)||1):1)+')" onfocusin="I2.midiaGo('+(rf?(parseInt(rf.pg,10)||1):1)+')"><div class="th" id="th-'+k[0]+'">'+(v?'<img src="'+v+'" style="'+hhImgStyle(k[0])+'">':'<span>sem foto</span>')+'</div>'+(v?'<div class="hh-sls">'+sl('Zoom','z',1,3,0.05,ai.z)+sl('← Horizontal →','x',0,100,1,ai.x)+sl('↑ Vertical ↓','y',0,100,1,ai.y)+sl('☼ Brilho (mais escura ← → mais clara)','b',30,180,1,ai.b)+'<button class="btn btn-o btn-sm" onclick="I2.midiaAjReset(\''+k[0]+'\')">Centralizar</button></div>':'')+'<b>'+k[1]+'</b>'+midiaRefHtml(k[0])+'<label class="btn btn-o btn-sm">Enviar foto<input type="file" accept="image/*" hidden onchange="I2.midiaFoto(\''+k[0]+'\',this)"></label>'+(v?' <button class="btn btn-o btn-sm" onclick="I2.midiaDel(\''+k[0]+'\')">Remover</button>':'')+'<button id="ms-'+k[0]+'" class="btn btn-sm ms-btn '+(midiaDK.has(k[0])?'btn-p':'btn-o')+'" '+(midiaDK.has(k[0])?'':'disabled ')+'onclick="I2.midiaSaveOne(\''+k[0]+'\')">'+(midiaDK.has(k[0])?'💾 Salvar foto':'✔ Salva')+'</button></div>'; });
 
   h += '</div></div>'; /* fecha grupo + coluna esquerda */
   h += '<div class="mid-r"><div class="mid-rh"><b>Simulação da proposta</b><span class="mid-nav"><button class="btn btn-o btn-sm" onclick="I2.midiaPg(-1)">‹</button><span id="mp-pg">Pág. 1</span><button class="btn btn-o btn-sm" onclick="I2.midiaPg(1)">›</button></span></div><div class="mid-rw" id="mp-wrap"><div class="mid-in" id="mp-in"><iframe id="mp-frame" scrolling="no"></iframe></div></div><div class="mid-rn">Mostra a página onde a foto aparece, com dados de exemplo. Passe o mouse sobre uma foto para ver a página dela. As trocas aparecem aqui na hora.</div></div></div>';
-  if(cur.links) h += '<div class="i2-cs" style="margin-top:14px"><div class="i2-cs-h"><b>Links</b></div>'+HH_LINKS.map(k=>'<div class="fg"><label class="fl">'+k[1]+'</label><input value="'+esc(MIDIA.links[k[0]]||'')+'" placeholder="https://…" onchange="I2.midiaLink(\''+k[0]+'\',this.value)"></div>').join('')+'</div>';
+  if(cur.links) h += '<div class="i2-cs" style="margin-top:14px"><div class="i2-cs-h"><b>Links</b> <button id="ms-links" class="btn btn-o btn-sm" '+(midiaDL?'':'disabled ')+'onclick="I2.midiaSaveLinks()">'+(midiaDL?'💾 Salvar links':'✔ Salvo')+'</button></div>'+HH_LINKS.map(k=>'<div class="fg"><label class="fl">'+k[1]+'</label><input value="'+esc(MIDIA.links[k[0]]||'')+'" placeholder="https://…" onchange="I2.midiaLink(\''+k[0]+'\',this.value)"></div>').join('')+'</div>';
   setTimeout(midiaPrevInit,0);
   return h;
 }
-let midiaDirty = false;
-function midiaMark(){ midiaDirty = true; catSet(catDirty); }
-async function midiaSave(){ try{ await midiaWait(); await Store.setSetting('midia',MIDIA); midiaDirty = false; catSet(catDirty); try{ IDB.set('midia',{ts:null,v:null}); }catch(e){} say('Mídia salva ✔'); return true; }catch(e){ say('Erro ao salvar: '+e.message+' — suas alterações continuam na tela; clique em Salvar para tentar de novo.'); return false; } }
+let midiaDirty = false, midiaDK = new Set(), midiaDL = false, midiaBusy = {};
+function midiaRecalc(){ midiaDirty = midiaDK.size>0 || midiaDL; }
+function midiaMark(k){ if(k) midiaDK.add(k); else midiaDL = true; midiaRecalc(); catSet(catDirty); midiaBtn(k); }
+function midiaBtn(k){ const ks = k ? [k] : Array.from(midiaDK); ks.forEach(x=>{ const b = document.getElementById('ms-'+x); if(!b) return; const bz = midiaBusy[x], d = midiaDK.has(x); b.disabled = !d || !!bz; b.className = 'btn btn-sm ms-btn '+(bz?'busy':(d?'btn-p':'btn-o')); b.textContent = bz ? '⏳ Salvando…' : (d ? '💾 Salvar foto' : '✔ Salva'); }); const l = document.getElementById('ms-links'); if(l){ l.disabled = !midiaDL; l.textContent = midiaDL ? '💾 Salvar links' : '✔ Salvo'; } }
+async function midiaWriteKey(k){ const v = MIDIA.fotos[k]; await Store.setSetting('midia_f_'+k,{d:v||null}); }
+async function midiaWriteMeta(){ await Store.setSetting('midia_meta',{links:MIDIA.links,aj:MIDIA.aj}); }
+async function midiaSaveKeys(keys, withMeta, onProg){
+  await midiaWait(); let n = 0; const tot = keys.length + 1;
+  for(const k of keys){ midiaBusy[k] = true; midiaBtn(k); if(onProg) onProg(n,tot);
+    try{ await midiaWriteKey(k); } finally { delete midiaBusy[k]; }
+    midiaDK.delete(k); n++; midiaBtn(k); }
+  if(onProg) onProg(n,tot); await midiaWriteMeta(); if(withMeta) midiaDL = false; midiaRecalc(); catSet(catDirty); midiaBtn();
+}
+async function midiaSave(){ const keys = Array.from(midiaDK); const b = $('cat-save');
+  try{ await midiaSaveKeys(keys,true,(n,t)=>{ if(b){ b.disabled = true; b.textContent = '⏳ Salvando '+(n+1>t?t:n+1)+'/'+t+'…'; } }); say('Mídia salva ✔'); return true; }
+  catch(e){ midiaRecalc(); catSet(catDirty); say('Erro ao salvar: '+e.message+' — suas alterações continuam na tela; clique em Salvar para tentar de novo.'); return false; } }
+async function midiaSaveOne(k){ if(midiaBusy[k]) return; try{ await midiaSaveKeys([k],false); say('Foto salva ✔'); }catch(e){ midiaBtn(k); say('Erro ao salvar a foto: '+e.message+' — ela continua na tela; tente de novo.'); } }
+async function midiaSaveLinks(){ try{ await midiaWait(); await midiaWriteMeta(); midiaDL = false; midiaRecalc(); catSet(catDirty); midiaBtn(); say('Links salvos ✔'); }catch(e){ say('Erro ao salvar os links: '+e.message); } }
 window.addEventListener('beforeunload',function(ev){ if(midiaDirty){ ev.preventDefault(); ev.returnValue = ''; } });
 Object.assign(I2,{
   hhOpenNew(){ HHS = hhNew(); hhSet(false); hhRender(); },
@@ -2466,17 +2491,19 @@ Object.assign(I2,{
   hhLinkClose(){ const m = $('hh-link-modal'); if(m) m.classList.remove('on'); if(LINK_CTX==='inv'){ LINK_CTX = 'hh'; return; } if(LINK_CTX==='esp'){ LINK_CTX = 'hh'; I2.espOpenNew(); } else { HHS = hhNew(); hhSet(false); hhRender(); } window.scrollTo(0,0); },
   hhDoc(k){ if(!HHS.docs) HHS.docs = {coq:true,but:false}; HHS.docs[k] = !HHS.docs[k]; hhSet(true); hhRender(); },
   hhLoad(p){ HHS = p; HHS.meta = HHS.meta||{}; if(!HHS.docs) HHS.docs = {coq:true,but:false}; hhSet(false); hhRender(); },
-  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui carregar a foto: '+(e&&e.message||e)); } },
+  async midiaFoto(k,inp){ const f = inp.files && inp.files[0]; if(!f) return; try{ MIDIA.fotos[k] = await hhFile(f, k==='mapa'?1400:1600); midiaMark(k); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); }catch(e){ say('Não consegui carregar a foto: '+(e&&e.message||e)); } },
   midiaGo(pg){ if(pg===midiaPg) return; midiaGoNow(pg,true); },
   midiaPg(d){ midiaGoNow(midiaPg+d,true); },
   midiaSel(id){ midiaSec = id; $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
-  async midiaDel(k){ delete MIDIA.fotos[k]; midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
+  async midiaDel(k){ delete MIDIA.fotos[k]; midiaMark(k); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   midiaAj(k,f,v,save){ MIDIA.aj = MIDIA.aj||{}; const a = MIDIA.aj[k] = Object.assign({z:1,x:50,y:50,b:100}, MIDIA.aj[k]); a[f] = +v;
-    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); midiaPrevSoon(); if(save) midiaMark(); },
-  async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; midiaMark(); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
+    const im = document.querySelector('#th-'+k+' img'); if(im) im.style.cssText = hhImgStyle(k); midiaPrevSoon(); if(save) midiaMark(k); },
+  async midiaAjReset(k){ delete (MIDIA.aj||{})[k]; midiaMark(k); $('cat-body').innerHTML = '<div class="adm-tabs">'+catTabsHtml()+'</div>'+renderMidia(); },
   async midiaLink(k,v){ MIDIA.links[k] = v.trim(); midiaMark(); },
   midiaSaveNow(){ return midiaSave(); },
-  async midiaDiscard(){ if(midiaDirty && !(await ask('Descartar as alterações de mídia não salvas?','Descartar'))) return; try{ const m = await Store.getSetting('midia'); midiaApply(m); }catch(e){ say('Não consegui recarregar: '+e.message); return; } midiaDirty = false; catSet(catDirty); renderCatalogo(); }
+  midiaSaveOne(k){ return midiaSaveOne(k); },
+  midiaSaveLinks(){ return midiaSaveLinks(); },
+  async midiaDiscard(){ if(midiaDirty && !(await ask('Descartar as alterações de mídia não salvas?','Descartar'))) return; try{ midiaApply(await midiaLoadAll(false)); }catch(e){ say('Não consegui recarregar: '+e.message); return; } midiaDK.clear(); midiaDL = false; midiaDirty = false; catSet(catDirty); renderCatalogo(); }
 });
 Object.assign(I2,{ hhOpenNewIfEmpty(){ if(!HHS) I2.hhOpenNew(); else hhRender(); } });
 

@@ -68,13 +68,14 @@ header{position:sticky}.tabs{display:flex;gap:6px;background:#2a2525;padding:8px
 
 .mid-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
 .mid-l .hh-mid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
-.mid-r{position:sticky;top:12px;background:#fff;border:1px solid #e3dede;border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.mid-r{position:sticky;top:128px;max-height:calc(100vh - 140px);overflow:auto;background:#fff;border:1px solid #e3dede;border-radius:10px;padding:12px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
 .mid-rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
 .mid-nav{display:flex;align-items:center;gap:8px;font-size:12px;color:#555}
 .mid-rw{overflow-y:auto;overflow-x:hidden;background:#777;border-radius:4px;position:relative}
 .mid-in{position:relative;width:100%}
 .mid-rn{font-size:11.5px;color:#777;margin-top:8px;line-height:1.4}
 @media(max-width:1100px){.mid-split{grid-template-columns:1fr}.mid-r{position:static}}
+.ms-btn{margin-top:6px}.ms-btn.busy{opacity:.7}.ms-btn[disabled]{cursor:default}
 
 .sim-tab{max-width:1180px;margin:0 auto;padding:22px 18px 60px}
 .sim-tab select,.sim-tab textarea{font:inherit;border:1.5px solid #ddd;border-radius:6px;padding:8px 10px;background:#fff}
