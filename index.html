@@ -946,7 +946,7 @@ function syncCat(){
 function newProposal(){
   return { id:uid(), cliente:'', contato:'', fone:'', email:'', convidados:'', tabela:'', modo:'evento',
     obs:'Forma de pagamento: 50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.',
-    dias:[newDay()], extras:[], hide:{credito:false,extras:false}, meta:{catV:2} };
+    dias:[newDay()], extras:[], descs:[], hide:{credito:false,extras:false}, meta:{catV:2} };
 }
 function isSobConsumo(l){ return /sob consumo/i.test(l.desc||''); }
 function newLine(cat,pick){
@@ -987,14 +987,14 @@ function calcDay(d){
 }
 function calcAll(p){
   p = p || P;
-  const R = { esp:0, he:0, inv:0, serv:0, desconto:0, credito:0, extras:0, days:[] };
+  const R = { esp:0, he:0, inv:0, serv:0, desconto:0, credito:0, extras:0, descx:0, days:[] };
   p.dias.forEach(d=>{ const c = calcDay(d); R.days.push(c);
     R.esp += c.esp; R.he += c.he; R.inv += c.elig; R.serv += c.serv; R.desconto += c.desconto; R.credito += c.credito; });
-  R.extras = sumL(p.extras);
+  R.extras = sumL(p.extras); R.descx = r2((p.descs||[]).reduce((a,x)=>a+Math.max(0,num(x.valor)),0));
   ['esp','he','inv','serv','desconto','credito'].forEach(k=>R[k]=r2(R[k]));
   R.evento = r2(R.esp + R.he + R.inv + R.serv);
-  R.total = r2(R.evento - R.desconto + R.extras);
-  R.totalPdf = r2(R.evento - R.desconto + (p.hide.extras ? 0 : R.extras));
+  R.total = r2(R.evento - R.desconto - R.descx + R.extras);
+  R.totalPdf = r2(R.evento - R.desconto - R.descx + (p.hide.extras ? 0 : R.extras));
   return R;
 }
 function faltaDoc(){ const f = []; if(!P.tabela) f.push('a Tabela de preços'); if(!String(P.cliente||'').trim()) f.push('o cliente'); if(!(num(P.convidados)>0)) f.push('o nº de convidados'); if(!P.dias.every(d=>d.data)) f.push('a data de cada dia'); if(!P.dias.some(d=>d.espacos.some(e=>e.nome))) f.push('o espaço'); return f; }
@@ -1096,10 +1096,14 @@ const eyeSvg = off => off
   : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 
 function lockV(e,k){ const un = k==='valor' ? (e.man||e.unV) : (e.manTeto||e.unT); return (P.tabela && e.nome && !un) ? 'readonly title="Valor vindo da tabela — clique para editar manualmente" class="i2-lock"' : ''; }
+const stdSel = n => { const m = /^Tabela (\d)/.exec(n||''); return m && DATA.tables.indexOf(n)>=0 ? 'Tabela '+m[1] : null; };
+const tabFaixa = () => Math.floor(num(P&&P.convidados)) > 50 ? 'mais' : 'ate';
+function resolveTab(v){ const m = /^Tabela (\d)$/.exec(v||''); return m ? baseKey(+m[1], tabFaixa()) : v; }
 function renderTabelaSelect(){
   const s = $('i2-tabela'); if(!s) return;
   let h = '<option value="">Escolher tabela…</option>';
-  h += '<optgroup label="Padrão">' + DATA.tables.map(n=>'<option '+(n===P.tabela?'selected':'')+' value="'+esc(n)+'">'+esc(n)+'</option>').join('') + '</optgroup>';
+  { const cur = stdSel(P.tabela), n = Math.floor(num(P.convidados)), fx = n>0 ? (n>50 ? ' · a partir de 51 pessoas' : ' · 15 a 50 pessoas') : '';
+    h += '<optgroup label="Padrão — a faixa de pessoas é aplicada automaticamente">' + [1,2,3].map(k=>'<option '+(cur==='Tabela '+k?'selected':'')+' value="Tabela '+k+'">Tabela '+k+fx+'</option>').join('') + '</optgroup>'; }
   if(custom.length) h += '<optgroup label="★ Personalizadas">' + custom.map(c=>'<option '+(c.name===P.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('') + '</optgroup>';
   s.innerHTML = h; s.className = P.tabela ? '' : 'empty';
 }
@@ -1194,22 +1198,28 @@ function dayTimes(d,i){
   const multi = P.dias.length > 1;
   return `<div class="i2-dt-row" id="dtr-${d.id}">
     <div class="fg"><label class="fl">Dia do evento</label><div class="i2-dlab" id="dl-${d.id}">${dayLab(d,i)}</div></div>
-    <div class="fg"><label class="fl">Chegada</label>${timeSel(d,'chegada')}</div>
-    <div class="fg"><label class="fl">Início</label>${timeSel(d,'inicio')}</div>
-    <div class="fg"><label class="fl">Término</label>${timeSel(d,'termino')}</div>
+    <div class="fg"><label class="fl">Chegada no Espaço</label>${timeSel(d,'chegada')}</div>
+    <div class="fg"><label class="fl">Início do Evento</label>${timeSel(d,'inicio')}</div>
+    <div class="fg"><label class="fl">Saída do Espaço</label>${timeSel(d,'termino')}</div>
     <div class="i2-hrs" id="hrs-${d.id}"></div>
     <div class="sp"><button class="btn btn-o btn-sm" onclick="I2.dupDay('${d.id}')" title="Copia espaço e itens para o dia seguinte">⧉ Duplicar dia</button>${multi?`<button class="btn btn-o btn-sm" onclick="I2.delDay('${d.id}')">🗑 Remover dia</button>`:''}</div>
   </div>`;
 }
 function dayLab(d,i){ return (P.dias.length>1?'Dia '+(i+1)+' · ':'')+(d.data?fdate(d.data):'<span style="color:var(--w)">escolha a data lá em cima</span>'); }
 function renderDts(){ const el = $('i2-dts'); if(!el||!P) return; const tm = $('i2-dtimes'); if(tm) tm.innerHTML = P.dias.map(dayTimes).join(''); const m = P.dias.length>1;
-  el.innerHTML = P.dias.map((d,i)=>'<span class="dt-in">'+(m?'<small>Dia '+(i+1)+'</small>':'')+'<input type="date" value="'+esc(d.data)+'" oninput="I2.day(\''+d.id+'\',\'data\',this.value)" onchange="I2.dateChanged()">'+(m?'<b title="Remover este dia" onclick="I2.delDay(\''+d.id+'\')">×</b>':'')+'</span>').join('')+'<button class="btn btn-o btn-sm" onclick="I2.addDay()">＋ Adicionar data</button>'; }
+  el.innerHTML = P.dias.map((d,i)=>'<span class="dt-in">'+(m?'<small>Dia '+(i+1)+'</small>':'')+'<input type="date" value="'+esc(d.data)+'" oninput="I2.day(\''+d.id+'\',\'data\',this.value)" onchange="I2.dateChanged()">'+(m?'<b title="Remover este dia" onclick="I2.delDay(\''+d.id+'\')">×</b>':'')+'</span>').join('')+(P.dias.length<6?'<button class="btn btn-o btn-sm" onclick="I2.addDay()">＋ Adicionar data</button>':'<small style="color:var(--gr)">máx. 6 datas</small>'); }
 function renderDays(){ const el = $('i2-days'); if(!el) return; el.innerHTML = P.dias.map(dayCard).join(''); renderDts(); refresh(); }
 function renderDay(id){
   const i = P.dias.findIndex(d=>d.id===id), old = $('day-'+id); if(i<0||!old) return renderDays();
   const y = window.scrollY; old.outerHTML = dayCard(P.dias[i],i); window.scrollTo(0,y); refresh();
 }
-function renderExtras(){
+function renderDescs(){
+  const el = $('i2-descs'); if(!el) return; const L = P.descs || (P.descs = []);
+  el.innerHTML = (L.length ? '<table class="i2-ln"><thead><tr><th>Descrição do desconto</th><th style="text-align:right;width:150px">Valor (R$)</th><th style="width:28px"></th></tr></thead><tbody>'
+    + L.map(x=>'<tr><td class="nm"><input class="nm-in" value="'+esc(x.nome)+'" placeholder="Ex.: Desconto comercial" oninput="I2.dsc(\''+x.id+'\',\'nome\',this.value)"></td><td class="u"><input type="number" min="0" step="any" value="'+esc(x.valor)+'" oninput="if(parseFloat(this.value)<0)this.value=0;I2.dsc(\''+x.id+'\',\'valor\',this.value)"></td><td class="x"><button class="x-btn" onclick="I2.delDsc(\''+x.id+'\')">×</button></td></tr>').join('')
+    + '</tbody></table>' : '') + '<div class="i2-addrow"><button class="btn btn-o i2-plus" onclick="I2.addDsc()">＋ Adicionar desconto</button></div>';
+}
+function renderExtras(){ renderDescs();
   const el = $('i2-extras'); if(!el) return;
   const dates = P.dias.map(d=>d.data).filter(Boolean);
   const rows = P.extras.map(l=>`<tr>
@@ -1248,6 +1258,7 @@ function renderBody(){
   <div id="i2-days"></div>
   <div style="display:flex;gap:8px;margin:-4px 0 16px"><button class="btn btn-o" onclick="I2.addDay()">＋ Adicionar dia</button></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Extras no dia do evento</span><span style="font-size:11px;color:var(--gr)">Para o fechamento final. Entram como uma linha no resumo (e podem ser ocultados no PDF).</span></div><div class="card-body" id="i2-extras"></div></div>
+  <div class="card"><div class="card-hdr"><span class="card-title">Descontos</span><span style="font-size:11px;color:var(--gr)">Desconto comercial em R$. Entra no resumo do evento e no PDF, abatendo do valor total.</span></div><div class="card-body" id="i2-descs"></div></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Observações gerais</span></div><div class="card-body">
     <div class="fg"><label class="fl">Aparecem no PDF (a forma de pagamento já vem escrita aqui — edite à vontade)</label><textarea rows="3" oninput="I2.top('obs',this.value)">${esc(P.obs)}</textarea></div></div></div>
   <div class="card"><div class="card-hdr"><span class="card-title">Resumo do investimento</span></div><div class="card-body"><div class="i2-sumwrap" id="sm-wrap"><div id="sm-days"></div><div class="i2-sum"><div class="i2-sum-h">Total do evento (todos os dias)</div>
@@ -1257,6 +1268,7 @@ function renderBody(){
     <div class="i2-sr"><span class="l">Serviços / Outros</span><span class="v" id="sm-serv"></span></div>
     <div class="i2-sr bold"><span class="l">Valor do Evento</span><span class="v" id="sm-ev"></span></div>
     <div class="i2-sr disc"><span class="l">Desconto de Consumação</span><span class="v" id="sm-desc"></span></div>
+    <div class="i2-sr disc" id="smr-dx"><span class="l">Descontos</span><span class="v" id="sm-dx"></span></div>
     <div class="i2-sr" id="smr-cred"><span class="l">Crédito disponível <span style="color:var(--gr);font-size:10.5px">(não entra no total)</span></span><span class="v" id="sm-cred"></span><button class="i2-eye" id="eye-credito" onclick="I2.eye('credito')" title="Mostrar / ocultar no PDF"></button></div>
     <div class="i2-sr" id="smr-ext"><span class="l">Extras do evento</span><span class="v" id="sm-ext"></span><button class="i2-eye" id="eye-extras" onclick="I2.eye('extras')" title="Mostrar / ocultar no PDF"></button></div>
     <div class="i2-sr grand"><span class="l">VALOR TOTAL DO INVESTIMENTO</span><span class="v" id="sm-tot"></span></div>
@@ -1310,7 +1322,7 @@ function refresh(){
       +'<div class="i2-sr bold"><span class="l">Total do Dia '+(k+1)+'</span><span class="v">'+money(r2(c.esp+c.he+c.elig+c.serv-c.desconto))+'</span></div></div>'; }).join('') : ''; const sw = $('sm-wrap'); if(sw) sw.classList.toggle('multi', P.dias.length>1); }
   { const re = $('smr-esp'); if(re) re.style.display = (isConf() && !(R.esp>0)) ? 'none' : ''; }
   setIf('sm-esp',money(R.esp)); setIf('sm-he',money(R.he)); setIf('sm-inv',money(R.inv)); setIf('sm-serv',money(R.serv));
-  setIf('sm-ev',money(R.evento)); setIf('sm-desc','− '+money(R.desconto)); setIf('sm-cred',money(R.credito)); setIf('sm-ext',money(R.extras));
+  setIf('sm-ev',money(R.evento)); setIf('sm-desc','− '+money(R.desconto)); setIf('sm-cred',money(R.credito)); setIf('sm-dx','− '+money(R.descx)); { const r = $('smr-dx'); if(r) r.style.display = R.descx>0 ? '' : 'none'; } setIf('sm-ext',money(R.extras));
   setIf('sm-tot',money(R.total)); setIf('i2-live',money(R.total));
   ['credito','extras'].forEach(k=>{
     const row = $(k==='credito'?'smr-cred':'smr-ext'), btn = $('eye-'+k), off = !!P.hide[k];
@@ -1415,8 +1427,9 @@ const I2 = {
     if(has && !(await ask('Trocar o tipo desmonta o espaço e o pacote já lançados (os demais itens são mantidos). Continuar?','Trocar'))) return;
     P.modo = m; P.dias.forEach(d=>{ d.gast = d.gast.filter(l=>!pkgInfo(l)); d.espacos = [newEsp()]; if(m==='conf') confSync(d); });
     touch(); renderBody(); },
-  setTabela(v){ P.tabela = v; applyTable(); touch(); renderTabelaSelect(); renderDays(); renderExtras(); if(v) say('Tabela aplicada — preços atualizados'); },
+  setTabela(v){ P.tabela = resolveTab(v); applyTable(); touch(); renderTabelaSelect(); renderDays(); renderExtras(); if(v) say('Tabela aplicada — preços atualizados'); },
   conv(v){ P.convidados = v; const n = num(v);
+    if(stdSel(P.tabela)){ P.tabela = resolveTab(stdSel(P.tabela)); applyTable(); renderTabelaSelect(); }
     P.dias.forEach(d=>d.gast.forEach(l=>{ if(pkgInfo(l)){ if(!l.man) l.unit = pkgPrice(l); return; } if(!l.qtdMan && l.base && !isSobConsumo(l)) l.qtd = n; }));
     if(isConf()) P.dias.forEach(confSync);
     touch(); renderDays(); },
@@ -1446,6 +1459,9 @@ const I2 = {
   heEye(dId,eId){ const e = espOf(dId,eId); if(!e) return; e.he.on = !e.he.on; e.he.auto = false; e.he.manual = true; if(e.he.on && !e.he.vhMan) e.he.vh = horaPadrao(e.nome); touch(); renderDay(dId); },
   restoreObs(dId,eId){ const e = espOf(dId,eId); if(!e || !e.nome){ say('Escolha o espaço primeiro'); return; } e.obs = obsPadrao(e.nome); touch(); renderDay(dId); say('Texto do Catálogo aplicado'); },
   newBlank(dId,cat){ const d = dayOf(dId); if(!d) return; const l = newLine(cat,{manual:true,name:''}); d[cat].push(l); touch(); renderDay(dId); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
+  addDsc(){ (P.descs = P.descs||[]).push({id:uid(),nome:'',valor:''}); touch(); renderDescs(); const i = document.querySelector('#i2-descs tr:last-child .nm-in'); if(i) i.focus(); },
+  dsc(id,k,v){ const x = (P.descs||[]).find(z=>z.id===id); if(!x) return; x[k] = v; touch(); },
+  delDsc(id){ P.descs = (P.descs||[]).filter(z=>z.id!==id); touch(); renderDescs(); },
   newBlankEx(){ const l = newLine('extras',{manual:true,name:''}); P.extras.push(l); touch(); renderExtras(); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   ln(dId,cat,id,k,v){ const l = lineOf(dId,cat,id); if(!l) return;
     if(k==='qtd'){ l.qtd = Math.max(0,num(v)); l.qtdMan = true; }
@@ -1461,7 +1477,7 @@ const I2 = {
     touch(); },
   resetEx(id){ const l = P.extras.find(x=>x.id===id); if(!l) return; l.man = false; l.unit = itemPrice(l.src,l.base,P.tabela); touch(); renderExtras(); },
   delEx(id){ P.extras = P.extras.filter(l=>l.id!==id); touch(); renderExtras(); },
-  addDay(){ const last = P.dias[P.dias.length-1], d = newDay(); if(last && last.data){ const dt = new Date(last.data+'T12:00:00'); dt.setDate(dt.getDate()+1); d.data = dt.toISOString().slice(0,10); }
+  addDay(){ if(P.dias.length>=6){ say('Máximo de 6 datas por proposta'); return; } const last = P.dias[P.dias.length-1], d = newDay(); if(last && last.data){ const dt = new Date(last.data+'T12:00:00'); dt.setDate(dt.getDate()+1); d.data = dt.toISOString().slice(0,10); }
     if(last){ d.chegada = last.chegada; d.inicio = last.inicio; d.termino = last.termino; }
     P.dias.push(d); touch(); renderDays(); renderExtras(); },
   dupDay(id){ const d = dayOf(id); if(!d) return; const c = newDay(d); P.dias.splice(P.dias.indexOf(d)+1,0,c); touch(); renderDays(); renderExtras(); say('Dia duplicado — ajuste a data'); },
@@ -1642,10 +1658,9 @@ function buildPrint(p,R,autoPrint){
   const datas = days.map(d=>fdate(d.data)).filter(Boolean);
   let horariosHtml;
   if(days.length===1){ const d = days[0], c = R.days[idxOf(d)];
-    horariosHtml = `<tr><td class="l">Chegada do cliente</td><td class="v">${esc(d.chegada||'—')}</td></tr><tr><td class="l">Início do evento</td><td class="v">${esc(d.inicio||'—')}</td></tr><tr><td class="l">Término do evento</td><td class="v">${esc(d.termino||'—')}</td></tr><tr><td class="l">Horas totais contratadas</td><td class="v"><b>${c.horas==null?'—':fmtH(c.horas)}</b></td></tr>`;
+    horariosHtml = `<tr><td class="l">Chegada no Espaço</td><td class="v">${esc(d.chegada||'—')}</td></tr><tr><td class="l">Início do Evento</td><td class="v">${esc(d.inicio||'—')}</td></tr><tr><td class="l">Saída do Espaço</td><td class="v">${esc(d.termino||'—')}</td></tr><tr><td class="l">Horas totais contratadas</td><td class="v"><b>${c.horas==null?'—':fmtH(c.horas)}</b></td></tr>`;
   } else {
-    horariosHtml = days.map(d=>{ const c = R.days[idxOf(d)]; return `<tr><td class="l nw">${fdate(d.data)||'—'}</td><td class="v">Cheg. ${esc(d.chegada||'—')} · Início ${esc(d.inicio||'—')} · Térm. ${esc(d.termino||'—')} · <b>${c.horas==null?'—':fmtH(c.horas)}</b></td></tr>`; }).join('')
-      + `<tr><td class="l">Horas contratadas</td><td class="v"><b>${fmtH(days.reduce((s,d)=>s+(R.days[idxOf(d)].horas||0),0))}</b> (soma dos dias)</td></tr>`;
+    horariosHtml = days.map(d=>{ const c = R.days[idxOf(d)]; return `<tr><td class="l nw">${fdate(d.data)||'—'}</td><td class="v">Chegada no Espaço ${esc(d.chegada||'—')} · Início do Evento ${esc(d.inicio||'—')} · Saída do Espaço ${esc(d.termino||'—')} · <b>${c.horas==null?'—':fmtH(c.horas)}</b></td></tr>`; }).join('');
   }
   const sr = (l,v,cls) => `<tr class="${cls||''}"><td class="l">${l}</td><td class="v">${v}</td></tr>`;
   const dayCards = [], tot = [];
@@ -1662,6 +1677,7 @@ function buildPrint(p,R,autoPrint){
   if(R.serv>0) tot.push(sr('Serviços / Outros',m(R.serv)));
   tot.push(sr('Valor do Evento',m(R.evento),'sub'));
   if(R.desconto>0) tot.push(sr('Desconto de Consumação','− '+m(R.desconto),'disc'));
+  (p.descs||[]).forEach(x=>{ if(num(x.valor)>0) tot.push(sr('Desconto'+(String(x.nome||'').trim()?' — '+esc(x.nome):''),'− '+m(num(x.valor)),'disc')); });
   if(!p.hide.credito && R.credito>0) tot.push(sr('Crédito disponível',m(R.credito),'cred'));
   if(!p.hide.extras && R.extras>0) tot.push(sr('Extras do evento',m(R.extras)));
   tot.push(sr('VALOR TOTAL DO INVESTIMENTO',m(R.totalPdf),'grand'));
@@ -1744,7 +1760,7 @@ ${autoPrint ? '<script>window.onload=function(){setTimeout(function(){window.pri
 /* ───────── inicialização ───────── */
 function normalize(p){
   if(p.tabela) p.tabela = rn(p.tabela);
-  p.dias = p.dias || []; p.extras = p.extras || []; p.hide = p.hide || {credito:false,extras:false}; p.meta = p.meta || {};
+  p.dias = p.dias || []; p.extras = p.extras || []; p.descs = p.descs || []; p.hide = p.hide || {credito:false,extras:false}; p.meta = p.meta || {};
   if(typeof p.obs !== 'string') p.obs = '';
   if(p.pagamento && p.obs.indexOf(p.pagamento) < 0){ p.obs = ('Forma de pagamento: '+p.pagamento+(p.obs?'\n'+p.obs:'')); } delete p.pagamento; delete p.validade;
   if(!p.dias.length) p.dias.push(newDay());
@@ -3110,7 +3126,7 @@ function simAns1(id){
   const t = k => { const x = Object.keys(SIM[SIM_GRP[k]||k]||{}); return x; };
   if(id==='dias') return SIM.ndias+(SIM.ndias>1?' dias':' dia');
   if(id==='igual') return SIM.igual ? 'Sim, tudo igual nos '+SIM.ndias+' dias' : 'Não, vou escolher dia a dia';
-  if(id==='hor') return 'Chegada às <b>'+SIM.chegada+'</b>, saída às <b>'+SIM.termino+'</b>';
+  if(id==='hor') return 'Chegada no Espaço às <b>'+SIM.chegada+'</b>, saída do Espaço às <b>'+SIM.termino+'</b>';
   if(id==='coffee') return SIM.coffee.length ? SIM.coffee.map((c,i)=>(SIM.coffee.length>1?(i+1)+'º momento: ':'')+esc(simLabel('coffee',c.cat||''))+(c.hora?' às '+c.hora:'')).join('<br>') : 'Pular';
   if(id==='espaco'){ const s = Object.keys(SIM.salas); return s.length ? s.map(n=>esc(simEsp(n).t)).join(' + ') : 'Ainda não sei — quero ajuda'; }
   if(id==='obs') return SIM.obs ? esc(SIM.obs) : 'Nada por enquanto';
@@ -3131,7 +3147,7 @@ function simTime(f){
 }
 function simCfTime(i){ const v = SIM.coffee[i].hora||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = ''; for(let k=6;k<23;k++){ const t = String(k).padStart(2,'0'); ho += '<option'+(t===h?' selected':'')+'>'+t+'</option>'; } for(let k=0;k<60;k+=5){ const t = String(k).padStart(2,'0'); mo += '<option'+(t===m?' selected':'')+'>'+t+'</option>'; } return '<span class="sim-tm"><select onchange="I2.simCfTm('+i+',this.parentNode)">'+ho+'</select>:<select onchange="I2.simCfTm('+i+',this.parentNode)">'+mo+'</select></span>'; }
 function simCtl(id, multi){
-  if(id==='hor'){ const dts = SIM.datas||[]; return (!dts[CD] ? '<div class="sim-row" style="margin-bottom:10px"><label>Data'+'<input type="date" value="'+esc(SIM.data)+'" onchange="I2.simDt(this.value)"></label></div>' : '')+'<div class="sim-row"><label>Chegada'+simTime('chegada')+'</label><label>Saída'+simTime('termino')+'</label></div>'; }
+  if(id==='hor'){ const dts = SIM.datas||[]; return (!dts[CD] ? '<div class="sim-row" style="margin-bottom:10px"><label>Data'+'<input type="date" value="'+esc(SIM.data)+'" onchange="I2.simDt(this.value)"></label></div>' : '')+'<div class="sim-row"><label>Chegada no Espaço'+simTime('chegada')+'</label><label>Saída do Espaço'+simTime('termino')+'</label></div>'; }
   if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(sp=>{ const e = simEsp(sp.name); return '<div class="sim-card'+(SIM.salas[sp.name]?' on':'')+'" onclick="I2.simPick(this.dataset.n)" data-n="'+esc(sp.name)+'"><b>'+esc(e.t)+'</b>'+(e.cap?'<small>'+esc(e.cap)+'</small>':'')+'<i>'+(SIM.salas[sp.name]?'✔ Escolhido':'Escolher →')+'</i></div>'; }).join('')+'</div>'+(multi?'':'<div class="sim-act"><button class="btn btn-o btn-sm" onclick="I2.simPick(\'\')">Ainda não sei — quero ajuda para escolher</button></div>');
   if(id==='coffee'){
     const n = SIM.coffee.length, cats = simItems('coffee');
@@ -3149,7 +3165,7 @@ function simHasAny(id){ const g = SIM_GRP[id]; if(id==='coffee') return SIM.coff
 function simControls(id){
   const next = lbl => '<div class="sim-act"><button class="btn btn-w" onclick="I2.simNext()">'+(lbl||'Continuar')+' →</button></div>';
   if(id==='igual') return '<div class="sim-chips"><div class="sim-chip" onclick="I2.simIgual(1)"><span>Sim, igual — duplicar tudo</span></div><div class="sim-chip" onclick="I2.simIgual(0)"><span>Não, vou escolher dia a dia</span></div></div>';
-  if(id==='dias'){ const mx = Math.min(7, Math.max(5,(SIM.datas||[]).length)); return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
+  if(id==='dias'){ const mx = 6; return '<div class="sim-chips">'+Array.from({length:mx},(_,k)=>'<div class="sim-chip'+(SIM.ndias===k+1?' on':'')+'" onclick="I2.simND('+(k+1)+')"><span>'+(k+1)+(k?' dias':' dia')+'</span></div>').join('')+'</div>'; }
   if(id==='obs') return '<textarea rows="4" placeholder="Escreva aqui…" onchange="I2.simObs(this.value)">'+esc(SIM.obs)+'</textarea>'+next();
   if(id==='fone') return '<input type="text" class="sim-fone" autocomplete="name" placeholder="Seu nome" value="'+esc(SIM.contato||'')+'" oninput="I2.simContato(this.value)"><input type="tel" class="sim-fone" inputmode="tel" autocomplete="tel" placeholder="(31) 99999-9999" value="'+esc(SIM.fone||'')+'" oninput="I2.simFone(this.value)"><input type="email" class="sim-fone" inputmode="email" autocomplete="email" placeholder="seu@email.com.br" value="'+esc(SIM.email||'')+'" oninput="I2.simEmail(this.value)" onkeydown="if(event.key===\'Enter\'){I2.simNext()}">'+next();
   if(id==='resumo') return '<div class="sim-act"><button class="btn btn-w" onclick="I2.simSend()">✔ Enviar para o Espaço Vista</button></div>';
@@ -3172,7 +3188,7 @@ function simSummary(){
   const keep = CD; const list = SIM.igual ? [0] : SIM.dias.map((_,k)=>k);
   list.forEach(k=>{ CD = k;
     h += (SIM.dias.length>1 ? '<div class="sim-dh">'+(SIM.igual ? 'Todos os '+SIM.dias.length+' dias (iguais)' : esc(simDayHead(k)))+'</div>' : '')
-    + row('Horário', SIM.chegada||SIM.termino ? 'Chegada '+(SIM.chegada||'--')+' · Saída '+(SIM.termino||'--') : '')+row('Espaço',Object.keys(SIM.salas).map(n=>esc(simEsp(n).t)).join('<br>'))
+    + row('Horário', SIM.chegada||SIM.termino ? 'Chegada no Espaço '+(SIM.chegada||'--')+' · Saída do Espaço '+(SIM.termino||'--') : '')+row('Espaço',Object.keys(SIM.salas).map(n=>esc(simEsp(n).t)).join('<br>'))
     +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns1('coffee') : '')+row('Almoço',nm('almoco'))+row('Sobremesas',nm('sobremesa'))+row('Happy hour',nm('hh'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv')); });
   CD = keep;
   return h+(SIM.obs?row('Observações',esc(SIM.obs)):'')+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
@@ -3230,8 +3246,12 @@ Object.assign(I2,{
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
-  simSend(){ if(!simFoneOk() || !simEmailOk() || String(SIM.contato||'').trim().length<2){ say('Informe o seu nome, WhatsApp (com DDD) e e-mail antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM); const l = simList(); l.unshift({id:uid(), em:new Date().toISOString(), cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, contato:SIM.contato, email:SIM.email, dias:JSON.parse(JSON.stringify(SIM.dias))}); simSave(l);
-    SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos recebidos" abaixo.'); },
+  simSend(){ if(!simFoneOk() || !simEmailOk() || String(SIM.contato||'').trim().length<2){ say('Informe o seu nome, WhatsApp (com DDD) e e-mail antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM), pay = {cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, contato:SIM.contato, email:SIM.email, dias:JSON.parse(JSON.stringify(SIM.dias))};
+    const fin = ()=>{ SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos Recebidos".'); };
+    if(typeof CLOUD!=='undefined' && CLOUD && !window.SIM_CFG){
+      Store.api('orcamentos_recebidos',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:'simulador-interno',cliente:pay.cli,payload:pay,status:'novo',envio_n:1}})
+        .then(()=>{ try{ orcLoad(); }catch(e){} fin(); }).catch(e=>say('Erro ao enviar: '+e.message)); return; }
+    const l = simList(); l.unshift(Object.assign({id:uid(), em:new Date().toISOString()}, pay)); simSave(l); fin(); },
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
@@ -3252,7 +3272,11 @@ Object.assign(I2,{
 /* ═════════ ORÇAMENTOS RECEBIDOS (reais — vindos da aba "Monte sua proposta" do link) ═════════ */
 let ORC = [];
 function orcBadge(){ const n = ORC.filter(o=>o.status==='novo' && !o.arquivado).length, l = document.querySelector('.sb-link[data-view=orc]'); if(!l) return; let b = l.querySelector('.sb-n'); if(!b){ b = document.createElement('span'); b.className = 'sb-n'; b.style.cssText = 'margin-left:auto;background:#d33;color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px'; l.appendChild(b); } b.textContent = n; b.style.display = n ? '' : 'none'; }
-async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } orcBadge(); }
+async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } await orcPurge(); orcBadge(); }
+async function orcPurge(){ const lim = Date.now() - 10*864e5, old = ORC.filter(o=>o.arquivado && o.arquivado_em && new Date(o.arquivado_em).getTime() < lim).map(o=>o.id);
+  if(old.length){ try{ await Store.api('orcamentos_recebidos?id=in.('+old.map(encodeURIComponent).join(',')+')',{method:'DELETE'}); ORC = ORC.filter(o=>old.indexOf(o.id)<0); }catch(e){} }
+  const sem = ORC.filter(o=>o.arquivado && !o.arquivado_em).map(o=>o.id); if(sem.length){ const now = new Date().toISOString(); try{ await Store.api('orcamentos_recebidos?id=in.('+sem.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{Prefer:'return=minimal'},body:{arquivado_em:now}}); ORC.forEach(o=>{ if(sem.indexOf(o.id)>=0) o.arquivado_em = now; }); }catch(e){} } }
+const orcDias = o => Math.max(0, Math.ceil((new Date(o.arquivado_em||Date.now()).getTime() + 10*864e5 - Date.now())/864e5));
 let ORC_TAB = 'act', ORC_SEL = new Set();
 function orcVisible(){ const arq = ORC_TAB==='arq'; return ORC.filter(o=>!!o.arquivado===arq); }
 function orcDraw(){
@@ -3266,9 +3290,9 @@ function orcDraw(){
     +'<button class="btn btn-sm i2-bulk-del" style="margin-left:auto" onclick="I2.orcDelAll()">🗑 Excluir todos ('+l.length+')</button></div>' : '';
   const rows = l.map(o=>{ const x = o.payload||{}, u = simSum(x), sel = ORC_SEL.has(o.id);
     const tag = (o.status==='novo' ? '<span class="orc-t" style="background:#d33">NOVO</span>' : '<span class="orc-t" style="background:#999">'+(o.status==='aberto'?'ABERTO':esc(o.status).toUpperCase())+'</span>') + (o.envio_n>1 ? '<span class="orc-t" style="background:#c77d00">REENVIO Nº '+o.envio_n+'</span>' : '');
-    return '<div class="i2-pl cli-r'+(sel?' sel':'')+'"><input type="checkbox" class="i2-ck" '+(sel?'checked':'')+' onchange="I2.orcSel(\''+o.id+'\',this.checked)"><div style="flex:1;min-width:0"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.contato?' · '+esc(x.contato):'')+(x.fone?' · WhatsApp '+esc(x.fone):'')+(x.email?' · '+esc(x.email):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
+    return '<div class="i2-pl cli-r'+(sel?' sel':'')+'"><input type="checkbox" class="i2-ck" '+(sel?'checked':'')+' onchange="I2.orcSel(\''+o.id+'\',this.checked)"><div style="flex:1;min-width:0"><div class="n">'+tag+' '+esc(o.cliente||x.cli)+' · evento em '+u.ds+(arq && o.arquivado_em ? ' <span style="color:#c77d00;font-size:11px">· some em '+orcDias(o)+' dia(s)</span>' : '')+'</div><div class="m">Recebido '+new Date(o.enviado_em).toLocaleString('pt-BR')+' · '+u.txt+(x.contato?' · '+esc(x.contato):'')+(x.fone?' · WhatsApp '+esc(x.fone):'')+(x.email?' · '+esc(x.email):'')+(o.visto_por?' · aberto por '+esc(o.visto_por):'')+'</div></div>'
       +'<div style="display:flex;gap:8px"><button class="btn btn-w btn-sm" onclick="event.stopPropagation();I2.orcOpen(\''+o.id+'\')">Abrir no Investimento</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.orcArq([\''+o.id+'\'],'+(!arq)+')">'+(arq?'Desarquivar':'Arquivar')+'</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.orcDel(\''+o.id+'\')">×</button></div></div>'; }).join('');
-  el.innerHTML = tabs + bar + (l.length ? rows : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(!CLOUD?'Disponível no sistema online (com login).':arq?'Nenhum orçamento arquivado.':'Nenhum orçamento recebido ainda.')+'</p>');
+  el.innerHTML = tabs + (arq ? '<p style="font-size:11.5px;color:var(--gr);margin:4px 2px 10px">Os orçamentos arquivados são excluídos automaticamente depois de 10 dias.</p>' : '') + bar + (l.length ? rows : '<p style="color:var(--gr);font-size:12px;text-align:center;padding:16px">'+(!CLOUD?'Disponível no sistema online (com login).':arq?'Nenhum orçamento arquivado.':'Nenhum orçamento recebido ainda.')+'</p>');
 }
 function orcRender(){ if(!$('orc-list')) return; orcLoad().then(orcDraw); }
 Object.assign(I2,{
@@ -3279,10 +3303,10 @@ Object.assign(I2,{
   orcTab(t){ ORC_TAB = t; ORC_SEL.clear(); orcDraw(); },
   orcSel(id,on){ on ? ORC_SEL.add(id) : ORC_SEL.delete(id); orcDraw(); },
   orcSelAll(on){ orcVisible().forEach(o=>{ on ? ORC_SEL.add(o.id) : ORC_SEL.delete(o.id); }); orcDraw(); },
-  async orcArq(ids,on){ try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{Prefer:'return=minimal'},body:{arquivado:!!on}}); }catch(e){ say('Erro: '+e.message); return; } ORC.forEach(o=>{ if(ids.indexOf(o.id)>=0) o.arquivado = !!on; }); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+(on?' arquivado(s) — veja na aba Arquivados':' desarquivado(s)')); orcBadge(); orcDraw(); },
+  async orcArq(ids,on){ try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{Prefer:'return=minimal'},body:{arquivado:!!on, arquivado_em: on ? new Date().toISOString() : null}}); }catch(e){ say('Erro: '+e.message); return; } ORC.forEach(o=>{ if(ids.indexOf(o.id)>=0){ o.arquivado = !!on; o.arquivado_em = on ? new Date().toISOString() : null; } }); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+(on?' movido(s) para Arquivados — excluídos automaticamente em 10 dias':' desarquivado(s)')); orcBadge(); orcDraw(); },
   orcArqSel(){ I2.orcArq(Array.from(ORC_SEL),ORC_TAB!=='arq'); },
-  async orcDelIds(ids,msg){ if(!ids.length) return; if(!(await ask(msg,'Excluir'))) return; try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'DELETE'}); }catch(e){ say('Erro ao excluir: '+e.message); return; } ORC = ORC.filter(z=>ids.indexOf(z.id)<0); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+' excluído(s)'); orcBadge(); orcDraw(); },
-  orcDel(id){ return I2.orcDelIds([id],'Excluir este orçamento recebido? Não dá para desfazer.'); },
+  async orcDelIds(ids,msg){ if(!ids.length) return; if(ORC_TAB!=='arq') return I2.orcArq(ids,true); if(!(await ask(msg,'Excluir'))) return; try{ await Store.api('orcamentos_recebidos?id=in.('+ids.map(encodeURIComponent).join(',')+')',{method:'DELETE'}); }catch(e){ say('Erro ao excluir: '+e.message); return; } ORC = ORC.filter(z=>ids.indexOf(z.id)<0); ids.forEach(i=>ORC_SEL.delete(i)); say(ids.length+' excluído(s)'); orcBadge(); orcDraw(); },
+  orcDel(id){ return I2.orcDelIds([id],'Excluir definitivamente este orçamento? Não dá para desfazer.'); },
   orcDelSel(){ const ids = Array.from(ORC_SEL); return I2.orcDelIds(ids,'Excluir '+ids.length+' orçamento(s) selecionado(s)? Não dá para desfazer.'); },
   orcDelAll(){ const ids = orcVisible().map(o=>o.id); return I2.orcDelIds(ids,'Excluir TODOS os '+ids.length+' orçamentos '+(ORC_TAB==='arq'?'arquivados':'ativos')+'? Não dá para desfazer.'); }
 });
@@ -3301,7 +3325,7 @@ async function homeRender(){
   const valMonth = sentMonth.reduce((a,x)=>a+(+x.total||0),0);
   const expiring = act.filter(x=>{ const i = info(x); return i && i.dias>=0 && i.dias<=3; }).sort((a,b)=>info(a).exp-info(b).exp);
   const open = act.filter(x=>!info(x));
-  const novos = ORC.filter(o=>o.status==='novo');
+  const novos = ORC.filter(o=>o.status==='novo' && !o.arquivado);
   const byCli = {}; open.forEach(x=>{ const k = norm(String(x.cliente||'(sem nome)').replace(/\s+/g,' ').trim()); (byCli[k] = byCli[k] || {n:x.cliente||'(sem nome)', c:0, t:0}); byCli[k].c++; byCli[k].t += (+x.total||0); });
   const cliArr = Object.values(byCli).sort((a,b)=>b.t-a.t).slice(0,6), maxT = Math.max(1,...cliArr.map(c=>c.t));
   const tipos = {'Investimento':0,'Espaço':0,'Confraternização':0}; sentMonth.forEach(x=>{ tipos[homeKind(x)]++; }); const maxN = Math.max(1,...Object.values(tipos));
