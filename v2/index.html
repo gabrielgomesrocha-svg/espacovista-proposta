@@ -2361,18 +2361,20 @@ const MIDIA_REF = (function(){
   // Proposta de Buffet (9 páginas)
   const b = (k,pg,tit,pos,box,extra)=>{ R[k] = {pg:pg, tit:tit, pos:pos, box:box, extra:extra||''}; };
   b('bz_capa',1,'Capa','Foto de fundo da capa (tela inteira).',[0,0,100,100]);
-  b('bz_fundo2',2,'Soluções gastronômicas','Fundo escuro da página 2.',[0,0,100,100]);
-  b('bz_p3',3,'Serviço de sala','Foto vertical à direita da página.',[70,0,30,100]);
-  b('bz_cb1',4,'Coffee break','Coluna da direita — 1ª foto.',[80,3,17,30]);
-  b('bz_cb2',4,'Coffee break','Coluna da direita — 2ª foto.',[80,35,17,30]);
-  b('bz_cb3',4,'Coffee break','Coluna da direita — 3ª foto.',[80,67,17,30]);
-  b('bz_al1',5,'Almoço Executivo e Master','Coluna da direita — 1ª foto.',[80,3,17,30]);
-  b('bz_al2',5,'Almoço Executivo e Master','Coluna da direita — 2ª foto.',[80,35,17,30]);
-  b('bz_al3',5,'Almoço Executivo e Master','Coluna da direita — 3ª foto.',[80,67,17,30]);
-  b('bz_pr1',6,'Almoço Premium e Mineiro','Coluna da direita — 1ª foto.',[80,3,17,30]);
-  b('bz_pr2',6,'Almoço Premium e Mineiro','Coluna da direita — 2ª foto.',[80,35,17,30]);
-  b('bz_pr3',6,'Almoço Premium e Mineiro','Coluna da direita — 3ª foto.',[80,67,17,30]);
-  b('bz_fundo9',9,'Contato','Foto de fundo da última página (escura).',[0,0,100,100]);
+  b('bz_fundo2',2,'Soluções gastronômicas','Foto do painel esquerdo (escurecida).',[0,0,36.5,100]);
+  b('bz_p3',3,'Resumo dos cardápios','Faixa do topo — 1ª foto.',[0,0,33.3,21.3]);
+  b('bz_p3b',3,'Resumo dos cardápios','Faixa do topo — 2ª foto.',[33.3,0,33.3,21.3]);
+  b('bz_p3c',3,'Resumo dos cardápios','Faixa do topo — 3ª foto.',[66.6,0,33.4,21.3]);
+  b('bz_cb1',4,'Coffee break','Faixa do topo — 1ª foto.',[0,0,33.3,21.3]);
+  b('bz_cb2',4,'Coffee break','Faixa do topo — 2ª foto.',[33.3,0,33.3,21.3]);
+  b('bz_cb3',4,'Coffee break','Faixa do topo — 3ª foto.',[66.6,0,33.4,21.3]);
+  b('bz_al1',5,'Almoço Executivo e Master','Faixa do topo — 1ª foto.',[0,0,33.3,13.9]);
+  b('bz_al2',5,'Almoço Executivo e Master','Faixa do topo — 2ª foto.',[33.3,0,33.3,13.9]);
+  b('bz_al3',5,'Almoço Executivo e Master','Faixa do topo — 3ª foto.',[66.6,0,33.4,13.9]);
+  b('bz_pr1',6,'Almoço Premium e Mineiro','Faixa do topo — 1ª foto.',[0,0,33.3,13.9]);
+  b('bz_pr2',6,'Almoço Premium e Mineiro','Faixa do topo — 2ª foto.',[33.3,0,33.3,13.9]);
+  b('bz_pr3',6,'Almoço Premium e Mineiro','Faixa do topo — 3ª foto.',[66.6,0,33.4,13.9]);
+  b('bz_fundo9',9,'Contato','Foto do painel esquerdo.',[0,0,46.9,100]);
   return R;
 })();
 function midiaRefHtml(k){
@@ -2774,50 +2776,61 @@ function espPages(c){
   });
   return '<div class="ev2"><style>'+ESP2_CSS+'</style>'+pgs.join('')+'</div>';
 }
-/* ═════════ PROPOSTA DE BUFFET — modelo (9 páginas, 1920×1080) ═════════ */
-const BUF_STYLE = `
-.bf .in{position:absolute;left:100px;right:100px;top:56px;bottom:40px}
-.bf h3.s{font:300 38px 'Montserrat',sans-serif;letter-spacing:-.01em;margin:0 0 10px}
-.bf h3.s b{font-weight:800;color:var(--w)}
-.bf h3.s small{font:400 19px 'Inter',sans-serif;color:#555;margin-left:10px;letter-spacing:0}
-.bx2{background:#fff;border:1.5px solid #D9D2D2;border-radius:10px;padding:16px 26px}
-.bx2 .r{display:flex;font-size:17.5px;padding:3px 0;color:#333}
-.bx2 .r b{width:230px;font-weight:700;color:var(--k)}
-.bx2 .r span{flex:1}
-.bx2 .nt{font-size:15.5px;line-height:1.45;color:#555}
-.bx2 .nt li{list-style:none;padding:1px 0}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:stretch}
-ul.nt{list-style:none;padding-left:0}
-.vc{display:inline-block;margin-top:10px;background:#fff;border:1.5px solid var(--w);color:var(--w);font:800 15px 'Montserrat',sans-serif;padding:7px 16px;border-radius:6px;text-decoration:none;letter-spacing:.03em}
-.phs{position:absolute;right:100px;top:56px;bottom:40px;width:520px;display:flex;flex-direction:column;gap:14px}
-.phs .ph{flex:1;border-radius:16px}
-.phs.v3{width:300px}
-.ct{display:grid;gap:16px}
-.ct .bx2 h4{font:800 17px 'Montserrat',sans-serif;color:var(--k);margin-bottom:6px}
-.ct .bx2 li{list-style:none;font-size:16.5px;line-height:1.38;color:#333;padding:1px 0}
-.cl3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.cl3 .bx2{padding:12px 20px}
-.cl3 h4{font:700 16.5px 'Montserrat',sans-serif;margin-bottom:5px;color:var(--k)}
-.cl3 li{list-style:none;font-size:15.5px;line-height:1.34;color:#333;padding:1px 0}
-.ttl{font:300 40px 'Montserrat',sans-serif;margin:0 0 10px;letter-spacing:-.01em}
-.ttl b{font-weight:800;color:var(--w)}
-.ttl small{font:500 20px 'Inter',sans-serif;color:#555;margin-left:12px}
-.bev{margin-top:12px}
-.sob{display:grid;grid-template-columns:repeat(3,1fr);gap:0 36px}
-.sob div{display:flex;justify-content:space-between;font-size:15.5px;padding:3px 0;border-bottom:1px dotted #d2cbcb;color:#333}
-.sob div b{font-weight:700}
-.hh4{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.hh4 .bx2{padding:14px 22px}
-.hh4 h4{font:800 15px 'Montserrat',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--w);margin-bottom:6px}
-.hh4 p{font-size:14.5px;color:#666;margin-bottom:6px}
-.hh4 li{list-style:none;font-size:16px;line-height:1.36;color:#333;padding:1px 0 1px 14px;position:relative}
-.hh4 li::before{content:'';position:absolute;left:0;top:9px;width:5px;height:5px;background:var(--w);border-radius:50%}
-.hh4 .full{grid-column:1/4}
-.hh4 .cols3{display:grid;grid-template-columns:repeat(3,1fr);column-gap:36px}
-.opt3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:6px}
-.opt3 div{text-align:center}
-.opt3 h5{font:800 24px 'Montserrat',sans-serif;color:var(--wd);margin-bottom:6px}
-.opt3 p{border:1.5px solid #D9D2D2;border-radius:10px;background:#fff;padding:14px 20px;font-size:17px;line-height:1.4;color:#333}
+/* ═════════ PROPOSTA DE BUFFET — modelo (9 páginas, 1920×1080) · mesmo padrão visual do Espaço ═════════ */
+const BUF_STYLE = ESP2_CSS.replace(/\.ev2/g,'.bfv') + `
+.bfv .band h2{white-space:nowrap}
+.bfv .band.sm{height:150px}.bfv .band.sm .ph{height:150px}.bfv .band.sm h2{font-size:46px;bottom:20px}.bfv .band.sm .lg{height:38px;top:20px}
+.bfv .band.dkb{height:104px;background:#241f1f}.bfv .band.dkb h2{font-size:46px;bottom:24px}.bfv .band.dkb .lg{height:38px;top:33px}
+.bfv .eyebrow.s{font-size:14px}
+.bfv .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.bfv .g2{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.bfv .pc.fl{display:flex;flex-direction:column}
+.bfv .pc .r b i{font:500 13px Inter;font-style:normal;color:#777;margin-left:5px;letter-spacing:0}
+.bfv .pc p.d{font-size:16px;line-height:1.5;color:#444;margin:8px 0 12px}
+.bfv .bl{list-style:none}
+.bfv .bl li{font-size:16.5px;line-height:1.35;padding:3px 0 3px 16px;position:relative;color:#333}
+.bfv .bl li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;background:var(--w)}
+.bfv .bl.c2{column-count:2;column-gap:36px}.bfv .bl.c2 li{break-inside:avoid}
+.bfv .vw{margin-top:auto;padding-top:16px}
+.bfv .vc{display:inline-block;background:var(--k);color:#fff;font:700 13px Montserrat;letter-spacing:.14em;text-transform:uppercase;padding:10px 18px;border-radius:4px;text-decoration:none}
+.bfv .vc::after{content:' →'}
+.bfv .cbs{display:grid;gap:16px}
+.bfv .cb{display:grid;grid-template-columns:290px 1fr;border-radius:8px;overflow:hidden;background:var(--g1)}
+.bfv .cb .l{background:var(--w);color:#fff;padding:20px 26px;display:flex;flex-direction:column;justify-content:center}
+.bfv .cb .l small{font:700 13px Montserrat;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+.bfv .cb .l h3{font:800 28px Montserrat;text-transform:uppercase;margin:6px 0 12px}
+.bfv .cb .l b{font:800 34px Montserrat;letter-spacing:-.02em}
+.bfv .cb .l span{display:block;font:600 13px Inter;letter-spacing:.12em;text-transform:uppercase;opacity:.9;margin-top:2px}
+.bfv .cb .r2{display:grid;gap:34px;padding:18px 28px}
+.bfv h5{font:800 13.5px Montserrat;letter-spacing:.14em;text-transform:uppercase;color:var(--w);padding-bottom:7px;border-bottom:2px solid var(--w);margin-bottom:6px}
+.bfv .cb .bl li{font-size:15.5px;line-height:1.3;padding:2px 0 2px 16px}.bfv .cb .bl li::before{top:9px}
+.bfv .cb p.s{font-size:14.5px;color:#555;margin-top:8px;line-height:1.4}
+.bfv .alb{border-top:3px solid var(--k);padding-top:12px;margin-bottom:16px}
+.bfv .alh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.bfv .alh h3{font:300 25px Montserrat;text-transform:uppercase;letter-spacing:.01em}.bfv .alh h3 b{font-weight:800}
+.bfv .alh .pr{font:800 28px Montserrat;color:var(--w);letter-spacing:-.02em}
+.bfv .alh .pr span{font:600 13px Inter;color:#777;letter-spacing:.1em;text-transform:uppercase;margin-left:8px}
+.bfv .alc{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.bfv .alc .pc{padding:14px 22px}
+.bfv .alc .pc h4{font-size:14px;padding-bottom:8px;margin-bottom:4px}
+.bfv .alc .bl li{font-size:15px;line-height:1.28;padding:2px 0 2px 16px}.bfv .alc .bl li::before{top:9px}
+.bfv .bev{margin-top:8px;display:flex;gap:6px 26px;flex-wrap:wrap;align-items:baseline;background:#fff;border:1.5px solid var(--g2);border-radius:6px;padding:8px 16px;font-size:14.5px;color:#333}
+.bfv .bev b{font:800 12.5px Montserrat;letter-spacing:.16em;text-transform:uppercase;color:var(--w)}
+.bfv .bev span{padding-left:13px;position:relative}.bfv .bev span::before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;background:var(--w)}
+.bfv .sob{display:grid;grid-template-columns:repeat(3,1fr);gap:0 40px}
+.bfv .sob div{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:4px 0;border-bottom:1px solid #e1dcdc;color:#333}
+.bfv .sob div b{font:800 15px Montserrat;white-space:nowrap}
+.bfv .hg{display:grid;gap:18px}
+.bfv .hg .pc{padding:16px 24px}.bfv .hg .pc h4{font-size:15px;padding-bottom:9px}
+.bfv .hg .bl li{font-size:15.5px;line-height:1.28;padding:2px 0 2px 16px}.bfv .hg .bl li::before{top:9px}
+.bfv .hg .pc p.d{font-size:14.5px;margin:6px 0 8px}
+.bfv .inv .cards{grid-template-columns:repeat(3,1fr)}
+.bfv .big .pc .r{font-size:18.5px;padding:9px 0}.bfv .big .pc .r b i{font-size:14px}.bfv .big .bl li{font-size:17.5px;line-height:1.4}.bfv .big .bl li::before{top:12px}.bfv .big .pc{padding:26px 30px}.bfv .big .pc h4{font-size:18px}.bfv .big .pc p.d{font-size:18px;line-height:1.55}
+.bfv .rm .alc .pc{padding:20px 26px}.bfv .rm .alc .bl li{font-size:16.5px;line-height:1.34;padding:3px 0 3px 16px}.bfv .rm .alc .bl li::before{top:11px}.bfv .rm .alb{margin-bottom:30px}.bfv .rm .alh h3{font-size:28px}.bfv .rm .alh .pr{font-size:32px}.bfv .rm .bev{padding:11px 18px;font-size:15.5px}
+.bfv .dn .alb{margin-bottom:12px}.bfv .dn .alc .pc{padding:11px 22px}.bfv .dn .alc .bl li{line-height:1.24;padding:1.5px 0 1.5px 16px}.bfv .dn .alc .bl li::before{top:8px}.bfv .dn .alh{margin-bottom:8px}.bfv .dn .bev{margin-top:6px;padding:6px 16px}.bfv .dn .sob{grid-template-columns:repeat(4,1fr);gap:0 30px}.bfv .dn .sob div{padding:3px 0;font-size:14.5px}.bfv .dn .sob div b{font-size:14.5px}
+.bfv .cbs.bg2 .cb .bl li{font-size:16px;line-height:1.3;padding:2px 0 2px 16px}.bfv .cbs.bg2 .cb .bl li::before{top:10px}.bfv .cbs.bg2 .cb .r2{padding:18px 30px}.bfv .cbs.bg2 .cb p.s{font-size:15.5px}
+.bfv .b2 .lead{font-size:26px!important;line-height:1.5}.bfv .b2 .dif h3{font-size:23px}.bfv .b2 .dif p{font-size:19px;line-height:1.5}.bfv .b2 .dif i{font-size:17px}
+.bfv .inv .card .v{font-size:36px}.bfv .inv .card .n{line-height:1.4}
 `;
 const BUF_SERV = [['Serviço de sala: café','Café garrafa','por pessoa'],['Serviço de sala: café expresso (cápsula)','Café expresso','por unidade'],['Serviço de sala: água','Água','por unidade'],['Red Bull (unidade)','Red Bull','por unidade']];
 const BUF_CB = [['Coffee Break: Categoria Executivo','Executivo'],['Coffee Break: Categoria Master','Master'],['Coffee Break: Categoria Premium','Premium']];
@@ -2830,65 +2843,78 @@ const BUF_ALM = {
   'Premium':[['Filet ao molho de shitake','Carré de cordeiro em crosta de ervas e vinho tinto','Batatas assadas com ervas finalizada com azeite trufado','Risoto de queijos finos','Arroz de uvas passas e castanha ou arroz branco','Salada de grão de bico, maçã verde e perfume de hortelã e salada primavera'],['Baby beef ao molho gruyère','Bacalhoada do porto','Batata gratinada com queijo canastra','Arroz branco e ao alho','Penne ao molho funghi','Salada de folhas, balsâmico e nozes','Salada de folhas verdes, rúcula, tomate seco e mussarela de búfala e champignon'],['Bobó de camarão','Bife de ancho ao molho parrilero','Batata roquefort','Farofa de dendê','Arroz branco ou ao alho e óleo','Salada de frutos do mar (lula, kani, mexilhão e camarão)','Salada verde com lascas de parmesão']],
   'Mineiro':[['Feijoada completa','Feijoada magra','Farofa de alho e bacon','Couve','Arroz branco','Torresminho','Molho apimentado','Laranja e abacaxi'],['Frango com quiabo','Costelinha à mineira','Couve','Angu','Arroz branco','Torresmo','Farofa','Salada de folhas'],['Frango ao molho pardo','Pernil gratinado','Angu','Couve','Arroz branco','Farofa','Salada verde']]
 };
+const BUF_SAN = ['Pão de forma integral, muçarela, rúcula e patê de tomate seco','Pão de forma integral, peito de peru, cream cheese, alface','Pão de forma, pasta de frango desfiado e alface','Mini pão doce, pasta de salaminho e muçarela','Mini sanduíche de salpicão','Baguete francesa, lombinho canadense, muçarela, alface e tomate'];
+const BUF_SAL = ['Cestinha de palmito','Canapé de queijo e bacon, ou de brie e damasco','Coxinha de frango com catupiry','Mini pastel de queijo canastra','Trouxinha de alho poró','Empadinha de frango com catupiry, ou de queijo canastra','Mini quiche lorraine, ou damasco'];
+const BUF_SUCO = '(Abacaxi com hortelã, limão, uva integral ou maracujá)';
 function bufAlmBlock(c,k,ttlName,sucos){
   const key = BUF_AL.find(a=>a[1]===k)[0];
-  return '<div style="margin-bottom:14px"><h3 class="ttl">Almoço <b>'+ttlName+'</b><small>'+c.pp(key)+' por pessoa</small></h3><div class="cl3">'+BUF_ALM[k].map((l,i)=>'<div class="bx2"><h4>Cardápio '+(i+1)+'</h4><ul>'+l.map(x=>'<li>• '+x+'</li>').join('')+'</ul></div>').join('')+'</div>'+BUF_BEB.replace('__S__',sucos)+'</div>';
+  return '<div class="alb"><div class="alh"><h3>Almoço <b>'+ttlName+'</b></h3><div class="pr">'+c.pp(key)+'<span>por pessoa</span></div></div><div class="alc">'+BUF_ALM[k].map((l,i)=>'<div class="pc"><h4>Cardápio '+(i+1)+'</h4><ul class="bl">'+l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>').join('')+'</div><div class="bev"><b>Bebidas</b><span>Água mineral</span><span>Coca Cola (normal e zero)</span><span>Guaraná Antártica (normal e zero)</span><span>Suco natural: '+sucos+' '+BUF_SUCO+'</span></div></div>';
 }
 function bufPages(c){
-  const bg = (k,cls) => '<div class="bg '+(cls||'')+'">'+(c.F[k] ? '<img src="'+c.F[k]+'" style="'+c.st(k)+'" alt="">' : '')+'</div>';
-  const ph = (k,l) => c.foto(k,l||'','100%','100%').replace(/<span class="tag">.*?<\/span>/,'').replace('flex:none','flex:1;min-height:0');
-  const ul = a => '<ul>'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const L = (typeof MIDIA!=='undefined' && MIDIA.links) || {};
+  const phd = (k,st) => c.F[k] ? '<div class="ph d has"'+(st?' style="'+st+'"':'')+'><img src="'+c.F[k]+'" style="'+c.st(k)+'" alt=""></div>' : '<div class="ph d"'+(st?' style="'+st+'"':'')+'></div>';
+  const lg = '<img class="lg" src="'+c.logo+'" alt="Espaço Vista">';
+  const foot = n => '<div class="foot"><span>Buffet Vista · Proposta comercial</span><span>'+n+' / 9</span></div>';
+  const band = (h,keys,cls) => '<div class="band '+(cls||'')+'">'+(keys?keys.map(k=>phd(k)).join(''):'')+'<div class="sh"></div><h2>'+h+'</h2>'+lg+'</div>';
+  const ul = (a,cl) => '<ul class="bl'+(cl?' '+cl:'')+'">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const row = (a,b,u) => '<div class="r"><span>'+a+'</span><b>'+b+(u?'<i>'+u+'</i>':'')+'</b></div>';
+  const vc = id => '<div class="vw"><a class="vc" href="#'+id+'">Ver cardápio</a></div>';
+  const sm = '<small style="font:400 15px Inter;letter-spacing:.12em;text-transform:uppercase;opacity:.7">';
   const P = [];
-  P.push(`<section class="page p1" id="b1">${bg('bz_capa')}<div class="c z"><img class="logo" src="${c.logo}" alt="Buffet Vista" style="filter:brightness(0) invert(1)"><h1><b>Proposta</b> de buffet</h1>${c.cliente?'<div class="cl">'+c.cliente+'</div>':''}<div class="dt">${c.data}</div></div></section>`);
-  P.push(`<section class="page p2 dk" id="b2">${bg('bz_fundo2')}<div class="z" style="position:absolute;left:150px;top:300px;width:900px;color:#fff"><h2 class="t" style="font-weight:800">Soluções gastronômicas<br><span style="font-weight:300">para eventos empresariais</span></h2><p style="font-size:23px;line-height:1.6;margin-top:50px;color:#EEE">Conte com o melhor serviço de buffet para o seu evento corporativo. Desde 2009, o Buffet Vista oferece excelência em catering e buffet, atendendo com exclusividade o mercado empresarial.</p><p style="font-size:23px;line-height:1.6;margin-top:26px;color:#EEE">Oferecemos uma variedade de cardápios com o quantitativo mínimo de 15 pessoas, adaptando nossas soluções gastronômicas a diversos tipos de eventos. Nosso menu inclui diferentes categorias de coffee breaks, almoços e coquetéis, sempre assegurando a máxima qualidade.</p></div></section>`);
-  // 3 resumo
-  P.push(`<section class="page pg bf" id="b3">${bg('esp_fundo','light')}<div class="in z" style="right:660px">
-   <div style="font:300 26px 'Montserrat';margin-bottom:12px">Número de convidados: <b style="font-weight:800;color:var(--wd)">${c.n} pessoas</b></div>
-   <h3 class="s">Serviço de <b>Sala</b></h3><div class="row2"><div class="bx2">${BUF_SERV.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' '+s[2]+'</span></div>').join('')}</div><ul class="nt" style="padding-top:8px"><li>• Inclusos mão de obra, materiais e insumos.</li><li>• Café ilimitado e servido em garrafa. Valor por pessoa durante o evento.</li><li>• Água mineral e com gás, sob consumo.</li></ul></div>
-   <h3 class="s" style="margin-top:14px">Categorias <b>Coffee Break</b></h3><div class="row2"><div><div class="bx2">${BUF_CB.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' por pessoa</span></div>').join('')}</div><a class="vc" href="#b4">Ver cardápio</a></div><div><ul class="nt"><li>• Duração de até 30 minutos.</li><li>• Valor por pessoa para cada categoria.</li><li>• Cobrança mínima referente a 15 pessoas.</li></ul></div></div>
-   <h3 class="s" style="margin-top:14px">Categorias <b>Almoço</b></h3><div class="row2"><div><div class="bx2">${BUF_AL.map(s=>'<div class="r"><b>'+s[1]+'</b><span>'+c.pp(s[0])+' por pessoa</span></div>').join('')}</div><a class="vc" href="#b5">Ver cardápio</a></div><div><ul class="nt"><li>• Duração de até 1 hora e 30 minutos.</li><li>• Valor por pessoa para cada categoria.</li><li>• Cobrança mínima referente a 15 pessoas.</li></ul></div></div>
-   <div style="display:grid;grid-template-columns:1fr 1fr;column-gap:30px;row-gap:0;margin-top:16px;align-items:stretch"><h3 class="s" style="font-size:34px;white-space:nowrap">Happy Hour <b>Comida de Buteco</b></h3><h3 class="s" style="font-size:34px;white-space:nowrap">Happy Hour <b>Coquetel</b></h3><div class="bx2 nt" style="padding:12px 20px">O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de petit gourmet, petiscos e pratos quentes. Inclui cerveja, refrigerante e água.</div><div class="bx2 nt" style="padding:12px 20px">O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha opções entre petit gourmet, frios, assados, fritos, prato quente e pratos principais. Inclui cerveja, refrigerante e água.</div><div><a class="vc" href="#b7">Ver cardápio</a></div><div><a class="vc" href="#b8">Ver cardápio</a></div></div>
-  </div><div class="phs z">${c.foto('bz_p3','','100%','100%').replace(/<span class="tag">.*?<\/span>/,'').replace('class="ph f"','class="ph f" style="flex:1;border-radius:16px;width:100%"')}</div></section>`);
-  // 4 coffee break
-  const cb = (t,price,al,beb,extra) => '<div style="margin-bottom:18px"><h3 class="ttl">Coffee Break <b>'+t+'</b><small>'+price+' por pessoa</small></h3><div class="bx2"><div style="display:flex;gap:40px"><div style="width:210px;flex:none"><h4 style="font:700 16px Montserrat">Alimentos</h4>'+ul(al)+'</div>'+extra+'<div style="margin-left:auto;width:390px;flex:none"><h4 style="font:700 16px Montserrat">Bebidas</h4>'+ul(beb[0])+(beb[1]?'<p style="font-size:15px;color:#444;margin-top:6px">'+beb[1]+'</p>':'')+'</div></div></div></div>';
-  const san = n => '<div style="font-size:15.5px;color:#333;line-height:1.38"><b style="font-weight:600">Mini Sanduíche: '+n+'</b><ul><li>Pão de forma integral, muçarela, rúcula e patê de tomate seco</li><li>Pão de forma integral, peito de peru, cream cheese, alface</li><li>Pão de forma, pasta de frango desfiado e alface</li><li>Mini pão doce, pasta de salaminho e muçarela</li><li>Mini sanduíche de salpicão</li><li>Baguete francesa, lombinho canadense, muçarela, alface e tomate</li></ul></div>';
-  P.push(`<section class="page pg bf" id="b4">${bg('esp_fundo','light')}<div class="in z" style="right:440px">
-   ${cb('Executivo',c.pp(BUF_CB[0][0]),['Biscoito de Queijo','Pão de queijo','Petit four'],[['Café','Leite']],'')}
-   ${cb('Master',c.pp(BUF_CB[1][0]),['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Frutas da estação'],[['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],'Suco Natural: 1 opção (Abacaxi com hortelã, limão, uva integral ou maracujá)'],san('1 opção'))}
-   ${cb('Premium',c.pp(BUF_CB[2][0]),['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Salada de frutas','Petit four'],[['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],'Suco Natural: 2 opções (Abacaxi com hortelã, limão, uva integral ou maracujá)'],san('2 opções')+'<div style="font-size:15.5px;color:#333;line-height:1.38"><b style="font-weight:600">Salgados: 2 opções</b><ul><li>Cestinha de palmito</li><li>Canapé de queijo e bacon, ou de brie e damasco</li><li>Coxinha de frango com catupiry</li><li>Mini pastel de queijo canastra</li><li>Trouxinha de alho poró</li><li>Empadinha de frango com catupiry, ou de queijo canastra</li><li>Mini quiche lorraine, ou damasco</li></ul></div>')}
-  </div><div class="phs v3 z">${['bz_cb1','bz_cb2','bz_cb3'].map(k=>ph(k)).join('')}</div></section>`);
-  // 5 almoço exec + master
-  P.push(`<section class="page pg bf" id="b5">${bg('esp_fundo','light')}<div class="in z" style="right:440px">${bufAlmBlock(c,'Executivo','Executivo','1 opção')}${bufAlmBlock(c,'Master','Master','1 opção')}</div><div class="phs v3 z">${['bz_al1','bz_al2','bz_al3'].map(k=>ph(k)).join('')}</div></section>`);
-  // 6 premium + mineiro + sobremesas
+  /* 1 capa */
+  P.push('<section class="page dk bf" id="b1">'+phd('bz_capa','position:absolute;inset:0')+'<div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,16,16,.92) 0,rgba(20,16,16,.55) 55%,rgba(20,16,16,.25))"></div><div style="position:absolute;left:110px;top:90px">'+lg+'</div><div style="position:absolute;left:110px;bottom:150px"><div class="eyebrow" style="font-size:18px">Proposta comercial</div><h1 style="font:300 84px/1.04 Montserrat;letter-spacing:-.03em;margin:18px 0 34px;text-transform:uppercase">Buffet <b style="font-weight:800">Vista</b><br><span style="font-size:40px;letter-spacing:0;text-transform:none;opacity:.85">Soluções gastronômicas para eventos empresariais</span></h1><div style="display:flex;gap:60px;border-top:1px solid rgba(255,255,255,.3);padding-top:24px;font:700 26px Montserrat">'+(c.cliente?'<div>'+c.cliente+'<br>'+sm+'Cliente</small></div>':'')+'<div>'+c.data+'<br>'+sm+'Data da proposta · válida por '+VALIDADE_DIAS+' dias</small></div><div>'+c.n+' pessoas<br>'+sm+'Convidados</small></div></div></div></section>');
+  /* 2 apresentação */
+  P.push('<section class="page bf" id="b2">'+phd('bz_fundo2','position:absolute;left:0;top:0;bottom:0;width:700px')+'<div style="position:absolute;left:0;top:0;bottom:0;width:700px;background:linear-gradient(180deg,rgba(20,16,16,.55),rgba(20,16,16,.9));padding:80px 64px;color:#fff;display:flex;flex-direction:column">'+lg+'<div style="margin-top:auto"><div class="eyebrow" style="color:#E04040">Buffet Vista</div><h2 style="font:300 50px/1.08 Montserrat;letter-spacing:-.02em;margin:14px 0 22px">Soluções gastronômicas para <b style="font-weight:800">eventos empresariais</b></h2></div></div>'
+   +'<div class="b2" style="position:absolute;left:760px;right:80px;top:120px"><p class="lead" style="font-size:22px">Conte com o melhor serviço de buffet para o seu evento corporativo. Desde 2009, o Buffet Vista oferece excelência em catering e buffet, atendendo com exclusividade o mercado empresarial.</p><p class="lead" style="font-size:22px;margin-top:14px">Oferecemos uma variedade de cardápios com o quantitativo mínimo de 15 pessoas, adaptando nossas soluções gastronômicas a diversos tipos de eventos. Nosso menu inclui diferentes categorias de coffee breaks, almoços e coquetéis, sempre assegurando a máxima qualidade.</p>'
+   +'<div class="eyebrow" style="margin:70px 0 26px">Nosso buffet</div><div class="dif" style="grid-template-columns:repeat(2,1fr);gap:40px 44px"><div><i>01</i><h3>Desde 2009</h3><p>Excelência em catering e buffet, com atendimento exclusivo ao mercado empresarial.</p></div><div><i>02</i><h3>Cardápios variados</h3><p>Diferentes categorias de coffee breaks, almoços e coquetéis, adaptados a cada tipo de evento.</p></div><div><i>03</i><h3>A partir de 15 pessoas</h3><p>Quantitativo mínimo para a contratação dos cardápios.</p></div><div><i>04</i><h3>Máxima qualidade</h3><p>Soluções gastronômicas pensadas para o seu evento corporativo.</p></div></div></div>'+foot(2)+'</section>');
+  /* 3 resumo */
+  P.push('<section class="page bf big" id="b3">'+band('Nossos <b>cardápios</b>',['bz_p3','bz_p3b','bz_p3c'])+'<div class="body" style="top:256px"><div class="eyebrow" style="margin-bottom:16px">Número de convidados · '+c.n+' pessoas · valores por pessoa</div><div class="g3">'
+   +'<div class="pc fl"><h4>Serviço de sala</h4>'+BUF_SERV.map(s=>row(s[1],c.pp(s[0]),s[2])).join('')+'<ul class="bl" style="margin-top:12px"><li>Inclusos mão de obra, materiais e insumos.</li><li>Café ilimitado e servido em garrafa. Valor por pessoa durante o evento.</li><li>Água mineral e com gás, sob consumo.</li></ul></div>'
+   +'<div class="pc fl"><h4>Coffee break</h4>'+BUF_CB.map(s=>row(s[1],c.pp(s[0]),'por pessoa')).join('')+'<ul class="bl" style="margin-top:12px"><li>Duração de até 30 minutos.</li><li>Valor por pessoa para cada categoria.</li><li>Cobrança mínima referente a 15 pessoas.</li></ul>'+vc('b4')+'</div>'
+   +'<div class="pc fl"><h4>Almoço</h4>'+BUF_AL.map(s=>row(s[1],c.pp(s[0]),'por pessoa')).join('')+'<ul class="bl" style="margin-top:12px"><li>Duração de até 1 hora e 30 minutos.</li><li>Valor por pessoa para cada categoria.</li><li>Cobrança mínima referente a 15 pessoas.</li></ul>'+vc('b5')+'</div></div>'
+   +'<div class="g2" style="margin-top:22px"><div class="pc fl"><h4>Happy hour · Comida de Buteco</h4><p class="d" style="margin-bottom:0">O menu apresenta uma refinada interpretação da culinária mineira. O cardápio conta com um charmoso cantinho mineiro, servido em ponto fixo, além de petit gourmet, petiscos e pratos quentes. Inclui cerveja, refrigerante e água.</p>'+vc('b7')+'</div><div class="pc fl"><h4>Happy hour · Coquetel Salgados Finos</h4><p class="d" style="margin-bottom:0">O menu apresenta um cardápio sofisticado com opções da culinária contemporânea. Escolha opções entre petit gourmet, frios, assados, fritos, prato quente e pratos principais. Inclui cerveja, refrigerante e água.</p>'+vc('b8')+'</div></div></div>'+foot(3)+'</section>');
+  /* 4 coffee break */
+  const CB = [{n:'Executivo',k:0,al:['Biscoito de Queijo','Pão de queijo','Petit four'],beb:['Café','Leite']},
+    {n:'Master',k:1,al:['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Frutas da estação'],beb:['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],suco:'Suco Natural: 1 opção '+BUF_SUCO,san:'1 opção'},
+    {n:'Premium',k:2,al:['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Salada de frutas','Petit four'],beb:['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],suco:'Suco Natural: 2 opções '+BUF_SUCO,san:'2 opções',sal:'2 opções'}];
+  const cb = x => { const cols = [['Alimentos',ul(x.al)]]; if(x.san) cols.push(['Mini sanduíche · '+x.san,ul(BUF_SAN)]); if(x.sal) cols.push(['Salgados · '+x.sal,ul(BUF_SAL)]); cols.push(['Bebidas',ul(x.beb)+(x.suco?'<p class="s">'+x.suco+'</p>':'')]);
+    return '<div class="cb"><div class="l"><small>Coffee break</small><h3>'+x.n+'</h3><div><b>'+c.pp(BUF_CB[x.k][0])+'</b><span>por pessoa</span></div></div><div class="r2" style="grid-template-columns:repeat('+cols.length+',1fr);'+(cols.length<3?'max-width:960px':'')+'">'+cols.map(q=>'<div><h5>'+q[0]+'</h5>'+q[1]+'</div>').join('')+'</div></div>'; };
+  P.push('<section class="page bf" id="b4">'+band('Coffee <b>break</b>',['bz_cb1','bz_cb2','bz_cb3'],'sm')+'<div class="body" style="top:178px"><div class="cbs bg2" style="gap:18px">'+CB.map(cb).join('')+'</div></div>'+foot(4)+'</section>');
+  /* 5 almoço executivo + master */
+  P.push('<section class="page bf rm" id="b5">'+band('Almoço <b>Executivo</b> e <b>Master</b>',['bz_al1','bz_al2','bz_al3'],'sm')+'<div class="body" style="top:176px">'+bufAlmBlock(c,'Executivo','Executivo','1 opção')+bufAlmBlock(c,'Master','Master','1 opção')+'</div>'+foot(5)+'</section>');
+  /* 6 premium + mineiro + sobremesas */
   const sb = BUF_SOB.map(s=>'<div><span>'+s[1]+'</span><b>'+c.pp(s[0])+'</b></div>').join('');
-  P.push(`<section class="page pg bf" id="b6">${bg('esp_fundo','light')}<div class="in z" style="right:auto;width:1390px"><style>#b6 .bx2{padding:8px 20px}#b6 .bx2 li{font-size:14.5px;line-height:1.3;padding:0}#b6 .bev h4{margin:0}#b6 .ttl{font-size:34px}</style>${bufAlmBlock(c,'Premium','Premium','1 opção').replace('margin-bottom:14px','margin-bottom:6px')}${bufAlmBlock(c,'Mineiro','Mineiro','2 opções').replace('margin-bottom:14px','margin-bottom:2px')}<h3 class="ttl" style="margin-top:2px;margin-bottom:4px;font-size:34px">Sobremesas<small>Valor cobrado por pessoa</small></h3><div class="bx2" style="padding:6px 24px"><div class="sob" style="font-size:14.5px">${sb}</div></div></div><div class="phs v3 z">${['bz_pr1','bz_pr2','bz_pr3'].map(k=>ph(k)).join('')}</div></section>`);
-  // 7 buteco
-  const but = c.hb;
-  P.push(`<section class="page pg bf" id="b7">${bg('esp_fundo','light')}<div class="in z"><h3 class="ttl" style="font-size:42px">HAPPY HOUR - <b>Comida de Buteco</b></h3><div class="hh4">
-   <div class="bx2"><h4>Cantinho mineiro</h4><p>Todos itens abaixo estão inclusos. Servido em ponto fixo.</p>${ul(['Mandioquinha noisette','Torresminho crocante','Carne de panela ao molho servida com pães','Linguiça calabresa defumada','Mini tonel de cachaça'])}</div>
-   <div class="bx2" style="grid-column:2/4"><h4>Petiscos e petit gourmet</h4><p>Servido volante. Escolha até 7 opções.</p><div class="cols3" style="grid-template-columns:1fr 1fr">${ul(['Caeser salad','Bruschetta marguerita / berinjela','Espetinho caprese','Pão de queijo com lombinho canadense e catupiry','Trouxinha de alho poró','Escondidinho de frango com catupiry','Coxinha de frango com catupiry','Mini quibe ao molho de limão','Rolê de frango com bacon'])}${ul(['Cubinho de lombo ao molho de abacaxi','Espetado de frango empanado ao molho da casa','Filet aperitivo ao molho gorgonzola','Pastel de feira','Shot de batatinha frita','Empanado de peixe ao gergelim negro','Pirulito de polpetone ao molho de tomate','Brochetinho','Carne de sol na mandioca cozida c/ manteiga de garrafa'])}</div></div>
-   <div class="bx2 full"><h4>Prato quente</h4><p>Serviço volante. Escolha até 1 variedade (item opcional)</p><div class="cols3">${ul(['Mexido gourmet','Tropeiro gourmet'])}${ul(['Macarrão na chapa','Yakisoba'])}${ul(['Caldos (até 2 opções): mandioca, feijão, alho poró e mineiro.'])}</div></div>
-   <div class="bx2 full"><h4>Frutos do mar</h4><p>Serviço volante. Escolha até 2 variedades (item opcional)</p><div class="cols3">${ul(['Espetado de camarão ao aioli','Petit bobó de camarão','Crocante de camarão'])}${ul(['Ceviche de peixe branco','Crisp de camarão empanado ao molho de limão','Empanado de camarão com catupiry'])}${ul(['Batata Baby de salmão e alecrim','Bolinho de Bacalhau ao molho de limão siciliano'])}</div></div>
-   <div class="bx2 full"><h4>Bebidas</h4><p>Serviço volante. Bebidas inclusas e itens opcionais.</p><div class="cols3">${ul(['Cerveja Original (600 ml)'])}${ul(['Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral'])}${ul(['Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa.','Suco natural (1 variedade): R$ 4,00 por pessoa.'])}</div></div></div>
-   <div class="opt3"><div><h5>OPÇÃO 1: ${but[0]}</h5><p>Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Cerveja Original + Refrigerante + Água Mineral</p></div><div><h5>OPÇÃO 2: ${but[1]}</h5><p>Cantinho Mineiro + 7 variedades de Petiscos / Petit Gourmet + Prato Quente + Cerveja Original + Refrigerante + Água Mineral</p></div><div><h5>OPÇÃO 3: ${but[2]}</h5><p>Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Prato Quente + 2 Frutos do Mar + Cerveja Original + Refrigerante + Água Mineral</p></div></div></div></section>`);
-  // 8 coquetel
-  const coq = c.hc;
-  P.push(`<section class="page pg bf" id="b8">${bg('esp_fundo','light')}<div class="in z"><h3 class="ttl" style="font-size:42px">HAPPY HOUR - <b>Coquetel Salgados Finos</b></h3><div class="hh4">
-   <div class="bx2"><h4>Frios</h4>${ul(['Caesar salad','Bruschetta de marguerita ou berinjela','Espetinho caprese','Cestinha de palmito ou Palmito Imperador ao manjericão','Canapé de salmão com perfume de limão siciliano','Canapé de manga e cream cheese','Mini canapé burger','Barqueta de guacamole','Crocante de camarão','Tartelette de frango com catupiry ou salmão','Ceviche de peixe branco','Chips de batata doce com carpaccio de filé e dijon'])}</div>
-   <div class="bx2"><h4>Assados</h4>${ul(['Batata baby de catupiry e bacon ou salmão ou bacalhau','Bombom de berinjela com gergelim negro','Cigarrete de brie e presunto parma','Crostini de cogumelos selvagens','Empada aberta carioca de siri','Empadinha de queijo canastra com geleia de pimenta','Duas flores de brie e damasco','Gravatinha de bacalhau','Mini quiche de carne seca e crisp de couve ou quiche lorraine','Trouxinha de alho poró','Mil folhas de salmão','Cubeta de pepperoni','Vol-au-vent de damasco e brie ou espinafre e crisp de parma'])}</div>
-   <div class="bx2"><h4>Fritos</h4>${ul(['Arancini','Bombom de frango com catupiry','Crocante de queijo gruyere','Risole de milho ou Meia lua de alho poró','Dadinho de tapioca','Empanado de peixe ao gergelim preto','Espetado de frango ao sour cream','Filet aperitivo ao molho parrilero','Croquete de costela e barbecue de goiabada','Pastelzinho de feira','Stick de frango','Risole de lombinho e cream cheese','Ouriço de queijo minas e goiabada cascão'])}</div>
-   <div class="bx2 full"><h4>Especiais</h4><div class="cols3">${ul(['Crisp de camarão empanado ao molho de limão','Petit bacalhoada','Crunch de camarão com catupiry','Crocante de camarão','Bolinho de bacalhau ao molho de limão siciliano'])}${ul(['Tartellete de camarão','Escondidinho de carne seca','Crisp de camarão empanado ao molho de limão','Petit bacalhoada','Crunch de camarão com catupiry'])}${ul(['Crocante de camarão','Vol-au-vent de camarão','Bolinho de bacalhau ao molho de limão siciliano','Tartellete de camarão','Escondidinho de carne seca'])}</div></div>
-   <div class="bx2 full"><h4>Bebidas</h4><div class="cols3">${ul(['Cerveja Original (600 ml)'])}${ul(['Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral'])}${ul(['Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa.','Suco natural (1 variedade): R$ 4,00 por pessoa.'])}</div></div></div>
-   <div class="opt3"><div><h5>OPÇÃO 1: ${coq[0]}</h5><p>12 variedades de Salgados (Frios, Assados e Fritos) + Cerveja Original + Refrigerante + Água Mineral</p></div><div><h5>OPÇÃO 2: ${coq[1]}</h5><p>12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Cerveja Original + Refrigerante + Água Mineral</p></div><div><h5>OPÇÃO 3: ${coq[2]}</h5><p>12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Mini Churros + Cerveja Original + Suco + Refrigerante + Água Mineral</p></div></div></div></section>`);
-  P.push(`<section class="page p8 dk" id="b9">${bg('bz_fundo9')}<div class="c z"><h2>Contato <b>Comercial</b></h2><p>E-mail: contato@espacovista.com.br<br>Telefone / WhatsApp: (31) 3643-8566<br>www.espacovista.com.br<br>@ovistabh</p><img class="logo" src="${c.logo}" alt="" style="filter:brightness(0) invert(1)"></div></section>`);
-  return P.join('\n');
+  P.push('<section class="page bf dn" id="b6">'+band('Almoço <b>Premium</b> e <b>Mineiro</b>',['bz_pr1','bz_pr2','bz_pr3'],'sm')+'<div class="body" style="top:176px">'+bufAlmBlock(c,'Premium','Premium','1 opção')+bufAlmBlock(c,'Mineiro','Mineiro','2 opções')+'<div class="alb"><div class="alh"><h3><b>Sobremesas</b></h3><div class="pr" style="font-size:15px;color:#666;font-weight:600"><span style="margin:0">Valor cobrado por pessoa</span></div></div><div class="sob">'+sb+'</div></div></div>'+foot(6)+'</section>');
+  /* 7 buteco */
+  const but = c.hb, coq = c.hc;
+  const inv = (sub,o,d) => '<div class="inv" style="height:300px"><div class="h"><h3>Investimento <span>· '+c.n+' pessoas</span></h3><p>'+sub+'</p></div><div class="cards">'+[0,1,2].map(i=>'<div class="card"><small class="t">Opção '+(i+1)+'</small><div class="v">'+o[i]+'</div><div class="n">'+d[i]+'</div></div>').join('')+'</div></div>';
+  P.push('<section class="page bf" id="b7">'+band('Happy hour · <b>Comida de Buteco</b>',null,'dkb')+'<div class="body" style="top:132px"><div class="hg" style="grid-template-columns:1fr 2fr">'
+   +'<div class="pc"><h4>Cantinho mineiro</h4><p class="d">Todos itens abaixo estão inclusos. Servido em ponto fixo.</p>'+ul(['Mandioquinha noisette','Torresminho crocante','Carne de panela ao molho servida com pães','Linguiça calabresa defumada','Mini tonel de cachaça'])+'</div>'
+   +'<div class="pc"><h4>Petiscos e petit gourmet</h4><p class="d">Servido volante. Escolha até 7 opções.</p>'+ul(['Caeser salad','Bruschetta marguerita / berinjela','Espetinho caprese','Pão de queijo com lombinho canadense e catupiry','Trouxinha de alho poró','Escondidinho de frango com catupiry','Coxinha de frango com catupiry','Mini quibe ao molho de limão','Rolê de frango com bacon','Cubinho de lombo ao molho de abacaxi','Espetado de frango empanado ao molho da casa','Filet aperitivo ao molho gorgonzola','Pastel de feira','Shot de batatinha frita','Empanado de peixe ao gergelim negro','Pirulito de polpetone ao molho de tomate','Brochetinho','Carne de sol na mandioca cozida c/ manteiga de garrafa'],'c2')+'</div></div>'
+   +'<div class="hg" style="grid-template-columns:1fr 1.4fr 1fr;margin-top:18px">'
+   +'<div class="pc"><h4>Prato quente</h4><p class="d">Serviço volante. Escolha até 1 variedade (item opcional)</p>'+ul(['Mexido gourmet','Tropeiro gourmet','Macarrão na chapa','Yakisoba','Caldos (até 2 opções): mandioca, feijão, alho poró e mineiro.'])+'</div>'
+   +'<div class="pc"><h4>Frutos do mar</h4><p class="d">Serviço volante. Escolha até 2 variedades (item opcional)</p>'+ul(['Espetado de camarão ao aioli','Petit bobó de camarão','Crocante de camarão','Ceviche de peixe branco','Crisp de camarão empanado ao molho de limão','Empanado de camarão com catupiry','Batata Baby de salmão e alecrim','Bolinho de Bacalhau ao molho de limão siciliano'],'c2')+'</div>'
+   +'<div class="pc"><h4>Bebidas</h4><p class="d">Serviço volante. Bebidas inclusas e itens opcionais.</p>'+ul(['Cerveja Original (600 ml)','Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral','Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa.','Suco natural (1 variedade): R$ 4,00 por pessoa.'])+'</div></div></div>'
+   +inv('Happy hour · Comida de Buteco',but,['Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Cerveja Original + Refrigerante + Água Mineral','Cantinho Mineiro + 7 variedades de Petiscos / Petit Gourmet + Prato Quente + Cerveja Original + Refrigerante + Água Mineral','Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Prato Quente + 2 Frutos do Mar + Cerveja Original + Refrigerante + Água Mineral'])+foot(7)+'</section>');
+  /* 8 coquetel */
+  P.push('<section class="page bf" id="b8">'+band('Happy hour · <b>Coquetel Salgados Finos</b>',null,'dkb')+'<div class="body" style="top:132px"><div class="hg" style="grid-template-columns:repeat(3,1fr)">'
+   +'<div class="pc"><h4>Frios</h4>'+ul(['Caesar salad','Bruschetta de marguerita ou berinjela','Espetinho caprese','Cestinha de palmito ou Palmito Imperador ao manjericão','Canapé de salmão com perfume de limão siciliano','Canapé de manga e cream cheese','Mini canapé burger','Barqueta de guacamole','Crocante de camarão','Tartelette de frango com catupiry ou salmão','Ceviche de peixe branco','Chips de batata doce com carpaccio de filé e dijon'])+'</div>'
+   +'<div class="pc"><h4>Assados</h4>'+ul(['Batata baby de catupiry e bacon ou salmão ou bacalhau','Bombom de berinjela com gergelim negro','Cigarrete de brie e presunto parma','Crostini de cogumelos selvagens','Empada aberta carioca de siri','Empadinha de queijo canastra com geleia de pimenta','Duas flores de brie e damasco','Gravatinha de bacalhau','Mini quiche de carne seca e crisp de couve ou quiche lorraine','Trouxinha de alho poró','Mil folhas de salmão','Cubeta de pepperoni','Vol-au-vent de damasco e brie ou espinafre e crisp de parma'])+'</div>'
+   +'<div class="pc"><h4>Fritos</h4>'+ul(['Arancini','Bombom de frango com catupiry','Crocante de queijo gruyere','Risole de milho ou Meia lua de alho poró','Dadinho de tapioca','Empanado de peixe ao gergelim preto','Espetado de frango ao sour cream','Filet aperitivo ao molho parrilero','Croquete de costela e barbecue de goiabada','Pastelzinho de feira','Stick de frango','Risole de lombinho e cream cheese','Ouriço de queijo minas e goiabada cascão'])+'</div></div>'
+   +'<div class="hg" style="grid-template-columns:1.4fr 1fr;margin-top:18px"><div class="pc"><h4>Especiais</h4>'+ul(['Crisp de camarão empanado ao molho de limão','Petit bacalhoada','Crunch de camarão com catupiry','Crocante de camarão','Bolinho de bacalhau ao molho de limão siciliano','Tartellete de camarão','Escondidinho de carne seca','Vol-au-vent de camarão'],'c2')+'</div>'
+   +'<div class="pc"><h4>Bebidas</h4>'+ul(['Cerveja Original (600 ml)','Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral','Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa.','Suco natural (1 variedade): R$ 4,00 por pessoa.'])+'</div></div></div>'
+   +inv('Happy hour · Coquetel Salgados Finos',coq,['12 variedades de Salgados (Frios, Assados e Fritos) + Cerveja Original + Refrigerante + Água Mineral','12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Cerveja Original + Refrigerante + Água Mineral','12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Mini Churros + Cerveja Original + Suco + Refrigerante + Água Mineral'])+foot(8)+'</section>');
+  /* 9 contato */
+  const tile = (k,l) => L[k] ? '<a class="tile" style="background:#3a3636" href="'+esc(L[k])+'" target="_blank">'+l+'</a>' : '<div class="tile" style="background:#3a3636">'+l+'</div>';
+  P.push('<section class="page dk bf" id="b9">'+phd('bz_fundo9','position:absolute;left:0;top:0;bottom:0;width:900px')+'<div style="position:absolute;left:980px;right:100px;top:130px"><div class="eyebrow">Contato comercial</div><h2 style="font:300 56px/1.08 Montserrat;letter-spacing:-.02em;margin:16px 0 18px">Fale com o <b style="font-weight:800">Buffet Vista</b></h2><div class="tiles" style="grid-template-columns:repeat(2,1fr);margin-top:34px">'+tile('whatsapp','WhatsApp')+tile('instagram','Instagram')+'</div><div style="margin-top:60px;border-top:1px solid rgba(255,255,255,.25);padding-top:30px"><div style="font:600 26px/1.7 Montserrat">E-mail: contato@espacovista.com.br<br>Telefone / WhatsApp: (31) 3643-8566<br>www.espacovista.com.br<br>@ovistabh</div></div><div style="margin-top:50px">'+lg+'</div></div>'+foot(9)+'</section>');
+  return '<div class="bfv">'+P.join('\n')+'</div>';
 }
 /* ═════════ PROPOSTA DO ESPAÇO — lógica (valores sempre do Catálogo) ═════════ */
 let ESPS = null, ESP_DIRTY = false, ESP_BUSY = false;
 const ESP_MIDIA_KEYS = [['esp_capa','Espaço · Capa e fundo escuro (foto do salão)'],['esp_fundo','Espaço · Fundo das páginas claras (vira cinza claro)'],['esp_exp','Espaço · Página 2 (foto lateral)'],['esp_vista','Salão Vista'],['esp_real','Salão Real'],['esp_serra','Espaço Serra do Curral'],['esp_ouro','Sala Ouro Preto'],['esp_mariana','Sala Mariana'],['esp_tira','Sala Tiradentes'],['esp_p3_pl','Pág. 3 · Card do pacote Plenária (Vista + Real + Serra)'],['esp_p3_om','Pág. 3 · Card Sala Ouro Preto + Mariana'],['esp_p3_tira','Pág. 3 · Card Sala Tiradentes'],['esp_p3_ex','Pág. 3 · Card Espaço Vista Exclusivo'],['esp_p4_vista','Pág. 4 · Faixa do topo — Salão Vista'],['esp_p4_real','Pág. 4 · Faixa do topo — Salão Real'],['esp_p4_serra','Pág. 4 · Faixa do topo — Serra do Curral'],['esp_p6_t1','Exclusivo · Faixa do topo — 1ª foto'],['esp_p6_t2','Exclusivo · Faixa do topo — 2ª foto'],['esp_p6_t3','Exclusivo · Faixa do topo — 3ª foto'],['esp_p6_g1','Exclusivo · Grid — Salão Vista'],['esp_p6_g2','Exclusivo · Grid — Salão Real'],['esp_p6_g3','Exclusivo · Grid — Serra do Curral'],['esp_p6_g4','Exclusivo · Grid — Sala Ouro Preto'],['esp_p6_g5','Exclusivo · Grid — Sala Mariana'],['esp_p6_g6','Exclusivo · Grid — Sala Tiradentes'],['esp_p9_1','Pág. Informações gerais · Faixa do topo — 1ª foto'],['esp_p9_2','Pág. Informações gerais · Faixa do topo — 2ª foto'],['esp_p9_3','Pág. Informações gerais · Faixa do topo — 3ª foto'],['esp_buf1','Buffet · foto reserva 1'],['esp_buf2','Buffet · foto reserva 2'],['esp_buf3','Buffet · foto reserva 3']];
-ESP_MIDIA_KEYS.push(['bz_capa','Buffet · Capa (fundo escuro)'],['bz_fundo2','Buffet · Página 2 (fundo escuro)'],['bz_fundo9','Buffet · Última página (fundo escuro)'],['bz_p3','Buffet · Resumo (foto vertical)'],['bz_cb1','Buffet · Coffee break foto 1'],['bz_cb2','Buffet · Coffee break foto 2'],['bz_cb3','Buffet · Coffee break foto 3'],['bz_al1','Buffet · Almoço foto 1'],['bz_al2','Buffet · Almoço foto 2'],['bz_al3','Buffet · Almoço foto 3'],['bz_pr1','Buffet · Almoço premium foto 1'],['bz_pr2','Buffet · Almoço premium foto 2'],['bz_pr3','Buffet · Almoço premium foto 3']);
+ESP_MIDIA_KEYS.push(['bz_capa','Buffet · Capa (fundo escuro)'],['bz_fundo2','Buffet · Página 2 (fundo escuro)'],['bz_fundo9','Buffet · Última página (fundo escuro)'],['bz_p3','Buffet · Resumo foto 1'],['bz_p3b','Buffet · Resumo foto 2'],['bz_p3c','Buffet · Resumo foto 3'],['bz_cb1','Buffet · Coffee break foto 1'],['bz_cb2','Buffet · Coffee break foto 2'],['bz_cb3','Buffet · Coffee break foto 3'],['bz_al1','Buffet · Almoço foto 1'],['bz_al2','Buffet · Almoço foto 2'],['bz_al3','Buffet · Almoço foto 3'],['bz_pr1','Buffet · Almoço premium foto 1'],['bz_pr2','Buffet · Almoço premium foto 2'],['bz_pr3','Buffet · Almoço premium foto 3']);
 ESP_MIDIA_KEYS.forEach(k=>HH_MIDIA_KEYS.push(k));
-const ESP_FALLBACK = {esp_p3_pl:'esp_vista',esp_p3_om:'esp_ouro',esp_p3_tira:'esp_tira',esp_p3_ex:'esp_serra',esp_p4_vista:'esp_vista',esp_p4_real:'esp_real',esp_p4_serra:'esp_serra',esp_p6_t1:'esp_vista',esp_p6_t2:'esp_real',esp_p6_t3:'esp_serra',esp_p6_g1:'esp_vista',esp_p6_g2:'esp_real',esp_p6_g3:'esp_serra',esp_p6_g4:'esp_ouro',esp_p6_g5:'esp_mariana',esp_p6_g6:'esp_tira',esp_p9_1:'esp_vista',esp_p9_2:'esp_serra',esp_p9_3:'esp_ouro', esp_capa:'esp_vista', esp_exp:'esp_vista', esp_real:'esp_vista', esp_serra:'esp_vista', esp_ouro:'esp_vista', esp_mariana:'esp_ouro', esp_tira:'esp_ouro', esp_mid1:'esp_serra', esp_mid2:'esp_serra', esp_mid3:'esp_serra', esp_mid4:'esp_serra', esp_fundo:'foto1', esp_contato:'esp_ouro', esp_vista:'foto1', esp_buf1:'foto3', esp_buf2:'foto3', esp_buf3:'foto3', bz_capa:'esp_buf2', bz_fundo2:'esp_buf1', bz_fundo9:'esp_serra', bz_p3:'esp_buf1', bz_cb1:'esp_buf1', bz_cb2:'esp_buf2', bz_cb3:'esp_buf3', bz_al1:'esp_buf1', bz_al2:'esp_buf2', bz_al3:'esp_buf3', bz_pr1:'esp_buf1', bz_pr2:'esp_buf2', bz_pr3:'esp_buf3'};
+const ESP_FALLBACK = {esp_p3_pl:'esp_vista',esp_p3_om:'esp_ouro',esp_p3_tira:'esp_tira',esp_p3_ex:'esp_serra',esp_p4_vista:'esp_vista',esp_p4_real:'esp_real',esp_p4_serra:'esp_serra',esp_p6_t1:'esp_vista',esp_p6_t2:'esp_real',esp_p6_t3:'esp_serra',esp_p6_g1:'esp_vista',esp_p6_g2:'esp_real',esp_p6_g3:'esp_serra',esp_p6_g4:'esp_ouro',esp_p6_g5:'esp_mariana',esp_p6_g6:'esp_tira',esp_p9_1:'esp_vista',esp_p9_2:'esp_serra',esp_p9_3:'esp_ouro', esp_capa:'esp_vista', esp_exp:'esp_vista', esp_real:'esp_vista', esp_serra:'esp_vista', esp_ouro:'esp_vista', esp_mariana:'esp_ouro', esp_tira:'esp_ouro', esp_mid1:'esp_serra', esp_mid2:'esp_serra', esp_mid3:'esp_serra', esp_mid4:'esp_serra', esp_fundo:'foto1', esp_contato:'esp_ouro', esp_vista:'foto1', esp_buf1:'foto3', esp_buf2:'foto3', esp_buf3:'foto3', bz_capa:'esp_buf2', bz_fundo2:'esp_buf1', bz_fundo9:'esp_serra', bz_p3:'esp_buf1', bz_p3b:'bz_cb2', bz_p3c:'bz_al3', bz_cb1:'esp_buf1', bz_cb2:'esp_buf2', bz_cb3:'esp_buf3', bz_al1:'esp_buf1', bz_al2:'esp_buf2', bz_al3:'esp_buf3', bz_pr1:'esp_buf1', bz_pr2:'esp_buf2', bz_pr3:'esp_buf3'};
 const ESP_ROWS = {
   mid:[['equip','Pacote de 6 Tvs - Entrada + Salão Real','Pacote 6 TVs · 3 na Entrada (Jardim Vertical) + 3 no Salão Real'],['equip','Pacote 3 TVs - Jardim Vertical','Pacote 3 TVs · Entrada (Jardim Vertical)'],['equip','Pacote 3 TV´s - Salão Real','Pacote 3 TVs · Salão Real (Foyer)'],['equip','Totem com TV 4K 49"','TV 4K 49" com pedestal'],['equip','Porta banner','Porta banner']],
   eq1:[['equip','Link dedicado 50 MB','Internet link dedicado (50 Mb)'],['equip','Link dedicado 100mb','Internet link dedicado (100 Mb)'],['equip','Microfone adicional sem fio','Microfone adicional sem fio'],['equip','Notebook','Notebook'],['equip','Púlpito','Púlpito'],['equip','Palco 5m x 2m','Palco 5m x 2m (h: 25 cm)'],['equip','Palco 7m x 2m','Palco 7m x 2m (h: 25 cm)'],['equip','Monitor de palco 27 polegadas','Monitor de retorno 27"'],['equip','Passador de slide','Passador de slide']],
