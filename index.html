@@ -2163,9 +2163,9 @@ const HH_MIDIA_KEYS = [['foto1','Foto 1 — salão'],['foto2','Foto 2 — vista'
 const HH_LINKS = [['whatsapp','WhatsApp'],['instagram','Instagram'],['video','Vídeo institucional'],['tour','Tour virtual'],['mapa','Localização (Google Maps)']];
 let HHS = null;          // proposta aberta
 let HH_DIRTY = false;
-/* WhatsApp Desktop quebra emojis de 4 bytes ao abrir o link wa.me: troca os mais comuns por equivalentes de 3 bytes e remove o resto */
-const WA_EMO = {'😊':'☺️','🙂':'☺️','😀':'☺️','😃':'☺️','😉':'☺️','👉':'➡️','👇':'⬇️','👍':'✅','🙏':'✨','🎉':'✨','🥂':'✨'};
-function waSafe(t){ return String(t).replace(/[\u{10000}-\u{10FFFF}]/gu, c=>WA_EMO[c]||''); }
+/* O link de pré-preenchimento do WhatsApp (wa.me) corrompe emojis (testado: até os de 3 bytes). Troca por texto equivalente e remove o resto. */
+const WA_EMO = {'😊':':)','🙂':':)','😀':':)','😃':':)','😉':';)','☺':':)','👉':'→','➡':'→','👇':'↓','⬇':'↓'};
+function waSafe(t){ return String(t).replace(/[\u{10000}-\u{10FFFF}\u2600-\u27BF\u2B00-\u2BFF]\uFE0F?|\uFE0F|\u200D/gu, c=>WA_EMO[c.replace(/\uFE0F/g,'')]||'').replace(/ {2,}/g,' ').replace(/ +\n/g,'\n'); }
 const HH_LINKS_DEF = {whatsapp:'https://wa.me/553136438566', instagram:'https://www.instagram.com/ovistabh/', video:'https://www.youtube.com/watch?v=5AcGcGPCFOI', tour:'https://my360.com.br/3d-model/espaco-vista-formato-empresarial/fullscreen/', mapa:'https://www.google.com.br/maps/place/Espa%C3%A7o+Vista/@-19.9623506,-43.9634134,17z/data=!3m1!4b1!4m6!3m5!1s0xa697eaf9e9bc05:0x7b635f90c5f7be2a!8m2!3d-19.9623557!4d-43.9608385!16s%2Fg%2F12ml2l58r'};
 let MIDIA = {fotos:{},links:{},aj:{}};
 const VALIDADE_DIAS = 10;
