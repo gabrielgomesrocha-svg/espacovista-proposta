@@ -134,7 +134,7 @@ function simItems(id){
   if(id==='sala') return g.filter(n=>/^Serviço de sala:/.test(n) || n==='Red Bull (unidade)');
   if(id==='coffee') return g.filter(n=>/^Coffee Break:/.test(n) && SIM_NOSUG(n));
   if(id==='almoco') return g.filter(n=>/^Almoço:/.test(n) && SIM_NOSUG(n));
-  if(id==='hh') return g.filter(n=>/^(Butiquim Vista|Coquetel Vista):/.test(n));
+  if(id==='hh') return g.filter(n=>/^(Butiquim Vista|Coquetel Vista): Opção/.test(n));
   if(id==='sobremesa') return BUF_SOB.map(s=>s[0]).filter(n=>g.indexOf(n)>=0);
   if(id==='equip') return DATA.equip.map(i=>i.name);
   if(id==='serv') return DATA.serv.map(i=>i.name);
