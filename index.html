@@ -2239,6 +2239,9 @@ function hhLinksHtml(h){
 function hhPrintView(html){ return html.replace('</head>','<script>(function(){function z(){document.documentElement.style.zoom=Math.min(1,innerWidth/1920)}z();addEventListener("resize",z);addEventListener("beforeprint",function(){document.documentElement.style.zoom=1});addEventListener("afterprint",z)})()<\/script></head>'); }
 function dtsHtml(arr,add,del){ return (arr||[]).map((d,i)=>'<span class="dt-chip">'+new Date(d+'T12:00:00').toLocaleDateString('pt-BR')+'<b title="Remover" onclick="I2.'+del+'('+i+')">×</b></span>').join('')+'<input type="date" title="Escolha uma data para adicionar" onchange="I2.'+add+'(this.value);this.value=\'\'">'; }
 function dtsAdd(arr,v){ const a = (arr||[]).slice(); if(v && a.indexOf(v)<0) a.push(v); return a.sort(); }
+function hhSimCfg(h){ const sp = DATA.spaces[ESP_SALAS.vista.sp]; const hh = simItems('hh'), jan = simItems('jantar'); const g = ['sala','coffee','sobremesa'].reduce((a,id)=>a.concat(simItems(id)),[]).concat(hh, jan);
+  return {mode:'conf', cli:h.cliente, datas:(h.datas||[]).slice(), n:Math.floor(num(h.convidados)), spaces: sp ? [{name:sp.name, desc:sp.desc||''}] : [], gast:g, sob:simItems('sobremesa'), equip:simItems('equip'), serv:simItems('serv'), desc:simDescMap(hh.concat(jan))}; }
+window.__hhSim = () => ({cfg:hhSimCfg(HHS), html:hhLinkHtml(HHS,{})});
 function hhNew(){ return {id:uid(), tipo:'coq', modo:'conf', cliente:'', contato:'', fone:'', email:'', convidados:'', datas:[], tabela:'', horas:5, docs:{coq:true,but:true}, meta:{criado:new Date().toISOString(),catV:2}}; }
 
 /* ── extras do Coquetel: preço vem do Catálogo (Tabela da proposta + faixa por nº de convidados); fallback = valor antigo ── */
@@ -2516,7 +2519,7 @@ Object.assign(I2,{
       const fotos = await hhPublishMedia(), now = new Date().toISOString(), token = hhToken();
       HHS.meta.enviadoEm = now; HHS.meta.token = token; HHS.meta.salvoEm = now;
       const html = hhLinkHtml(HHS, fotos);
-      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:HHS.id, tipo:'coq', cliente:HHS.cliente, titulo:'Proposta — '+HHS.cliente, html:html, enviado_em:now, created_by_email:Store.email()}});
+      await Store.api('sent_links',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:token, proposal_id:HHS.id, tipo:'coq', cliente:HHS.cliente, titulo:'Proposta — '+HHS.cliente, html:html, sim:hhSimCfg(HHS), enviado_em:now, created_by_email:Store.email()}});
       HHS.meta.links = (HHS.meta.links||[]).concat([{token:token, em:now}]);
       await Store.save(HHS, hhFirstTotal(HHS));
       hhSet(false); hhShowLink(token, now, {cli:HHS.cliente, nome:HHS.contato, fone:HHS.fone, email:HHS.email});
@@ -2951,8 +2954,8 @@ const ESP_ROWS = {
 const ESP_MONT = 'Diária de montagem / desmontagem';
 function espSimCfg(e){
   const sp = Object.keys(ESP_SALAS).sort((a,b)=>(e.salas[b]?1:0)-(e.salas[a]?1:0)).map(k=>DATA.spaces[ESP_SALAS[k].sp]).filter(Boolean).map(x=>({name:x.name, desc:x.desc||''}));
-  const g = ['sala','coffee','almoco','sobremesa','hh'].reduce((a,id)=>a.concat(simItems(id)),[]);
-  return {cli:e.cliente, datas:(e.datas||[]).slice(), n:Math.floor(num(e.convidados)), spaces:sp, gast:g, sob:simItems('sobremesa'), equip:simItems('equip'), serv:simItems('serv')};
+  const g = ['sala','coffee','almoco','sobremesa','hh','jantar'].reduce((a,id)=>a.concat(simItems(id)),[]);
+  return {cli:e.cliente, datas:(e.datas||[]).slice(), n:Math.floor(num(e.convidados)), spaces:sp, gast:g, sob:simItems('sobremesa'), equip:simItems('equip'), serv:simItems('serv'), desc:simDescMap(simItems('jantar'))};
 }
 function espNew(){ return {id:uid(), tipo:'esp', cliente:'', contato:'', fone:'', email:'', tabela:'', convidados:'', datas:[], docs:{esp:true,buf:true}, salas:{vista:true,ouro:true,tira:true,excl:true}, meta:{criado:new Date().toISOString(),catV:2}}; }
 function espSp(e,k){ const info = tableInfo(e.tabela); const sp = DATA.spaces[ESP_SALAS[k].sp]; if(!info || !sp) return null; const v = info.esp(sp.name); return {total:v.total, teto:v.teto, base:r2(v.total - v.teto)}; }
@@ -3069,10 +3072,12 @@ const SIM_KEY = 'sim_recebidos_teste';
 let SIM = null;
 const SIM_DAYF = ['data','chegada','inicio','termino','salas','coffee','gast','equip','serv'];
 let CD = 0;
+function simDescMap(names){ const m = {}; names.forEach(n=>{ const it = DATA.gast.find(x=>x.name===n); if(it && it.desc) m[n] = String(it.desc).trim(); }); return m; }
 function simDayNew(dt){ return {data:dt||'', chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}}; }
 function simBind(o){ const E = simDayNew(); SIM_DAYF.forEach(k=>Object.defineProperty(o,k,{configurable:true,enumerable:false,get(){ return (o.dias[CD]||E)[k]; },set(v){ if(o.dias[CD]) o.dias[CD][k] = v; }})); return o; }
+function simConf(){ return !!(window.SIM_CFG && window.SIM_CFG.mode==='conf'); }
 function simNew(){ let datas; if(window.SIM_CFG) datas = (window.SIM_CFG.datas||[]).slice(); else { const d = new Date(); d.setDate(d.getDate()+45); datas = [d.toISOString().slice(0,10)]; }
-  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:0, igual:undefined, dias:[], obs:'', fone:'', contato:'', email:'', step:0, sent:false}); }
+  return simBind({v:2, cli: window.SIM_CFG ? window.SIM_CFG.cli : 'Empresa Exemplo Ltda', n: window.SIM_CFG ? window.SIM_CFG.n : 60, datas, ndias:simConf()?1:0, igual:undefined, dias:simConf()?[(function(){ const d0 = simDayNew(datas[0]||''); const sp = (window.SIM_CFG.spaces||[])[0]; if(sp) d0.salas = {[sp.name]:true}; return d0; })()]:[], obs:'', fone:'', contato:'', email:'', step:0, sent:false}); }
 let SIM_ST = 'sim_estado_teste';
 function simLoad(){ try{ const o = JSON.parse(localStorage.getItem(SIM_ST)||'null'); if(o && o.v===2 && o.cli && Array.isArray(o.dias) && (!o.sent || window.SIM_CFG)){ return simBind(o); } }catch(e){} return null; }
 function simPersist(){ try{ if(SIM && (!SIM.sent || window.SIM_CFG)) localStorage.setItem(SIM_ST, JSON.stringify(SIM)); else localStorage.removeItem(SIM_ST); }catch(e){} }
@@ -3112,7 +3117,8 @@ function simMulti(){ return simNd()>1 && !SIM.igual; }
 function simEmailOk(){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String((SIM&&SIM.email)||'').trim()); }
 function simFoneOk(){ return String((SIM&&SIM.fone)||'').replace(/\D/g,'').length>=10; }
 function simHasCoq(k){ const ds = (SIM&&SIM.dias)||[]; const f = d=>Object.keys((d&&d.gast)||{}).some(n=>/^Coquetel Vista: Opção/.test(n)); return k==null ? ds.some(f) : f(ds[k]); }
-function simSeq(){ const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>{ a.push({id:id,day:0}); if(id==='hh' && simHasCoq()) a.push({id:'jantar',day:0}); }); a.push({id:'obs',day:0},{id:'fone',day:0},{id:'resumo',day:0}); return a; }
+function simSeq(){ if(simConf()){ const ids = ['hor','hh']; if(simHasCoq()) ids.push('jantar'); return ids.concat(['sobremesa','sala','coffee','equip','serv','obs','fone','resumo']).map(id=>({id:id,day:0})); }
+  const a = [{id:'dias',day:0}]; if(simNd()>1) a.push({id:'igual',day:0}); SIM_PER.forEach(id=>{ a.push({id:id,day:0}); if(id==='hh' && simHasCoq()) a.push({id:'jantar',day:0}); }); a.push({id:'obs',day:0},{id:'fone',day:0},{id:'resumo',day:0}); return a; }
 function simSync(){ if(SIM && SIM.igual && SIM.dias.length>1){ const b = SIM.dias[0]; for(let k=1;k<SIM.dias.length;k++){ const c = JSON.parse(JSON.stringify(b)); c.data = SIM.dias[k].data; SIM.dias[k] = c; } } }
 function simSteps(){ return simSeq().map(x=>x.id); }
 function simDayOf(i){ const x = simSeq()[i]; return x ? x.day : 0; }
@@ -3120,13 +3126,13 @@ function simDt(d){ return d ? new Date(d+'T12:00:00').toLocaleDateString('pt-BR'
 function simDayHead(k){ const d = SIM.dias[k]||{}; return 'Dia '+(k+1)+(d.data?' · '+simDt(d.data):''); }
 const SIM_Q = {
   dias:()=>{ const ds = (SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})); return 'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar o seu evento'+(ds.length?' de <b>'+ds.join('</b> e <b>')+'</b>':'')+' para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.<br><br>Para começar: <b>quantos dias terá o evento?</b>'; },
-  hor:()=>simMulti() ? 'Primeiro, o horário de cada dia. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>' : 'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>',
+  hor:()=>simConf() ? 'Olá, <b>'+esc(SIM.cli)+'</b>! 👋 Vou te ajudar a montar a sua <b>confraternização</b> no <b>Salão Vista · Salão Real · Espaço Serra do Curral</b>'+((SIM.datas||[]).length?' no dia <b>'+(SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})).join('</b> e <b>')+'</b>':'')+', para <b>'+SIM.n+' convidados</b>. São poucas perguntas — você marca só o que quiser e nossa equipe cuida dos valores e finaliza tudo com você.<br><br>Para começar: <b>a que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>' : simMulti() ? 'Primeiro, o horário de cada dia. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>' : 'Primeiro, o horário. <b>A que horas o seu pessoal chega</b> e <b>a que horas é a saída?</b>',
   igual:()=>'Os <b>'+SIM.ndias+' dias</b> terão <b>exatamente a mesma configuração</b> (horário, espaço, gastronomia e equipamentos)? Se sim, eu <b>duplico tudo</b> para todos os dias e você responde só uma vez.',
   espaco:()=>'Qual <b>espaço</b> combina com o seu evento? É só tocar na opção.',
   sala:()=>'Vamos ao <b>serviço de sala</b>. O que você quer deixar à disposição dos convidados?',
   coffee:()=>'Vai querer <b>coffee break</b>? Quantos <b>momentos</b> ao longo do evento? Para cada um, escolha a categoria e o horário.',
   almoco:()=>'E <b>almoço</b>? Escolha a categoria.',
-  hh:()=>'Que tal um <b>happy hour</b> para fechar o dia? Escolha o formato.',
+  hh:()=>simConf() ? 'Qual <b>cardápio</b> você prefere para a confraternização? Escolha entre a <b>Comida de Buteco</b> e o <b>Coquetel</b> — opções 1, 2 ou 3.' : 'Que tal um <b>happy hour</b> para fechar o dia? Escolha o formato.',
   jantar:()=>'Para o seu <b>coquetel</b>, quer incluir também uma opção de <b>jantar</b>? Escolha uma das opções ou toque em <b>Sem jantar</b>.',
   sobremesa:()=>'Alguma <b>sobremesa</b>?',
   equip:()=>'Agora os <b>equipamentos</b>. O espaço já inclui o básico — marque o que precisar a mais.',
@@ -3159,7 +3165,7 @@ function simTime(f){
   return '<span class="sim-tm"><select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+ho+'</select>:<select onchange="I2.simTm(\''+f+'\',this.parentNode)">'+mo+'</select></span>';
 }
 function simCfTime(i){ const v = SIM.coffee[i].hora||'', p = v.split(':'), h = p[0]||'', m = p[1]||'00'; let ho = '<option value="">--</option>', mo = ''; for(let k=6;k<23;k++){ const t = String(k).padStart(2,'0'); ho += '<option'+(t===h?' selected':'')+'>'+t+'</option>'; } for(let k=0;k<60;k+=5){ const t = String(k).padStart(2,'0'); mo += '<option'+(t===m?' selected':'')+'>'+t+'</option>'; } return '<span class="sim-tm"><select onchange="I2.simCfTm('+i+',this.parentNode)">'+ho+'</select>:<select onchange="I2.simCfTm('+i+',this.parentNode)">'+mo+'</select></span>'; }
-function simJanDesc(n){ const it = DATA.gast.find(x=>x.name===n); const d = it && it.desc ? String(it.desc).trim() : ''; return d ? '<small style="display:block;font-weight:400;opacity:.8;font-size:11px;margin-top:2px">'+esc(d)+'</small>' : ''; }
+function simJanDesc(n){ const it = DATA.gast.find(x=>x.name===n); const d = it && it.desc ? String(it.desc).trim() : ((window.SIM_CFG&&window.SIM_CFG.desc&&window.SIM_CFG.desc[n])||''); return d ? '<small style="display:block;font-weight:400;opacity:.8;font-size:11px;margin-top:2px">'+esc(d)+'</small>' : ''; }
 function simCtl(id, multi){
   if(id==='hor'){ const dts = SIM.datas||[]; return (!dts[CD] ? '<div class="sim-row" style="margin-bottom:10px"><label>Data'+'<input type="date" value="'+esc(SIM.data)+'" onchange="I2.simDt(this.value)"></label></div>' : '')+'<div class="sim-row"><label>Chegada no Espaço'+simTime('chegada')+'</label><label>Saída do Espaço'+simTime('termino')+'</label></div>'; }
   if(id==='espaco') return '<div class="sim-cards">'+DATA.spaces.map(sp=>{ const e = simEsp(sp.name); return '<div class="sim-card'+(SIM.salas[sp.name]?' on':'')+'" onclick="I2.simPick(this.dataset.n)" data-n="'+esc(sp.name)+'"><b>'+esc(e.t)+'</b>'+(e.cap?'<small>'+esc(e.cap)+'</small>':'')+'<i>'+(SIM.salas[sp.name]?'✔ Escolhido':'Escolher →')+'</i></div>'; }).join('')+'</div>'+(multi?'':'<div class="sim-act"><button class="btn btn-o btn-sm" onclick="I2.simPick(\'\')">Ainda não sei — quero ajuda para escolher</button></div>');
@@ -3172,7 +3178,7 @@ function simCtl(id, multi){
     return h;
   }
   const grp = SIM_GRP[id], its = simItems(id), qty = grp!=='gast', one1 = id==='almoco'||id==='hh'||id==='jantar';
-  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.'+(one1?'simOne(\''+id+'\'':'simTog(\''+grp+'\'')+',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+(id==='jantar'?simJanDesc(n):'')+'</span>'+(qty&&on&&!SIM_ONE.test(n)?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button'+(SIM[grp][n]>=simMax(n)?' disabled style="opacity:.35"':'')+' onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
+  const chips = its.map(n=>{ const on = !!SIM[grp][n]; return '<div class="sim-chip'+(on?' on':'')+'" data-n="'+esc(n)+'" onclick="I2.'+(one1?'simOne(\''+id+'\'':'simTog(\''+grp+'\'')+',this.dataset.n)"><span>'+(on?'✔ ':'')+esc(simLabel(id,n))+((id==='jantar'||(id==='hh'&&simConf()))?simJanDesc(n):'')+'</span>'+(qty&&on&&!SIM_ONE.test(n)?'<em onclick="event.stopPropagation()"><button onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,-1)">−</button>'+SIM[grp][n]+'<button'+(SIM[grp][n]>=simMax(n)?' disabled style="opacity:.35"':'')+' onclick="I2.simQty(\''+grp+'\',this.closest(\'.sim-chip\').dataset.n,1)">+</button></em>':'')+'</div>'; }).join('');
   return '<div class="sim-chips">'+chips+'</div>';
 }
 function simHasAny(id){ const g = SIM_GRP[id]; if(id==='coffee') return SIM.coffee.length>0; if(id==='espaco') return Object.keys(SIM.salas).length>0; if(!g) return false; return simItems(id).some(n=>SIM[g][n]); }
@@ -3197,13 +3203,13 @@ function simControls(id){
 function simSummary(){
   const row = (t,v)=> v ? '<div class="sim-s"><small>'+t+'</small><div>'+v+'</div></div>' : '';
   const nm = id => { const x = simItems(id).filter(n=>SIM[SIM_GRP[id]][n]); return x.length ? x.map(n=>esc(simLabel(id,n))+(SIM_GRP[id]!=='gast'&&SIM[SIM_GRP[id]][n]>1?' ×'+SIM[SIM_GRP[id]][n]:'')).join('<br>') : ''; };
-  const dts = (SIM.datas||[]).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR')).join(' e ');
-  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row('Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('Contato',esc((SIM.contato||'')+(SIM.contato?'<br>':'')+SIM.fone)+(SIM.email?'<br>'+esc(SIM.email):'')):'');
+  const dts = (SIM.datas&&SIM.datas.length ? SIM.datas : SIM.dias.map(d=>d.data).filter(Boolean)).map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR')).join(' e ');
+  let h = '<div class="sim-sum"><b>Sua simulação</b>'+row(simConf()?'Confraternização':'Evento',esc(SIM.cli)+(dts?'<br>'+dts:'')+'<br>'+SIM.n+' convidados')+(SIM.fone?row('Contato',esc(SIM.contato||'')+(SIM.contato?'<br>':'')+esc(SIM.fone)+(SIM.email?'<br>'+esc(SIM.email):'')):'');
   const keep = CD; const list = SIM.igual ? [0] : SIM.dias.map((_,k)=>k);
   list.forEach(k=>{ CD = k;
     h += (SIM.dias.length>1 ? '<div class="sim-dh">'+(SIM.igual ? 'Todos os '+SIM.dias.length+' dias (iguais)' : esc(simDayHead(k)))+'</div>' : '')
     + row('Horário', SIM.chegada||SIM.termino ? 'Chegada no Espaço '+(SIM.chegada||'--')+' · Saída do Espaço '+(SIM.termino||'--') : '')+row('Espaço',Object.keys(SIM.salas).map(n=>esc(simEsp(n).t)).join('<br>'))
-    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns1('coffee') : '')+row('Almoço',nm('almoco'))+row('Sobremesas',nm('sobremesa'))+row('Happy hour',nm('hh'))+row('Jantar',nm('jantar'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv')); });
+    +row('Serviço de sala',nm('sala'))+row('Coffee break',SIM.coffee.length ? simAns1('coffee') : '')+row('Almoço',nm('almoco'))+row('Sobremesas',nm('sobremesa'))+row(simConf()?'Cardápio':'Happy hour',nm('hh'))+row('Jantar',nm('jantar'))+row('Equipamentos',nm('equip'))+row('Serviços',nm('serv')); });
   CD = keep;
   return h+(SIM.obs?row('Observações',esc(SIM.obs)):'')+'<p class="sim-hint">Sem valores: nossa equipe monta a proposta final com você.</p></div>';
 }
@@ -3261,7 +3267,7 @@ Object.assign(I2,{
   simRe(){ SIM.sent = false; SIM.step = simSteps().length-1; simRender(); },
   async simRestart(){ const msg = 'Recomeçar a conversa do zero? As respostas dadas até agora serão apagadas.'; const ok = (typeof ask==='function') ? await ask(msg,'Recomeçar') : confirm(msg); if(!ok) return; SIM = simNew(); CD = 0; simPersist(); simRender(); window.scrollTo(0,0); },
   simReset(){ SIM = simNew(); simPersist(); simRender(); },
-  simSend(){ if(!simFoneOk() || !simEmailOk() || String(SIM.contato||'').trim().length<2){ say('Informe o seu nome, WhatsApp (com DDD) e e-mail antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM), pay = {cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, contato:SIM.contato, email:SIM.email, dias:JSON.parse(JSON.stringify(SIM.dias))};
+  simSend(){ if(!simFoneOk() || !simEmailOk() || String(SIM.contato||'').trim().length<2){ say('Informe o seu nome, WhatsApp (com DDD) e e-mail antes de enviar.'); SIM.step = simSteps().indexOf('fone'); simRender(); return; } const cnt = simCounts(SIM), pay = {cli:SIM.cli, n:SIM.n, obs:SIM.obs, fone:SIM.fone, contato:SIM.contato, email:SIM.email, dias:JSON.parse(JSON.stringify(SIM.dias))}; if(simConf()) pay.conf = true;
     const fin = ()=>{ SIM.sent = true; simRender(); say('Enviado ✔ — '+(cnt.sal+cnt.buf+cnt.eq+cnt.sv)+' item(ns) em "Orçamentos Recebidos".'); };
     if(typeof CLOUD!=='undefined' && CLOUD && !window.SIM_CFG){
       Store.api('orcamentos_recebidos',{method:'POST',headers:{Prefer:'return=minimal'},body:{token:'simulador-interno',cliente:pay.cli,payload:pay,status:'novo',envio_n:1}})
@@ -3270,9 +3276,9 @@ Object.assign(I2,{
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const p = newProposal(); if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
-      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d);
+      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d); if(x.conf) confSync(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
       grp(/^Serviço de sala:|^Red Bull/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
       (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
