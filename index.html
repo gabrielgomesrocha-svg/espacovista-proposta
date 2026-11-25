@@ -1042,7 +1042,7 @@ const Store = {
   },
   email(){ return CLOUD ? (this.sess&&this.sess.email)||'' : 'modo local'; },
   async list(){
-    if(CLOUD) return await this.api('proposals?select=id,cliente,total,updated_at,updated_by_email,tipo:data->>tipo,links:data->meta->links,arquivado&order=updated_at.desc&limit=500');
+    if(CLOUD) return await this.api('proposals?select=id,cliente,total,updated_at,updated_by_email,tipo:data->>tipo,links:data->meta->links,rec:data->meta->recebido->>em,ver:data->meta->>versao,grp:data->meta->>grupo,base:data->meta->>base,arquivado&order=updated_at.desc&limit=500');
     let idx = []; try{ idx = JSON.parse(LS.get('inv2_index')||'[]'); }catch(e){}
     return idx.sort((a,b)=>(b.updated_at||'').localeCompare(a.updated_at||''));
   },
@@ -1050,8 +1050,12 @@ const Store = {
     if(CLOUD){ const r = await this.api('proposals?id=eq.'+encodeURIComponent(id)+'&select=data'); return r && r[0] ? r[0].data : null; }
     try{ return JSON.parse(LS.get('inv2_p_'+id)||'null'); }catch(e){ return null; }
   },
-  async save(p,total){
+  async save(p,total,opt){
     const now = new Date().toISOString();
+    if(CLOUD && !(opt&&opt.orig) && p.meta && p.meta.recebido){   /* editou um orçamento recebido: o original fica intacto e vira uma nova versão */
+      const orig = p.id, rc = p.meta.recebido; let n = 2; try{ n = (await this.list()).filter(x=>x.base===orig).length + 2; }catch(e){}
+      p.id = uid(); p.meta = Object.assign({}, p.meta, {versao:n, base:orig, deOrc:{orcId:rc.orcId, em:rc.em}}); delete p.meta.recebido; delete p.meta.token; delete p.meta.links; delete p.meta.enviadoEm;
+    }
     if(CLOUD){
       await this.api('proposals',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=minimal'},
         body:{id:p.id,cliente:p.cliente,total:total,data:p,token:(p.meta&&p.meta.token)||null,enviado_em:(p.meta&&p.meta.enviadoEm)||null,updated_at:now,updated_by_email:this.email()}});
@@ -1530,7 +1534,7 @@ const I2 = {
     I2._sel = I2._sel || new Set(); const ids = new Set((I2._list||[]).map(x=>x.id)); I2._sel.forEach(i=>{ if(!ids.has(i)) I2._sel.delete(i); });
     const nSel = l.filter(x=>I2._sel.has(x.id)).length, all = l.length>0 && nSel===l.length;
     const bar = l.length ? `<div class="i2-bulk"><label><input type="checkbox" ${all?'checked':''} onchange="I2.cliSelAll(this.checked)"><span>Selecionar todos (${l.length})</span></label>${nSel?`<span class="n">${nSel} selecionado(s)</span><button class="btn btn-o btn-sm" onclick="I2.cliArqSel()">${arq?'📤 Desarquivar':'📦 Arquivar'} selecionados</button><button class="btn btn-sm i2-bulk-del" onclick="I2.cliDelSel()">🗑 Excluir selecionados</button>`:''}</div>` : '';
-    const G = new Map(); l.forEach(x=>{ const k = norm(String(x.cliente||'').replace(/\s+/g,' ').trim()) || '(sem nome)'; if(!G.has(k)) G.set(k,{name:String(x.cliente||'').replace(/\s+/g,' ').trim()||'(sem nome)',items:[]}); G.get(k).items.push(x); });
+    const G = new Map(); const refs = new Set((I2._list||[]).map(x=>x.grp).filter(Boolean)); l.slice().sort((a,b)=>String(a.updated_at||'').localeCompare(String(b.updated_at||''))*-1).forEach(x=>{ const k = x.grp || (refs.has(x.id) ? 'g:'+x.id : (norm(String(x.cliente||'').replace(/\s+/g,' ').trim()) || '(sem nome)')); if(!G.has(k)) G.set(k,{name:String(x.cliente||'').replace(/\s+/g,' ').trim()||'(sem nome)',items:[]}); G.get(k).items.push(x); });
     I2._gk = []; I2._gm = []; I2._col = I2._col || new Set();
     const rows = x => `<div class="i2-pl cli-r${I2._sel.has(x.id)?' sel':''}" onclick="I2.openFromClientes('${esc(x.id)}')"><input type="checkbox" class="i2-ck" ${I2._sel.has(x.id)?'checked':''} onclick="event.stopPropagation()" onchange="I2.cliSel('${esc(x.id)}',this.checked)"><div style="flex:1;min-width:0"><div class="n">${I2.cliTags(x)}</div><div class="m">Atualizado ${x.updated_at?new Date(x.updated_at).toLocaleString('pt-BR'):''}${x.updated_by_email?' · '+esc(x.updated_by_email):''}</div></div><div class="t">${money(x.total)}</div>
       <button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.openFromClientes('${esc(x.id)}',true)">Duplicar</button><button class="btn btn-o btn-sm" onclick="event.stopPropagation();I2.cliArq(['${esc(x.id)}'],${!arq})">${arq?'Desarquivar':'Arquivar'}</button><button class="x-btn" title="Excluir" onclick="event.stopPropagation();I2.delFromClientes('${esc(x.id)}')">×</button></div>`;
@@ -1542,6 +1546,8 @@ const I2 = {
   async openFromClientes(id,copy){ const l = document.querySelector('.sb-link[data-view=inv2]'); if(l) l.click(); await I2.open(id,copy); },
   cliTags(x){ const T = x.tipo==='esp' ? ['Espaço','#7a1712'] : x.tipo==='coq' ? ['Confraternização','#b25b00'] : ['Investimento','#444'];
     let h = '<span class="orc-t" style="background:'+T[1]+'">'+T[0]+'</span>'; const L = Array.isArray(x.links) ? x.links : [];
+    if(x.rec) h += '<span class="orc-t" style="background:#1565c0" title="Cópia fiel do que o cliente enviou — não é alterada">📥 ORÇAMENTO RECEBIDO · '+new Date(x.rec).toLocaleDateString('pt-BR')+'</span>';
+    if(x.ver) h += '<span class="orc-t" style="background:#6a3d9a" title="Versão editada a partir do orçamento recebido">V'+esc(x.ver)+'</span>';
     if(L.length){ const last = L[L.length-1], exp = new Date(new Date(last.em).getTime()+10*864e5), vivo = new Date() <= exp; h += '<span class="orc-t" style="background:'+(vivo?'#2e8b57':'#999')+'">'+(vivo?'🔗 LINK ENVIADO · VÁLIDO ATÉ '+exp.toLocaleDateString('pt-BR'):'LINK EXPIRADO EM '+exp.toLocaleDateString('pt-BR'))+'</span>'; }
     return h; },
   cliSel(id,on){ I2._sel = I2._sel || new Set(); on ? I2._sel.add(id) : I2._sel.delete(id); I2.cliDraw(); },
@@ -3276,7 +3282,9 @@ Object.assign(I2,{
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const oid = x._orc ? 'orc-'+x._orc.id : '';
+    if(oid){ let ex = null; try{ ex = await Store.get(oid); }catch(e){} if(ex){ dirty = false; await I2.openFromClientes(oid); say('Este orçamento já está salvo em Clientes (Orçamento recebido) — aberto o original. Suas edições viram nova versão ao salvar.'); return; } }
+    const p = newProposal(); if(oid){ p.id = oid; p.meta.recebido = {orcId:x._orc.id, em:x._orc.em||new Date().toISOString(), n:x._orc.n||1}; if(x._orc.proposal_id) p.meta.grupo = x._orc.proposal_id; } if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
       Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d); if(x.conf) confSync(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
@@ -3288,7 +3296,8 @@ Object.assign(I2,{
       Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
       Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
-    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.'); }
+    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.');
+    if(oid){ try{ await Store.save(P, calcAll().total, {orig:true}); dirty = false; LS.del('inv2_draft'); stateLabel(); I2._list = null; say('Salvo em Clientes como “Orçamento recebido”. Ao editar e salvar, vira uma nova versão (o original fica intacto).'); }catch(e){ say('Aberto, mas não foi possível salvar o original: '+e.message); } } }
 });
 /* ═════════ ORÇAMENTOS RECEBIDOS (reais — vindos da aba "Monte sua proposta" do link) ═════════ */
 let ORC = [];
@@ -3318,7 +3327,7 @@ function orcDraw(){
 function orcRender(){ if(!$('orc-list')) return; orcLoad().then(orcDraw); }
 Object.assign(I2,{
   orcRender, orcBadge, orcLoad, orcDraw,
-  async orcOpen(id){ const o = ORC.find(z=>z.id===id); if(!o) return; const x = Object.assign({}, o.payload); if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
+  async orcOpen(id){ const o = ORC.find(z=>z.id===id); if(!o) return; const x = Object.assign({}, o.payload, {_orc:{id:o.id, proposal_id:(o.token==='simulador-interno'?null:o.proposal_id)||null, em:o.enviado_em, n:o.envio_n}}); if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
     await I2.simOpenRec(x);
     try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{status:'aberto',visto_por:Store.email(),visto_em:new Date().toISOString()}}); o.status = 'aberto'; o.visto_por = Store.email(); orcBadge(); }catch(e){} },
   orcTab(t){ ORC_TAB = t; ORC_SEL.clear(); orcDraw(); },

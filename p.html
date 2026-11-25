@@ -328,7 +328,9 @@ Object.assign(I2,{
   simDel(i){ const l = simList(); l.splice(i,1); simSave(l); simRecv(); },
   async simOpen(i){ return I2.simOpenRec(simList()[i]); },
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
-    const p = newProposal(); if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    const oid = x._orc ? 'orc-'+x._orc.id : '';
+    if(oid){ let ex = null; try{ ex = await Store.get(oid); }catch(e){} if(ex){ dirty = false; await I2.openFromClientes(oid); say('Este orçamento já está salvo em Clientes (Orçamento recebido) — aberto o original. Suas edições viram nova versão ao salvar.'); return; } }
+    const p = newProposal(); if(oid){ p.id = oid; p.meta.recebido = {orcId:x._orc.id, em:x._orc.em||new Date().toISOString(), n:x._orc.n||1}; if(x._orc.proposal_id) p.meta.grupo = x._orc.proposal_id; } if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
     x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
       Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d); if(x.conf) confSync(d);
       const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
@@ -340,7 +342,8 @@ Object.assign(I2,{
       Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
       Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
     if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
-    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.'); }
+    const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.');
+    if(oid){ try{ await Store.save(P, calcAll().total, {orig:true}); dirty = false; LS.del('inv2_draft'); stateLabel(); I2._list = null; say('Salvo em Clientes como “Orçamento recebido”. Ao editar e salvar, vira uma nova versão (o original fica intacto).'); }catch(e){ say('Aberto, mas não foi possível salvar o original: '+e.message); } } }
 });
 
   SIM_ST = 'sim_' + token;
