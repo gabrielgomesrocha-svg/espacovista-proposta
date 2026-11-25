@@ -3078,6 +3078,33 @@ const SIM_KEY = 'sim_recebidos_teste';
 let SIM = null;
 const SIM_DAYF = ['data','chegada','inicio','termino','salas','coffee','gast','equip','serv'];
 let CD = 0;
+function simBuildProp(x){
+  const keepP = P; try{ return simBuildProp0(x); } finally { P = keepP; }
+}
+function simBuildProp0(x){
+    const oid = x._orc ? 'orc-'+x._orc.id : ''; const p = newProposal(); if(oid){ p.id = oid; p.meta.recebido = {orcId:x._orc.id, em:x._orc.em||new Date().toISOString(), n:x._orc.n||1}; if(x._orc.proposal_id) p.meta.grupo = x._orc.proposal_id; } if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
+    x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
+      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d); if(x.conf) confSync(d);
+      const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
+      grp(/^Serviço de sala:|^Red Bull/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+      (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
+      grp(/^Almoço:/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+      gk.filter(n=>!/^(Serviço de sala:|Red Bull|Almoço:|Coffee Break:|Butiquim Vista:|Coquetel Vista:)/.test(n)).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
+      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; d.gast.push(l); });
+      Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
+      Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
+    if(x.obs) p.obs += '\nObservações do cliente: '+x.obs;
+    return p;
+}
+function simTabelaIni(x){ return DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); }
+/* salva o orçamento recebido em Clientes sem abrir a tela (usado ao chegar) */
+async function simAutoSave(o){
+  const x = Object.assign({}, simNorm(o.payload), {_orc:{id:o.id, proposal_id:(o.token==='simulador-interno'?null:o.proposal_id)||null, em:o.enviado_em, n:o.envio_n}});
+  if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
+  const keep = P; let p, total = 0;
+  try{ p = simBuildProp(x); P = p; const tb = simTabelaIni(x); if(tb){ p.tabela = resolveTab(tb); applyTable(); } total = calcAll().total; } finally { P = keep; }
+  await Store.save(p, total, {orig:true});
+}
 function simDescMap(names){ const m = {}; names.forEach(n=>{ const it = DATA.gast.find(x=>x.name===n); if(it && it.desc) m[n] = String(it.desc).trim(); }); return m; }
 function simDayNew(dt){ return {data:dt||'', chegada:'', inicio:'', termino:'', salas:{}, coffee:[], gast:{}, equip:{}, serv:{}}; }
 function simBind(o){ const E = simDayNew(); SIM_DAYF.forEach(k=>Object.defineProperty(o,k,{configurable:true,enumerable:false,get(){ return (o.dias[CD]||E)[k]; },set(v){ if(o.dias[CD]) o.dias[CD][k] = v; }})); return o; }
@@ -3284,25 +3311,20 @@ Object.assign(I2,{
   async simOpenRec(x){ if(!x) return; x = simNorm(x); if(dirty && !(await ask('Há alterações não salvas no Investimento. Substituir pela simulação do cliente?','Substituir'))) return;
     const oid = x._orc ? 'orc-'+x._orc.id : '';
     if(oid){ let ex = null; try{ ex = await Store.get(oid); }catch(e){} if(ex){ dirty = false; await I2.openFromClientes(oid); say('Este orçamento já está salvo em Clientes (Orçamento recebido) — aberto o original. Suas edições viram nova versão ao salvar.'); return; } }
-    const p = newProposal(); if(oid){ p.id = oid; p.meta.recebido = {orcId:x._orc.id, em:x._orc.em||new Date().toISOString(), n:x._orc.n||1}; if(x._orc.proposal_id) p.meta.grupo = x._orc.proposal_id; } if(x.conf) p.modo = 'conf'; p.cliente = x.cli; p.fone = x.fone||''; p.contato = x.contato||''; p.email = x.email||''; p.convidados = String(x.n); p.tabela = ''; P = p; p.dias = [];
-    x.dias.forEach(dx=>{ const d = newDay(); p.dias.push(d); d.data = dx.data; d.chegada = dx.chegada; d.inicio = dx.inicio||dx.chegada; d.termino = dx.termino; d.espacos = [];
-      Object.keys(dx.salas||{}).forEach(nm=>{ const e = newEsp(); e.nome = nm; e.obs = obsPadrao(nm); d.espacos.push(e); }); if(!d.espacos.length) d.espacos.push(newEsp()); syncHE(d); if(x.conf) confSync(d);
-      const gk = Object.keys(dx.gast||{}), grp = (re)=>gk.filter(n=>re.test(n));
-      grp(/^Serviço de sala:|^Red Bull/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
-      (dx.coffee||[]).forEach(c=>{ if(!c.cat) return; const l = newLine('gast',{name:c.cat,src:'gast'}); l.hor = c.hora||''; d.gast.push(l); });
-      grp(/^Almoço:/).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
-      gk.filter(n=>!/^(Serviço de sala:|Red Bull|Almoço:|Coffee Break:|Butiquim Vista:|Coquetel Vista:)/.test(n)).forEach(nm=>d.gast.push(newLine('gast',{name:nm,src:'gast'})));
-      grp(/^(Butiquim Vista|Coquetel Vista):/).forEach(nm=>{ const l = newLine('gast',{name:nm,src:'gast'}); l.qtd = 1; d.gast.push(l); });
-      Object.keys(dx.equip||{}).forEach(nm=>{ const l = newLine('equip',{name:nm,src:'equip'}); l.qtd = dx.equip[nm]; d.equip.push(l); });
-      Object.keys(dx.serv||{}).forEach(nm=>{ const l = newLine('serv',{name:nm,src:'serv'}); l.qtd = dx.serv[nm]; d.serv.push(l); }); });
-    if(x.obs) p.obs += '\nObservações do cliente: '+x.obs; dirty = true;
+    const p = simBuildProp(x); P = p; dirty = true;
     const lk = document.querySelector('.sb-link[data-view=inv2]'); if(lk) lk.click(); renderTabelaSelect(); renderBody(); const tb = DATA.tables.find(t=>/^Tabela 1/.test(t) && t.indexOf(x.n>50?'a partir':'15 a 50')>=0); if(tb){ I2.setTabela(tb); } say('Simulação aberta no Investimento — Tabela 1 aplicada como ponto de partida; troque se precisar.');
     if(oid){ try{ await Store.save(P, calcAll().total, {orig:true}); dirty = false; LS.del('inv2_draft'); stateLabel(); I2._list = null; say('Salvo em Clientes como “Orçamento recebido”. Ao editar e salvar, vira uma nova versão (o original fica intacto).'); }catch(e){ say('Aberto, mas não foi possível salvar o original: '+e.message); } } }
 });
 /* ═════════ ORÇAMENTOS RECEBIDOS (reais — vindos da aba "Monte sua proposta" do link) ═════════ */
 let ORC = [];
 function orcBadge(){ const n = ORC.filter(o=>o.status==='novo' && !o.arquivado).length, l = document.querySelector('.sb-link[data-view=orc]'); if(!l) return; let b = l.querySelector('.sb-n'); if(!b){ b = document.createElement('span'); b.className = 'sb-n'; b.style.cssText = 'margin-left:auto;background:#d33;color:#fff;border-radius:999px;font-size:10px;font-weight:800;padding:2px 7px'; l.appendChild(b); } b.textContent = n; b.style.display = n ? '' : 'none'; }
-async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } await orcPurge(); orcBadge(); }
+async function orcLoad(){ if(!CLOUD){ ORC = []; orcBadge(); return; } try{ ORC = await Store.api('orcamentos_recebidos?select=*&order=enviado_em.desc&limit=200') || []; }catch(e){ return; } await orcPurge(); orcBadge(); orcAutoSave(); }
+let ORC_AS = false;
+/* todo orçamento que chega é salvo em Clientes (tag Orçamento recebido), sem precisar abrir */
+async function orcAutoSave(){ if(ORC_AS || !CLOUD) return; const pend = ORC.filter(o=>!o.salvo_em && !o.arquivado); if(!pend.length) return; ORC_AS = true; let n = 0;
+  try{ for(const o of pend){ try{ let ex = null; try{ ex = await Store.get('orc-'+o.id); }catch(e){ continue; } if(!ex){ await simAutoSave(o); n++; }
+      const t = new Date().toISOString(); await Store.api('orcamentos_recebidos?id=eq.'+o.id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{salvo_em:t}}); o.salvo_em = t; }catch(e){} }
+    if(n){ I2._list = null; if($('i2-cli-list') && $('i2-cli-list').offsetParent) I2.renderClientes(true); } } finally { ORC_AS = false; } }
 async function orcPurge(){ const lim = Date.now() - 10*864e5, old = ORC.filter(o=>o.arquivado && o.arquivado_em && new Date(o.arquivado_em).getTime() < lim).map(o=>o.id);
   if(old.length){ try{ await Store.api('orcamentos_recebidos?id=in.('+old.map(encodeURIComponent).join(',')+')',{method:'DELETE'}); ORC = ORC.filter(o=>old.indexOf(o.id)<0); }catch(e){} }
   const sem = ORC.filter(o=>o.arquivado && !o.arquivado_em).map(o=>o.id); if(sem.length){ const now = new Date().toISOString(); try{ await Store.api('orcamentos_recebidos?id=in.('+sem.map(encodeURIComponent).join(',')+')',{method:'PATCH',headers:{Prefer:'return=minimal'},body:{arquivado_em:now}}); ORC.forEach(o=>{ if(sem.indexOf(o.id)>=0) o.arquivado_em = now; }); }catch(e){} } }
@@ -3329,7 +3351,7 @@ Object.assign(I2,{
   orcRender, orcBadge, orcLoad, orcDraw,
   async orcOpen(id){ const o = ORC.find(z=>z.id===id); if(!o) return; const x = Object.assign({}, o.payload, {_orc:{id:o.id, proposal_id:(o.token==='simulador-interno'?null:o.proposal_id)||null, em:o.enviado_em, n:o.envio_n}}); if(o.envio_n>1) x.obs = (x.obs?x.obs+' — ':'')+'(reenvio nº '+o.envio_n+' do cliente)';
     await I2.simOpenRec(x);
-    try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{status:'aberto',visto_por:Store.email(),visto_em:new Date().toISOString()}}); o.status = 'aberto'; o.visto_por = Store.email(); orcBadge(); }catch(e){} },
+    try{ await Store.api('orcamentos_recebidos?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:{status:'aberto',visto_por:Store.email(),visto_em:new Date().toISOString(),salvo_em:o.salvo_em||new Date().toISOString()}}); o.status = 'aberto'; o.visto_por = Store.email(); orcBadge(); }catch(e){} },
   orcTab(t){ ORC_TAB = t; ORC_SEL.clear(); orcDraw(); },
   orcSel(id,on){ on ? ORC_SEL.add(id) : ORC_SEL.delete(id); orcDraw(); },
   orcSelAll(on){ orcVisible().forEach(o=>{ on ? ORC_SEL.add(o.id) : ORC_SEL.delete(o.id); }); orcDraw(); },
