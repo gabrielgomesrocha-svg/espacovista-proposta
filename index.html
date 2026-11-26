@@ -187,6 +187,10 @@ body.inv2-on .tb-acts{display:none}
 .i2-ln td.u{white-space:nowrap}
 .i2-ln td.u input{width:calc(100% - 22px)}
 .i2-ln td.u input.man{border-color:#E0A800;background:#FFFBEA}
+.i2-ln td input.dif{border-color:#C62828!important;background:#FDECEA!important;color:#B71C1C}
+.i2-ln td.st.dif{color:#C62828;font-weight:700;background:#FDECEA}
+.i2-ln b.chg{cursor:pointer;border-bottom:1px dashed transparent}.i2-ln b.chg i{font-style:normal;opacity:0;font-size:11px;color:var(--w)}.i2-ln b.chg:hover{border-bottom-color:var(--w)}.i2-ln b.chg:hover i{opacity:1}
+.i2-ln input.i2-rep{margin:0 0 4px;width:100%}
 .i2-ln td.st{text-align:right;font-weight:700;color:var(--dk);padding-top:11px;white-space:nowrap}
 .i2-ln td.x{padding-top:7px}
 .i2-reset{background:none;border:none;color:#E0A800;cursor:pointer;font-size:13px;padding:0 2px}
@@ -948,6 +952,17 @@ function newProposal(){
     obs:'Forma de pagamento: 50% na assinatura do contrato + 50% até 3 dias úteis antes do evento.',
     dias:[newDay()], extras:[], descs:[], hide:{credito:false,extras:false}, meta:{catV:2} };
 }
+const FLAGS = 'border-color:#C62828;background:#FDECEA;color:#B71C1C';
+function lineFlags(l,cat){ if(!l.base) return {u:false,q:false};
+  const u = !!l.man && r2(num(l.unit)) !== r2(unitFor(l.src||cat,l));
+  let qd = 1; if(cat==='gast' && !pkgInfo(l)) qd = isSobConsumo(l) ? 0 : num(P.convidados);
+  const q = !!l.qtdMan && num(l.qtd) !== qd;
+  return {u,q}; }
+function flagRow(row,l,cat){ if(!row) return; const f = lineFlags(l,cat), qi = row.querySelector('[data-k=qtd]'), ui = row.querySelector('[data-k=unit]'), st = row.querySelector('td.st');
+  if(qi) qi.classList.toggle('dif',f.q); if(ui) ui.classList.toggle('dif',f.u); if(st) st.classList.toggle('dif',f.u||f.q); }
+function espDif(e,k){ if(!e.nome || isConf()) return false; const info = tableInfo(P.tabela); if(!info) return false; const t = info.esp(e.nome);
+  return k==='valor' ? !!e.man && r2(num(e.valor))!==r2(t.total) : !!e.manTeto && r2(num(e.teto))!==r2(t.teto); }
+function heVhDif(e,d){ return !!e.he.vhMan && r2(num(e.he.vh)) !== r2(isConf() ? 0.2*pkgValue(d) : horaPadrao(e.nome)); }
 function isSobConsumo(l){ return /sob consumo/i.test(l.desc||''); }
 function newLine(cat,pick){
   // pick: {name, src, desc, manual}
@@ -1114,14 +1129,15 @@ function renderTabelaSelect(){
 const COLS2 = '<colgroup><col><col style="width:17%"><col style="width:74px"><col style="width:118px"><col style="width:108px"><col style="width:76px"></colgroup>';
 const COLS = '<colgroup><col><col style="width:17%"><col style="width:74px"><col style="width:118px"><col style="width:108px"><col style="width:28px"></colgroup>';
 function lineRow(dId,cat,l){
+  const fl = lineFlags(l,cat);
   const n = (k,v)=>`I2.ln('${dId}','${cat}','${l.id}','${k}',${v})`;
   return `<tr data-l="${l.id}" data-d="${dId}" data-cat="${cat}">
-    <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : `<b>${esc(l.nome)}</b>`}
+    <td class="nm"><span class="grab" draggable="true" title="Arraste para mudar a posição">⋮⋮</span>${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o item" oninput="${n('nome','this.value')}">` : (pkgInfo(l) && isConf()) ? `<b>${esc(l.nome)}</b>` : `<b class="chg" title="Clique para trocar o item" onclick="I2.chg('${dId}','${cat}','${l.id}',this)">${esc(l.nome)} <i>✎</i></b>`}
       <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="${n('desc','this.value')}">${esc(l.desc)}</textarea>${pkgInfo(l) ? `<div class="i2-pkg">${pkgInfo(l).jan ? 'Jantar opcional' : isConf() ? 'Pacote Confraternização' : 'Happy Hour'}<span>valor pela Tabela e nº de convidados</span></div>` : ''}</td>
     <td class="hr">${cat==='gast' ? `<input class="i2-hor" autocomplete="off" data-d="${dId}" data-l="${l.id}" value="${esc(l.hor)}" placeholder="Escolha ou escreva…" oninput="${n('hor','this.value')}">` : ''}</td>
-    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" data-k="qtd" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('qtd','this.value')}"></td>
-    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" data-k="unit" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('unit','this.value')}" title="${l.man?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
-    <td class="st" id="st-${l.id}">${money(lineTotal(l))}</td>
+    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" class="${fl.q?'dif':''}" data-k="qtd" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('qtd','this.value')}" title="${fl.q?'Quantidade alterada manualmente':''}"></td>
+    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${fl.u?'dif':''}" data-k="unit" data-l="${l.id}" oninput="if(parseFloat(this.value)<0)this.value=0;${n('unit','this.value')}" title="${fl.u?'Valor alterado manualmente':'Valor da tabela (pode editar)'}">${l.man ? `<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetUnit('${dId}','${cat}','${l.id}')">↺</button>` : ''}</td>
+    <td class="st ${(fl.u||fl.q)?'dif':''}" id="st-${l.id}">${money(lineTotal(l))}</td>
     <td class="x"><button class="mv-b" title="Subir" onclick="I2.mvLine('${dId}','${cat}','${l.id}',-1)">▲</button><button class="mv-b" title="Descer" onclick="I2.mvLine('${dId}','${cat}','${l.id}',1)">▼</button><button class="x-btn" title="Remover" onclick="I2.delLine('${dId}','${cat}','${l.id}')">×</button></td></tr>`;
 }
 function catBlock(d,cat){
@@ -1133,15 +1149,19 @@ function catBlock(d,cat){
     <div class="i2-addrow"><input class="i2-add" id="add-${d.id}-${cat}" data-d="${d.id}" data-cat="${cat}" autocomplete="off" placeholder="＋ Adicionar em ${CATS[cat]} — digite para buscar${cat==='gast'?' (ex.: coffee, almoço, brownie)':cat==='equip'?' (ex.: microfone, palco, tv)':' (ex.: estacionamento, gerador)'}…">
       <button class="btn btn-o i2-plus" title="Criar um item novo (escrever nome, descrição e valor)" onclick="I2.newBlank('${d.id}','${cat}')">＋ Novo item</button></div></div>`;
 }
+function renderHeFlags(d,e){ const row = $('herow-'+e.id); if(!row) return; const ins = row.querySelectorAll('input[type=number]'); if(ins.length<2) return;
+  const m = hoursMin(d), over = (m!=null && m>LIMH()*60) ? m-LIMH()*60 : 0;
+  const set = (i,on)=>{ i.style.borderColor = on?'#C62828':''; i.style.background = on?'#FDECEA':''; i.style.color = on?'#B71C1C':''; };
+  set(ins[0], !!(e.he.qtdMan && over && r2(num(e.he.qtd))!==r2(over/60))); set(ins[1], heVhDif(e,d)); }
 function heRowHtml(d,e){
-  const he = e.he, manS = 'border-color:#E0A800;background:#FFFBEA';
+  const he = e.he, manS = FLAGS;
   if(!e.nome) return `<div id="herow-${e.id}"></div>`;
   const m = hoursMin(d), over = (m!=null && m>LIMH()*60) ? m-LIMH()*60 : 0;
   const body = he.on
     ? `<div class="i2-he"><span class="lbl">Hora extra</span>
-        <div class="fg"><label class="fl">Nº de horas</label><input type="number" step="any" min="0" value="${esc(he.qtd)}" placeholder="Ex.: 3,5" oninput="I2.he('${d.id}','${e.id}','qtd',this.value)"></div>
+        <div class="fg"><label class="fl">Nº de horas</label><input type="number" step="any" min="0" value="${esc(he.qtd)}" style="${(he.qtdMan && over && r2(num(he.qtd))!==r2(over/60))?manS:''}" placeholder="Ex.: 3,5" oninput="I2.he('${d.id}','${e.id}','qtd',this.value)"></div>
         <span class="mul">×</span>
-        <div class="fg"><label class="fl">Valor da hora (R$)</label><input type="number" step="any" min="0" value="${he.vh}" style="${he.vhMan?manS:''}" oninput="I2.he('${d.id}','${e.id}','vh',this.value)"></div>
+        <div class="fg"><label class="fl">Valor da hora (R$)</label><input type="number" step="any" min="0" value="${he.vh}" style="${heVhDif(e,d)?manS:''}" oninput="I2.he('${d.id}','${e.id}','vh',this.value)"></div>
         <span class="mul">=</span><b class="tot" id="he-${e.id}">${money(heValor(e))}</b>
         ${over ? `<span class="i2-hint">${fmtH(over)} acima das ${LIMH()}h contratadas${he.qtdMan?'':' · preenchido automaticamente'}</span>` : ''}
         <button class="i2-eye" title="Ocultar hora extra" onclick="I2.heEye('${d.id}','${e.id}')">${eyeSvg(false)}</button></div>`
@@ -1162,14 +1182,14 @@ function syncHE(d){
 function espBlock(d,e,k){
   const spOpts = '<option value="">— Selecione o espaço —</option>' + DATA.spaces.map(s=>`<option value="${esc(s.name)}" ${s.name===e.nome?'selected':''}>${esc(s.name)}</option>`).join('');
   const mOpts = '<option value="">— Montagem —</option>' + DATA.montagem.map(m=>`<option ${m===e.montagem?'selected':''}>${esc(m)}</option>`).join('');
-  const multi = d.espacos.length > 1, manS = 'border-color:#E0A800;background:#FFFBEA';
+  const multi = d.espacos.length > 1, manS = FLAGS;
   const heRow = heRowHtml(d,e);
   return `<div class="i2-esp-box">
     <div class="i2-esp">
       <div class="fg"><label class="fl">${multi?'Espaço '+(k+1):'Espaço'}</label><select onchange="I2.espSel('${d.id}','${e.id}',this.value)">${spOpts}</select></div>
       <div class="fg"><label class="fl">Montagem</label><select onchange="I2.esp('${d.id}','${e.id}','montagem',this.value)">${mOpts}</select></div>
-      <div class="fg"><label class="fl">Valor do espaço</label><input type="number" step="any" min="0" data-esp="valor" data-e="${e.id}" value="${e.valor}" style="${e.man?manS:''}" ${lockV(e,'valor')} onfocus="I2.unlock('${d.id}','${e.id}','valor',this)" oninput="I2.esp('${d.id}','${e.id}','valor',this.value)"></div>
-      <div class="fg"><label class="fl">Retorno de consumação</label><input type="number" step="any" min="0" data-esp="teto" data-e="${e.id}" value="${e.teto}" style="${e.manTeto?manS:''}" ${lockV(e,'teto')} onfocus="I2.unlock('${d.id}','${e.id}','teto',this)" oninput="I2.esp('${d.id}','${e.id}','teto',this.value)"></div>
+      <div class="fg"><label class="fl">Valor do espaço</label><input type="number" step="any" min="0" data-esp="valor" data-e="${e.id}" value="${e.valor}" style="${espDif(e,'valor')?manS:''}" ${lockV(e,'valor')} onfocus="I2.unlock('${d.id}','${e.id}','valor',this)" oninput="I2.esp('${d.id}','${e.id}','valor',this.value)"></div>
+      <div class="fg"><label class="fl">Retorno de consumação</label><input type="number" step="any" min="0" data-esp="teto" data-e="${e.id}" value="${e.teto}" style="${espDif(e,'teto')?manS:''}" ${lockV(e,'teto')} onfocus="I2.unlock('${d.id}','${e.id}','teto',this)" oninput="I2.esp('${d.id}','${e.id}','teto',this.value)"></div>
       ${multi?`<button class="x-btn" style="margin-bottom:6px" title="Remover este espaço" onclick="I2.delEsp('${d.id}','${e.id}')">×</button>`:'<span></span>'}
     </div>
     <div class="fg" style="margin-top:8px"><label class="fl">Incluso / observações do espaço</label><textarea rows="2" style="min-height:44px" oninput="I2.esp('${d.id}','${e.id}','obs',this.value)">${esc(e.obs)}</textarea></div>
@@ -1228,14 +1248,14 @@ function renderDescs(){
 function renderExtras(){ renderDescs();
   const el = $('i2-extras'); if(!el) return;
   const dates = P.dias.map(d=>d.data).filter(Boolean);
-  const rows = P.extras.map(l=>`<tr>
-    <td class="nm">${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o extra" oninput="I2.ex('${l.id}','nome',this.value)">` : `<b>${esc(l.nome)}</b>`}
+  const rows = P.extras.map(l=>{ const fl = lineFlags(l,'extras'); return `<tr data-l="${l.id}">
+    <td class="nm">${l.livre ? `<input class="nm-in" id="nm-${l.id}" value="${esc(l.nome)}" placeholder="Descreva o extra" oninput="I2.ex('${l.id}','nome',this.value)">` : `<b class="chg" title="Clique para trocar o item" onclick="I2.chg('','extras','${l.id}',this)">${esc(l.nome)} <i>✎</i></b>`}
       <textarea class="ds" rows="1" placeholder="Descrição / observações" oninput="I2.ex('${l.id}','desc',this.value)">${esc(l.desc)}</textarea></td>
     <td class="hr"><select onchange="I2.ex('${l.id}','data',this.value)"><option value="">— Data —</option>${dates.map(x=>`<option value="${x}" ${x===l.data?'selected':''}>${fdate(x)}</option>`).join('')}</select></td>
-    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" oninput="I2.ex('${l.id}','qtd',this.value)"></td>
-    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${l.man?'man':''}" oninput="I2.ex('${l.id}','unit',this.value)">${l.man?`<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetEx('${l.id}')">↺</button>`:''}</td>
-    <td class="st" id="st-${l.id}">${money(lineTotal(l))}</td>
-    <td class="x"><button class="x-btn" onclick="I2.delEx('${l.id}')">×</button></td></tr>`).join('');
+    <td class="q"><input type="number" min="0" step="any" value="${l.qtd}" class="${fl.q?'dif':''}" data-k="qtd" oninput="I2.ex('${l.id}','qtd',this.value)"></td>
+    <td class="u"><input type="number" min="0" step="any" value="${l.unit}" class="${fl.u?'dif':''}" data-k="unit" oninput="I2.ex('${l.id}','unit',this.value)">${l.man?`<button class="i2-reset" title="Voltar ao valor da tabela" onclick="I2.resetEx('${l.id}')">↺</button>`:''}</td>
+    <td class="st ${(fl.u||fl.q)?'dif':''}" id="st-${l.id}">${money(lineTotal(l))}</td>
+    <td class="x"><button class="x-btn" onclick="I2.delEx('${l.id}')">×</button></td></tr>`; }).join('');
   el.innerHTML = `${P.extras.length ? `<table class="i2-ln">${COLS}<thead><tr><th>Item</th><th>Data</th><th style="text-align:right">Qtd.</th><th style="text-align:right">Vlr. unit.</th><th style="text-align:right">Subtotal</th><th></th></tr></thead><tbody>${rows}</tbody></table>` : ''}
     <div class="i2-addrow"><input class="i2-add" id="add-extras" data-d="" data-cat="extras" autocomplete="off" placeholder="＋ Adicionar extra do dia do evento — busca em todo o catálogo…">
       <button class="btn btn-o i2-plus" title="Criar um extra novo (escrever nome, descrição e valor)" onclick="I2.newBlankEx()">＋ Novo item</button></div>`;
@@ -1372,10 +1392,24 @@ function sugOpen(inp){
 }
 function sugClose(){ sugBox().style.display='none'; sug.inp=null; }
 function sugMark(){ [].forEach.call(sugBox().children,(c,i)=>c.classList.toggle('on',i===sug.idx)); const c = sugBox().children[sug.idx]; if(c&&c.scrollIntoView) c.scrollIntoView({block:'nearest'}); }
+function replaceLine(inp,it){
+  const cat = inp.dataset.cat, dId = inp.dataset.d, id = inp.dataset.l, ex = cat==='extras';
+  const l = ex ? P.extras.find(x=>x.id===id) : lineOf(dId,cat,id); if(!l) return;
+  const old = l.base ? (DATA[l.src||cat].find(i=>i.name===l.base)||{}) : {}, descEd = !!l.desc && l.desc !== (old.desc||'');
+  const nl = newLine(cat,it);
+  l.src = nl.src; l.base = nl.base; l.nome = nl.nome; l.livre = nl.livre;
+  if(!descEd) l.desc = nl.desc;                       // descrição editada pelo usuário é mantida
+  if(!l.qtdMan) l.qtd = nl.qtd;                       // quantidade digitada é mantida
+  if(!l.man) l.unit = nl.unit;                        // valor digitado é mantido
+  const d = ex ? null : dayOf(dId); if(d && isConf()) confSync(d);
+  touch(); ex ? renderExtras() : renderDay(dId);
+}
 function sugPick(i){
   const it = sug.list[i], inp = sug.inp; if(!it||!inp) return;
   if(it.hor){ inp.value = it.name; I2.ln(inp.dataset.d,'gast',inp.dataset.l,'hor',it.name); sugClose(); return; }
-  const cat = inp.dataset.cat, dId = inp.dataset.d; sugClose(); inp.value='';
+  const cat = inp.dataset.cat, dId = inp.dataset.d;
+  if(inp.classList.contains('i2-rep')){ sugClose(); return replaceLine(inp,it); }
+  sugClose(); inp.value='';
   if(cat==='extras'){ const l = newLine('extras',it); P.extras.push(l); touch(); renderExtras(); const e = $('add-extras'); if(e) e.focus(); return; }
   const d = P.dias.find(x=>x.id===dId); if(!d) return;
   d[cat].push(newLine(cat,it)); touch(); renderDay(dId);
@@ -1390,7 +1424,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='ArrowUp'){ e.preventDefault(); sug.nav = true; sug.idx = Math.max(sug.idx-1,0); sugMark(); }
   else if(e.key==='Enter'){ e.preventDefault(); if(isHor && !sug.nav) sugClose(); else sugPick(sug.idx); }
   else if(e.key==='Tab' && isHor){ sugClose(); }
-  else if(e.key==='Escape'){ sugClose(); }
+  else if(e.key==='Escape'){ sugClose(); if(e.target.classList.contains('i2-rep')) e.target.blur(); }
 });
 document.addEventListener('mousedown',e=>{
   const b = sugBox(); if(!b) return;
@@ -1443,7 +1477,7 @@ const I2 = {
   day(id,k,v){ const d = dayOf(id); if(!d) return; d[k] = v; if(k==='chegada'||k==='inicio'||k==='termino') syncHE(d); touch(); },
   dateChanged(){ P.dias.forEach((d,i)=>{ const e = $('dl-'+d.id); if(e) e.innerHTML = dayLab(d,i); }); renderExtras(); refresh(); },
   esp(dId,eId,k,v){ const e = espOf(dId,eId); if(!e) return;
-    const mark = a => { const i = document.querySelector('[data-esp='+a+'][data-e="'+eId+'"]'); if(i){ i.style.borderColor='#E0A800'; i.style.background='#FFFBEA'; } };
+    const mark = a => { const i = document.querySelector('[data-esp='+a+'][data-e="'+eId+'"]'); if(i){ const on = espDif(e,a); i.style.borderColor = on?'#C62828':''; i.style.background = on?'#FDECEA':''; i.style.color = on?'#B71C1C':''; } };
     if(k==='valor'){ e.valor = num(v); e.man = true; mark('valor'); }
     else if(k==='teto'){ e.teto = num(v); e.manTeto = true; mark('teto'); }
     else e[k] = v;
@@ -1462,7 +1496,7 @@ const I2 = {
     if(nome && !P.tabela) say('Escolha a Tabela de preços para calcular o valor do espaço'); },
   addEsp(dId){ const d = dayOf(dId); if(!d) return; d.espacos.push(newEsp()); touch(); renderDay(dId); },
   delEsp(dId,eId){ const d = dayOf(dId); if(!d || d.espacos.length<2) return; d.espacos = d.espacos.filter(e=>e.id!==eId); touch(); renderDay(dId); },
-  he(dId,eId,k,v){ const e = espOf(dId,eId); if(!e) return; e.he[k] = (k==='qtd') ? v : num(v); if(k==='vh') e.he.vhMan = true; if(k==='qtd') e.he.qtdMan = true; setIf('he-'+eId, money(heValor(e))); touch(); },
+  he(dId,eId,k,v){ const e = espOf(dId,eId); if(!e) return; e.he[k] = (k==='qtd') ? v : num(v); if(k==='vh') e.he.vhMan = true; if(k==='qtd') e.he.qtdMan = true; setIf('he-'+eId, money(heValor(e))); touch(); const d = dayOf(dId); if(d) renderHeFlags(d,e); },
   heEye(dId,eId){ const e = espOf(dId,eId); if(!e) return; e.he.on = !e.he.on; e.he.auto = false; e.he.manual = true; if(e.he.on && !e.he.vhMan) e.he.vh = horaPadrao(e.nome); touch(); renderDay(dId); },
   restoreObs(dId,eId){ const e = espOf(dId,eId); if(!e || !e.nome){ say('Escolha o espaço primeiro'); return; } e.obs = obsPadrao(e.nome); touch(); renderDay(dId); say('Texto do Catálogo aplicado'); },
   newBlank(dId,cat){ const d = dayOf(dId); if(!d) return; const l = newLine(cat,{manual:true,name:''}); d[cat].push(l); touch(); renderDay(dId); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
@@ -1472,16 +1506,19 @@ const I2 = {
   newBlankEx(){ const l = newLine('extras',{manual:true,name:''}); P.extras.push(l); touch(); renderExtras(); setTimeout(()=>{ const i = $('nm-'+l.id); if(i) i.focus(); },30); },
   ln(dId,cat,id,k,v){ const l = lineOf(dId,cat,id); if(!l) return;
     if(k==='qtd'){ l.qtd = Math.max(0,num(v)); l.qtdMan = true; }
-    else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; const i = document.querySelector('[data-k=unit][data-l="'+id+'"]'); if(i) i.classList.add('man'); }
+    else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; }
     else l[k] = v;
-    touch(); },
+    touch(); flagRow(document.querySelector('tr[data-l="'+id+'"]'),l,cat); },
+  chg(dId,cat,id,el){ const inp = document.createElement('input'); inp.className = 'nm-in i2-add i2-rep'; inp.dataset.d = dId; inp.dataset.cat = cat; inp.dataset.l = id; inp.autocomplete = 'off';
+    inp.placeholder = 'Trocar item — digite para buscar…'; el.replaceWith(inp); inp.focus(); sugOpen(inp);
+    inp.addEventListener('blur',()=>setTimeout(()=>{ if(inp.isConnected){ sugClose(); cat==='extras' ? renderExtras() : renderDay(dId); } },180)); },
   resetUnit(dId,cat,id){ const l = lineOf(dId,cat,id); if(!l) return; l.man = false; l.unit = unitFor(l.src||cat,l); touch(); renderDay(dId); },
   mvLine(dId,cat,id,dir){ const d = dayOf(dId); if(!d) return; const a = d[cat], i = a.findIndex(l=>l.id===id), j = i+dir; if(i<0 || j<0 || j>=a.length) return; const t = a[i]; a[i] = a[j]; a[j] = t; touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+id+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   dropLine(dId,cat,from,to,after){ const d = dayOf(dId); if(!d || from===to) return; const a = d[cat], i = a.findIndex(l=>l.id===from); if(i<0) return; const it = a.splice(i,1)[0]; let j = a.findIndex(l=>l.id===to); if(j<0){ a.push(it); } else a.splice(after?j+1:j,0,it); touch(); renderDay(dId); const r = document.querySelector('tr[data-l="'+from+'"]'); if(r){ r.classList.add('mv-flash'); setTimeout(()=>r.classList.remove('mv-flash'),700); } },
   delLine(dId,cat,id){ const d = dayOf(dId); if(!d) return; d[cat] = d[cat].filter(l=>l.id!==id); touch(); renderDay(dId); },
   ex(id,k,v){ const l = P.extras.find(x=>x.id===id); if(!l) return;
-    if(k==='qtd') l.qtd = num(v); else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; } else l[k] = v;
-    touch(); },
+    if(k==='qtd'){ l.qtd = num(v); l.qtdMan = true; } else if(k==='unit'){ l.unit = Math.max(0,num(v)); l.man = true; } else l[k] = v;
+    touch(); flagRow(document.querySelector('tr[data-l="'+id+'"]'),l,'extras'); },
   resetEx(id){ const l = P.extras.find(x=>x.id===id); if(!l) return; l.man = false; l.unit = itemPrice(l.src,l.base,P.tabela); touch(); renderExtras(); },
   delEx(id){ P.extras = P.extras.filter(l=>l.id!==id); touch(); renderExtras(); },
   addDay(){ if(P.dias.length>=6){ say('Máximo de 6 datas por proposta'); return; } const last = P.dias[P.dias.length-1], d = newDay(); if(last && last.data){ const dt = new Date(last.data+'T12:00:00'); dt.setDate(dt.getDate()+1); d.data = dt.toISOString().slice(0,10); }
