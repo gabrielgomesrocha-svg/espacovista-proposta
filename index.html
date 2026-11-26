@@ -1122,7 +1122,7 @@ function renderTabelaSelect(){
   const s = $('i2-tabela'); if(!s) return;
   let h = '<option value="">Escolher tabela…</option>';
   { const cur = stdSel(P.tabela), n = Math.floor(num(P.convidados)), fx = n>0 ? (n>50 ? ' · a partir de 51 pessoas' : ' · 15 a 50 pessoas') : '';
-    h += '<optgroup label="Padrão — a faixa de pessoas é aplicada automaticamente">' + [1,2,3].map(k=>'<option '+(cur==='Tabela '+k?'selected':'')+' value="Tabela '+k+'">Tabela '+k+fx+'</option>').join('') + '</optgroup>'; }
+    h += '<optgroup label="Padrão — a faixa de pessoas é aplicada automaticamente">' + [1,2,3].map(k=>'<option '+(cur==='Tabela '+k?'selected':'')+' value="Tabela '+k+'">Tabela '+k+'</option>').join('') + '</optgroup>'; }
   if(custom.length) h += '<optgroup label="★ Personalizadas">' + custom.map(c=>'<option '+(c.name===P.tabela?'selected':'')+' value="'+esc(c.name)+'">★ '+esc(c.name)+'</option>').join('') + '</optgroup>';
   s.innerHTML = h; s.className = P.tabela ? '' : 'empty';
 }
