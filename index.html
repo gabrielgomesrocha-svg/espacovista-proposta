@@ -1942,6 +1942,206 @@ Object.assign(I2, {
     catSet(false); renderTabelaSelect(); if(P) renderBody(); say('Catálogo salvo ✔'); },
   async catDiscard(){ if(catTab==='md'){ await I2.midiaDiscard(); return; } if(catDirty && !(await ask('Descartar as alterações não salvas do catálogo?','Descartar'))) return; CAT = catFromData(); catSet(false); renderCatalogo(); }
 });
+/* ═════════ LAYOUT "HÍBRIDO" — visual da agência (creme · serifada · dourado) + motor de dados do Espaço Vista ═════════ */
+const HIB_CSS = `@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&family=Platypi:wght@400;500;600;700&display=swap');
+.hbz{--w:#A6201C;--wd:#20252A;--k:#1D2126;--g1:#F4ECE2;--au:#B08D56;--g2:#E6D9C8;--g3:#7B746B;--fb:15.5px;--fs:12px;--fh1:46px;--fh2:34px;--fh3:22px;--fp:30px;--pd:22px;--gp:18px;font-family:'Geologica',system-ui,sans-serif;color:var(--k);-webkit-font-smoothing:antialiased;line-height:1.5}
+@media(min-width:821px){.hbz{--fb:21px;--fs:15px;--fh1:148px;--fh2:76px;--fh3:34px;--fp:52px;--pd:80px;--gp:40px}}
+.hbz,.hbz .page,.hbz small,.hbz div,.hbz p,.hbz li{text-align:left!important}.hbz .cap td:last-child{text-align:right!important}.hbz *{box-sizing:border-box;margin:0;padding:0}
+.hbz h1,.hbz h2,.hbz h3,.hbz .ser{font-family:'Platypi',Georgia,serif;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.hbz .page{width:auto;height:auto;margin:0;position:relative;background:var(--g1);padding:var(--pd);overflow:hidden;border-bottom:3px solid #fff}
+.hbz .page.dk{background:var(--wd);color:var(--g1)}
+.hbz .pb{display:flex;flex-direction:column;position:static;width:100%}.hbz .cr b{display:block}.hbz .cr{overflow:hidden}
+.hbz .rh{display:flex;justify-content:space-between;gap:12px;font:500 10px/1 'Geologica';letter-spacing:.16em;text-transform:uppercase;padding-bottom:11px;border-bottom:1px solid var(--au);margin-bottom:calc(var(--pd)*.7)}
+.hbz .dk .rh{color:#cfc6b8}
+.hbz .eb{font:500 var(--fs)/1.2 'Geologica';letter-spacing:.2em;text-transform:uppercase;color:var(--au);margin-bottom:12px}
+.hbz .t1{font-size:var(--fh1)}.hbz .t2{font-size:var(--fh2)}.hbz .t3{font-size:var(--fh3)}
+.hbz .lead{font-size:var(--fb);line-height:1.6;color:#2b2f34}.hbz .dk .lead{color:#e8dfd2}
+.hbz .lead+.lead{margin-top:.8em}
+.hbz .h4{font:600 calc(var(--fb)*.92)/1.2 'Geologica';margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--au)}
+.hbz ul.ul{list-style:none;font-size:calc(var(--fb)*.88)}.hbz ul.ul li{padding:5px 0;border-bottom:1px solid rgba(176,141,86,.28)}.hbz ul.ul li:last-child{border:0}
+.hbz .row{display:flex;justify-content:space-between;gap:16px;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(176,141,86,.4);font-size:calc(var(--fb)*.86)}
+.hbz .row b{font-weight:600;white-space:nowrap;color:var(--k)}.hbz .row i{font-style:normal;color:var(--g3);font-size:.78em;font-weight:400;margin-left:5px}
+.hbz .ph{position:relative;overflow:hidden;background:#d8cdbe;min-height:140px}
+.hbz .ph.d{background:#cdbfae}
+.hbz .ph::after{content:attr(data-l);position:absolute;left:12px;bottom:9px;font:600 10px 'Geologica';letter-spacing:.14em;text-transform:uppercase;color:rgba(32,37,42,.55)}
+.hbz .ph.has::after{display:none}
+.hbz .ph img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block}
+.hbz .fr{border:2px solid var(--au);border-radius:12px}
+.hbz .lg{display:block;height:34px;width:auto;object-fit:contain;filter:brightness(0) invert(1)}
+.hbz .g2,.hbz .g3,.hbz .g4,.hbz .g6{display:grid;grid-template-columns:1fr;gap:var(--gp)}
+.hbz .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px;font-size:calc(var(--fb)*.8);color:var(--g3)}.hbz .chips span b{color:var(--k);font-weight:600}
+.hbz .chips span{padding-right:14px;border-right:1px solid var(--au)}.hbz .chips span:last-child{border:0}
+.hbz .cv{padding:0;display:grid;grid-template-columns:1fr;background:var(--wd);color:var(--g1)}
+.hbz .cv .cvp{order:-1;position:relative;height:240px}.hbz .cv .cvp .ph{position:absolute;inset:0;min-height:0}
+.hbz .cv .cvl{position:relative;padding:var(--pd);display:flex;flex-direction:column;gap:26px;background:var(--wd);overflow:hidden}
+.hbz .cv .cvl::before{content:'';position:absolute;left:-10%;top:-10%;width:90%;height:130%;background:#2a3036;transform:skewX(-14deg);transform-origin:top;z-index:0}
+.hbz .cv .cvl>*{position:relative;z-index:1}
+.hbz .cv h1{font-size:var(--fh1);color:var(--g1);font-weight:500}
+.hbz .cv .sub{font:400 calc(var(--fb)*1.15)/1.4 'Platypi',Georgia,serif;color:#e8dfd2;max-width:34ch}
+.hbz .cv .cvc{display:flex;flex-wrap:wrap;gap:22px 56px;border-top:1px solid rgba(176,141,86,.6);padding-top:20px}
+.hbz .cv .cvc b{display:block;font:600 calc(var(--fb)*1.05)/1.3 'Geologica'}.hbz .cv .cvc small{font:400 calc(var(--fs)*.9)/1.4 'Geologica';letter-spacing:.12em;text-transform:uppercase;color:#cfc6b8}
+.hbz .dif{display:grid;grid-template-columns:1fr;gap:var(--gp)}
+.hbz .dif div{border-top:1px solid rgba(176,141,86,.7);padding-top:14px}
+.hbz .dif i{display:block;font:500 calc(var(--fh3)*1.15)/1 'Platypi',Georgia,serif;font-style:normal;color:var(--au);margin-bottom:12px}
+.hbz .dif h3{font:600 calc(var(--fs)*1.02)/1.3 'Geologica';letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}
+.hbz .dif p{font-size:calc(var(--fb)*.82);line-height:1.55;color:#d8cfc2}
+.hbz .ix{list-style:none}.hbz .ix li{display:flex;align-items:baseline;gap:18px;padding:9px 0;border-bottom:1px solid var(--au)}
+.hbz .ix i{font:500 calc(var(--fh3)*.9)/1 'Platypi',Georgia,serif;font-style:normal;color:var(--w);min-width:2.1em}.hbz .ix a{color:inherit;text-decoration:none;flex:1;font:500 calc(var(--fh3)*.82)/1.2 'Platypi',Georgia,serif}
+.hbz .ix em{font:500 calc(var(--fs)*.8)/1 'Geologica';letter-spacing:.14em;color:var(--g3);font-style:normal;text-transform:uppercase}
+.hbz .pks{display:grid;grid-template-columns:1fr;gap:var(--gp)}
+.hbz .pk{background:#fbf7f1;border:1px solid var(--g2);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.hbz .pk .ph{height:150px;min-height:0;flex:none}
+.hbz .pkb{padding:16px 18px;display:flex;flex-direction:column;gap:5px}
+.hbz .pkb h3{font-size:calc(var(--fh3)*.74)}.hbz .pkb .sb{font-size:calc(var(--fs)*.9);color:var(--g3);letter-spacing:.1em;text-transform:uppercase}
+.hbz .pkb .hpr small{display:block;font-size:calc(var(--fs)*.85);color:var(--g3);letter-spacing:.1em;text-transform:uppercase;margin-top:8px}.hbz .pkb .hpr b{font:600 calc(var(--fp)*.82)/1.1 'Platypi',Georgia,serif}
+.hbz .cr{margin-top:8px;background:var(--wd);color:var(--g1);border-radius:6px;padding:10px 14px;font-size:calc(var(--fs)*.95)}.hbz .cr b{font:600 calc(var(--fb)*1.05) 'Geologica';color:#fff;margin-right:6px}.hbz .cr em{font-style:normal;color:#d8cfc2}
+.hbz .pt{font-size:calc(var(--fs)*.92);color:var(--g3);margin-top:6px}.hbz .pt b{color:var(--k);font-weight:600}
+.hbz .cr2{font-size:calc(var(--fs)*.95);color:var(--g3);margin-top:8px;line-height:1.45}
+.hbz .pk.apart{border-style:dashed;background:transparent}
+.hbz .pk.alt{border:2px solid var(--w);position:relative}.hbz .pk .altb{background:var(--w);color:#fff;font:600 11px 'Geologica';letter-spacing:.14em;text-transform:uppercase;text-align:center;padding:7px 10px}
+.hbz .inv{background:var(--wd);color:var(--g1);border-radius:6px;padding:20px 22px;margin-top:20px}
+.hbz .inv .ih{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:500 calc(var(--fs)*.9) 'Geologica';letter-spacing:.14em;text-transform:uppercase;color:var(--au);margin-bottom:14px}
+.hbz .inv .ic{display:grid;grid-template-columns:1fr;gap:18px}
+.hbz .inv small.t{display:block;font:500 calc(var(--fs)*.85)/1 'Geologica';letter-spacing:.16em;text-transform:uppercase;color:var(--au);margin-bottom:10px}
+.hbz .inv .v{font:600 var(--fp)/1.05 'Platypi',Georgia,serif;color:#fff}.hbz .inv .v s{font:400 calc(var(--fs)*1.05) 'Geologica';opacity:.7;display:block;margin-bottom:4px}
+.hbz .inv .n{font-size:calc(var(--fs)*1.02);line-height:1.5;color:#d8cfc2;margin-top:8px}.hbz .inv .n b{color:#fff;font-weight:600}
+.hbz .sp3{display:grid;grid-template-columns:1fr;gap:var(--gp)}
+.hbz .cap{width:100%;border-collapse:collapse;font-size:calc(var(--fb)*.86)}.hbz .cap td{padding:6px 0;border-bottom:1px solid rgba(176,141,86,.4)}.hbz .cap td:last-child{text-align:right;font-weight:600}
+.hbz .exg{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hbz .exg .ex{position:relative;height:150px;border-radius:8px;overflow:hidden}.hbz .exg .ex .ph{position:absolute;inset:0;min-height:0}
+.hbz .exg .exl{position:absolute;left:0;right:0;bottom:0;padding:10px 14px;background:linear-gradient(180deg,transparent,rgba(20,24,28,.78));color:#fff;display:flex;justify-content:space-between;font:600 calc(var(--fs)*1.02) 'Geologica';z-index:2}
+.hbz .cols4{display:grid;grid-template-columns:1fr;gap:var(--gp)}.hbz .cols4 .pc{margin-bottom:calc(var(--gp)*.8)}
+.hbz .nt{font-size:calc(var(--fs)*.95);color:var(--g3);margin-top:8px}
+.hbz .ig{display:grid;grid-template-columns:1fr;gap:var(--gp)}.hbz .ig section{margin-bottom:4px}
+.hbz .ig h3{font:600 calc(var(--fb)*.98)/1.2 'Geologica';display:flex;gap:12px;align-items:baseline;border-bottom:1px solid var(--au);padding-bottom:9px;margin-bottom:10px}.hbz .ig h3 i{font:500 calc(var(--fh3)*.8)/1 'Platypi',Georgia,serif;font-style:normal;color:var(--w)}
+.hbz .ig ul{list-style:none;font-size:calc(var(--fb)*.8);line-height:1.55;color:#2b2f34}.hbz .ig li{padding:3px 0}.hbz .ig b{font-weight:600}
+.hbz .mapw{position:relative}.hbz .mapw .ph{height:260px}
+.hbz .mapbtn{position:absolute;left:18px;bottom:18px;z-index:6;background:var(--w);color:#fff;font:600 15px 'Geologica';letter-spacing:.04em;padding:12px 20px;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.hbz .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0}
+.hbz .tile{display:block;text-decoration:none;color:var(--g1);border:1px solid var(--au);border-radius:6px;padding:15px 18px;font:500 calc(var(--fs)*1.05) 'Geologica';letter-spacing:.12em;text-transform:uppercase;background:transparent!important}
+.hbz .ct{position:relative;overflow:hidden}.hbz .ct::before{content:'';position:absolute;right:-12%;top:-6%;width:48%;height:112%;background:var(--w);transform:skewX(-16deg);z-index:0}
+.hbz .ct>*{position:relative;z-index:1}
+.hbz .ct .cl{font:500 calc(var(--fb)*1.3)/1.7 'Geologica'}.hbz .ct .cl small{display:block;font:500 calc(var(--fs)*.9) 'Geologica';letter-spacing:.2em;text-transform:uppercase;color:var(--au);margin-top:14px;line-height:1.2}
+.hbz .vc{display:inline-block;margin-top:12px;background:var(--w);color:#fff;text-decoration:none;font:600 calc(var(--fs)*.85) 'Geologica';letter-spacing:.1em;text-transform:uppercase;padding:7px 14px;border-radius:99px}
+.hbz .pcard{border-top:1px solid var(--au);padding-top:14px}
+.hbz .big{font:600 calc(var(--fp)*1.05)/1 'Platypi',Georgia,serif;color:var(--w);margin:12px 0 4px}.hbz .big+small{display:block;font-size:calc(var(--fs)*.95);color:var(--g3)}
+.hbz .al{border-top:1px solid var(--au);padding:16px 0}.hbz .alh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px}.hbz .alh h3{font-size:calc(var(--fh3)*.95)}.hbz .alh .hpr b{font:600 calc(var(--fp)*.78)/1 'Platypi',Georgia,serif;color:var(--w)}.hbz .alh .hpr span{font-size:calc(var(--fs)*.9);color:var(--g3);margin-left:6px}
+.hbz .bev{margin-top:10px;font-size:calc(var(--fs)*1.0);color:#444;display:flex;flex-wrap:wrap;gap:4px 20px;padding-top:9px;border-top:1px dotted var(--au)}.hbz .bev b{font-weight:600;color:var(--k)}
+.hbz .opt{background:var(--wd);color:var(--g1);border-radius:6px;padding:18px 22px;display:grid;grid-template-columns:1fr;gap:16px}
+.hbz .opt small{display:block;font:500 calc(var(--fs)*.85) 'Geologica';letter-spacing:.16em;text-transform:uppercase;color:var(--au);margin-bottom:6px}.hbz .opt .v{font:600 calc(var(--fp)*.92)/1 'Platypi',Georgia,serif;color:#fff}.hbz .opt .n{font-size:calc(var(--fs)*.95);line-height:1.45;color:#d8cfc2;margin-top:7px}
+@media(min-width:821px){
+ .hbz .page{width:1920px;height:1080px;padding:56px 80px 0;margin:0 0 40px;border:0}
+ .hbz .rh{font-size:13px;margin-bottom:0;padding-bottom:14px}
+ .hbz .pb{position:absolute;left:80px;right:80px;top:112px;bottom:56px;width:auto}.hbz .cr b{display:inline}
+ .hbz .cv{display:grid;grid-template-columns:1120px 1fr;padding:0}.hbz .cv .cvp{order:2;height:auto}.hbz .cv .cvl{padding:110px 80px 90px;justify-content:space-between}
+ .hbz .cv .lg{height:56px}
+ .hbz .g2{grid-template-columns:1fr 1fr}.hbz .g3{grid-template-columns:repeat(3,1fr)}.hbz .g4{grid-template-columns:repeat(4,1fr)}
+ .hbz .dif{grid-template-columns:repeat(3,1fr);gap:56px 60px}
+ .hbz .pks{grid-template-columns:1fr 1fr}.hbz .pk{flex-direction:row}.hbz .pk .ph{width:230px;height:auto;min-height:0}.hbz .pkb{padding:18px 22px;flex:1}
+ .hbz .inv .ic{grid-template-columns:.9fr 1.5fr 1.2fr;gap:44px}
+ .hbz .sp3{grid-template-columns:1fr 1fr}
+ .hbz .exg{grid-template-columns:repeat(3,1fr);gap:16px}.hbz .exg .ex{height:205px}
+ .hbz .cols4{grid-template-columns:repeat(4,1fr);gap:0 30px}
+ .hbz .ig{grid-template-columns:1fr 1fr 1fr;gap:34px 46px}
+ .hbz .tiles{grid-template-columns:1fr 1fr}
+ .hbz .opt{grid-template-columns:repeat(3,1fr);gap:44px}
+ .hbz .mapw .ph{height:640px}
+ .hbz .ul li{padding:3px 0}.hbz .cap td{padding:4px 0}
+ .hbz .inv{padding:16px 26px;margin-top:14px}.hbz .inv .v{font-size:calc(var(--fp)*.82)}.hbz .inv .n{font-size:15px;margin-top:6px}.hbz .inv .ih{margin-bottom:10px}.hbz .inv small.t{margin-bottom:6px}
+ .hbz .pkw{grid-template-columns:.78fr 1.22fr!important;gap:60px!important;flex:1;min-height:0}
+ .hbz .pkl .t2{font-size:60px}.hbz .pkl .ix li{padding:6px 0}
+ .hbz .pks{grid-template-columns:1fr;gap:10px}.hbz .pk .ph{width:200px}.hbz .pkb{padding:12px 20px;gap:3px}.hbz .pkb .hpr small{margin-top:4px}.hbz .pkb .hpr b{font-size:36px}.hbz .cr{padding:7px 12px;margin-top:4px}.hbz .pt{margin-top:2px}.hbz .cr2{margin-top:4px;font-size:14px}
+ .hbz .dn{--fb:17.5px;--fs:13px}
+ .hbz .dn .ul li{padding:2px 0;font-size:16px}.hbz .dn .h4{margin-bottom:6px;padding-bottom:6px;font-size:17px}.hbz .dn .pcard{padding-top:10px}
+ .hbz .dn .big{font-size:42px;margin:6px 0 2px}.hbz .dn .t2{font-size:56px;margin-bottom:14px!important}.hbz .dn .t3{font-size:26px}
+ .hbz .dn .bev{margin-top:6px;padding-top:6px;font-size:14px}.hbz .dn .al{padding:10px 0}.hbz .dn .alh{margin-bottom:6px}
+ .hbz .dn .opt{padding:12px 20px;gap:30px}.hbz .dn .opt .v{font-size:34px}.hbz .dn .opt .n{font-size:13.5px;margin-top:4px;line-height:1.35}
+ .hbz .dn .nt{font-size:13px;margin-top:4px}
+ .hbz .dn2 .ul li{padding:1px 0;font-size:14.5px}.hbz .dn2 .big{font-size:36px}.hbz .dn2 .h4{font-size:15.5px;margin-bottom:4px;padding-bottom:4px}.hbz .dn2 .t2{font-size:48px}.hbz .dn2 .opt{padding:9px 18px}.hbz .dn2 .opt .v{font-size:30px}
+}`;
+function tplEng(t){ const L = tplGet(t); return (L && L.engine) || ''; }
+const hRh = r => '<div class="rh"><span>Grupo Vista · Proposta comercial</span><span>'+r+'</span></div>';
+const hInv = (k,nome,extraCls) => '<div class="inv"><div class="ih"><span>Investimento · '+nome+'</span><span>1 diária · até 10 horas</span></div><div class="ic"><div><small class="t">Valor do espaço</small><div class="v">§'+k+'T§</div><div class="n">Valor da proposta referente a 1 diária, com duração de até 10 horas.</div></div><!--C:'+({v:'vista',o:'ouro',x:'excl'}[k])+'--><div><small class="t">Condição especial</small><div class="v"><s>De: §'+k+'T§ · Por:</s>§'+k+'L§</div><div class="n">sendo <b>§'+k+'L§</b> referente ao valor do espaço e <b>§'+k+'C§</b> revertidos em crédito para consumo. Condição válida por tempo determinado.</div></div><!--/C:'+({v:'vista',o:'ouro',x:'excl'}[k])+'--><div><small class="t">Observações</small><div class="n" style="margin-top:0">§OBS_'+({v:'vista',o:'ouro',x:'excl'}[k])+'§</div></div></div></div>';
+const hUl = a => '<ul class="ul">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+const hCh = (a,b) => '<div class="chips"><span>Área <b>'+a+'</b></span>'+b+'</div>';
+const hPh = (k,l,st) => '<div class="ph d" data-k="'+k+'" data-l="'+l+'"'+(st?' style="'+st+'"':'')+'></div>';
+const hRows = a => a.map(l=>'<div class="row"><span>'+l+'</span><b>§L:'+l+'§</b></div>').join('');
+const HIB_EXTRAS = [
+ ['Ativação de mídia',['Pacote 6 TVs · 3 na Entrada (Jardim Vertical) + 3 no Salão Real','Pacote 3 TVs · Entrada (Jardim Vertical)','Pacote 3 TVs · Salão Real (Foyer)','TV 4K 49" com pedestal','Porta banner']],
+ ['Combos de palco',['Combo 1: Palco 5m x 2m + Monitor de retorno + Púlpito','Combo 2: Palco 5m x 2m + Monitor de retorno + Microfone','Combo 3: Palco 5m x 2m + 4 Par Leds']],
+ ['Conectividade e áudio',['Internet link dedicado (50 Mb)','Internet link dedicado (100 Mb)','Microfone adicional sem fio','Notebook','Passador de slide','Rádio comunicação Motorola']],
+ ['Energia',['Gerador 110 kVa (stand by)','Gerador 110 kVa (em uso)','Ponto de energia extra'],'O crédito de consumo não se aplica ao gerador de energia.'],
+ ['Palco e iluminação',['Palco 5m x 2m (h: 25 cm)','Palco 7m x 2m (h: 25 cm)','Monitor de retorno 27"','Púlpito','Iluminação Par Led (unid.)','Ribalta']],
+ ['Apoio e papelaria',['Flipchart com 5 folhas e 1 pincel','Quadro branco','Papel para flipchart (5 folhas)','Pincel marcador (3 unid.)','Caneta bic (unid.)','Impressão (unid.)','Toalhas (escolar ou redonda, p/ todas as mesas)']],
+ ['Serviços extras',['Técnico de áudio e vídeo','Garçom extra (à parte, p/ servir bebidas não contratadas no buffet)','Recepcionista','Segurança']],
+ ['Estacionamento com manobrista',['Até 20 carros','Até 30 carros'],'Capacidade para até 30 carros. Manobrista obrigatório e já incluso; sem cobrança individual no dia do evento.']
+];
+const ESP3_PAGES = [
+ {id:'cv', c:null, h:'<section class="page cv" id="e-cv"><div class="cvl"><img class="lg" src="§LOGO§" alt="Espaço Vista"><div><div class="eb">Proposta comercial</div><h1>Espaço Vista</h1><p class="sub" style="margin-top:22px">Experiência única para o seu evento empresarial</p></div><div class="cvc"><div><b>§CLI§</b><small>§CONT§</small></div><div><b>§DATA§</b><small>Data da proposta · válida por §VALD§</small></div></div></div><div class="cvp"><div class="ph d" data-k="esp_capa" data-l="foto de capa"></div></div></section>'},
+ {id:'ex', c:null, h:'<section class="page" id="e-ex">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="g2" style="flex:1;align-items:center"><div><h2 class="t2" style="margin-bottom:32px">Experiência única para o seu evento empresarial</h2><p class="lead">Com uma vista panorâmica deslumbrante da Serra do Curral, o principal cartão-postal de Belo Horizonte, o Espaço Vista destaca-se como um local exclusivo para eventos empresariais.</p><p class="lead">Dispõe de uma estrutura diferenciada, incluindo pé direito duplo e uma área externa acolhedora, proporcionando uma experiência única aos participantes.</p><p class="lead">Com uma equipe altamente qualificada com expertise no mercado B2B desde 2012, o Espaço Vista oferece soluções completas para convenções, treinamentos e confraternizações nos mais variados formatos.</p></div><div class="fr" style="overflow:hidden;height:100%;min-height:260px;position:relative">'+hPh('esp_exp','foto do salão','position:absolute;inset:0;min-height:0')+'</div></div></div></section>'},
+ {id:'df', c:null, h:'<section class="page dk" id="e-df">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><h2 class="t2" style="margin:20px 0 44px">Nossos diferenciais</h2><div class="dif" style="flex:1;align-content:start;padding-top:30px">'
+   +[['Painel de LED','Painel de led de 200 polegadas. Full HD com dimensões de 4,50m de largura por 2,60m de altura incluso no valor da locação.'],['Localização privilegiada','Localizado entre duas importantes avenidas de Belo Horizonte, o Espaço Vista se encontra em uma localização de fácil acesso.'],['Buffet exclusivo','O Buffet Vista é especializado na realização de eventos empresariais e oferece soluções gastronômicas personalizadas.'],['Sem taxas e impostos','O Espaço Vista oferece uma proposta facilitada e diferenciada, sem cobrança de impostos ou taxas adicionais.'],['Equipamentos inclusos','Painel de led, microfone Sennheiser, sonorização TurboSound, mesa digital e mobiliário ergonômico.'],['Estacionamento próprio','Estacionamento interno e amplo com a capacidade de até 30 carros com serviço de manobrista.']].map((x,i)=>'<div><i>0'+(i+1)+'</i><h3>'+x[0]+'</h3><p>'+x[1]+'</p></div>').join('')+'</div></div></section>'},
+ {id:'pk', c:null, h:'<section class="page" id="e-pk">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div style="display:grid;gap:var(--gp)" class="pkw"><div class="pkl"><div class="eb">Índice</div><h2 class="t2" style="margin-bottom:26px">Conheça nossos espaços</h2><ul class="ix">'
+   +'<!--I:vista--><li><i>01</i><a href="#e-vista">Salão Vista</a><em>Pág. §PG:vista§</em></li><li><i>02</i><a href="#e-vista">Salão Real</a><em>Pág. §PG:vista§</em></li><li><i>03</i><a href="#e-vista">Serra do Curral</a><em>Pág. §PG:vista§</em></li><!--/I:vista-->'
+   +'<!--I:ouro--><li><i>04</i><a href="#e-ouro">Sala Ouro Preto</a><em>Pág. §PG:ouro§</em></li><li><i>05</i><a href="#e-ouro">Sala Mariana</a><em>Pág. §PG:ouro§</em></li><!--/I:ouro-->'
+   +'<!--I:tira--><li><i>06</i><a href="#e-ouro">Sala Tiradentes</a><em>Pág. §PG:ouro§</em></li><!--/I:tira-->'
+   +'<!--I:excl--><li><i>★</i><a href="#e-excl">Espaço Vista Exclusivo</a><em>Pág. §PG:excl§</em></li><!--/I:excl--></ul></div>'
+   +'<div><div class="eb">Pacotes de locação · 1 diária de até 10 horas · condição especial por tempo determinado</div><div class="pks">'
+   +'<!--S:vista--><div class="pk">'+hPh('esp_p3_pl','Salão Vista')+'<div class="pkb"><h3>Salão Vista + Real + Serra do Curral</h3><div class="sb">Plenária completa</div><div class="hpr"><small>Valor do espaço</small><b>§vT§</b></div><!--C:vista--><div class="cr"><b>§vC§</b><em>revertidos em crédito de consumação</em></div><div class="pt">Na prática: <b>§vL§</b> de locação + <b>§vC§</b> em consumação</div><!--/C:vista--></div></div><!--/S:vista-->'
+   +'<!--S:ouro--><div class="pk">'+hPh('esp_p3_om','Sala Ouro Preto')+'<div class="pkb"><h3>Sala Ouro Preto + Mariana</h3><div class="sb">Reuniões e apoio</div><div class="hpr"><small>Valor do espaço</small><b>§oT§</b></div><!--C:ouro--><div class="cr"><b>§oC§</b><em>revertidos em crédito de consumação</em></div><div class="pt">Na prática: <b>§oL§</b> de locação + <b>§oC§</b> em consumação</div><!--/C:ouro--></div></div><!--/S:ouro-->'
+   +'<!--S:tira--><div class="pk apart">'+hPh('esp_p3_tira','Sala Tiradentes')+'<div class="pkb"><h3>Sala Tiradentes</h3><div class="sb">Sala de apoio · camarim</div><div class="hpr"><small>Valor por diária</small><b>§tT§</b></div><div class="cr2">Pode ser contratada à parte, quando contratado o pacote Salão Vista + Salão Real + Serra do Curral ou Sala Ouro Preto + Sala Mariana.</div></div></div><!--/S:tira-->'
+   +'<!--S:excl--><div class="pk">'+hPh('esp_p3_ex','Espaço Vista Exclusivo')+'<div class="pkb"><h3>Espaço Vista Exclusivo</h3><div class="sb">Todos os ambientes</div><div class="hpr"><small>Valor do espaço</small><b>§xT§</b></div><!--C:excl--><div class="cr"><b>§xC§</b><em>revertidos em crédito de consumação</em></div><div class="pt">Na prática: <b>§xL§</b> de locação + <b>§xC§</b> em consumação</div><!--/C:excl--></div></div><!--/S:excl-->'
+   +'</div></div></div></div></section>'},
+ {id:'vista', c:'vista', h:'<section class="page dn" id="e-vista">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="sp3" style="flex:1;min-height:0"><div><div class="eb">Salões · 01 a 03</div><h2 class="t2" style="margin-bottom:20px">Salão Vista</h2><p class="lead" style="margin-bottom:18px;font-size:calc(var(--fb)*.82)">O espaço destaca-se pela vista panorâmica da cidade e arquitetura planejada para proporcionar conforto e privacidade em diversos tipos de eventos. Equipado com tecnologia de ponta, como painel de LED de 200 polegadas, mesa digital, sonorização, microfones e mobiliário, já inclusos no valor da locação. Inclui também o Salão Real e o Espaço Serra do Curral.</p>'
+   +'<div class="g2"><div><div class="h4">Características e itens inclusos</div>'+hUl(['Área: 160 m²','Pé direito duplo: 4,80 m','Painel de LED Full HD (4,50m x 2,60m)','1 Microfone sem fio (Sennheiser)','Sonorização (2 caixas Turbosound)','Mobiliário ergonômico','Wi-fi banda larga','Climatizado','Coffee point para serviço de sala','Vista panorâmica'])+'</div><div><div class="h4">Formatos e capacidades</div><table class="cap">'+[['Auditório','200 pessoas'],['Escolar','102 pessoas'],['"U" cadeiras','48 pessoas'],['"U" mesas e cadeiras','38 pessoas'],['Mesas redondas','90 pessoas'],['Coquetel','250 pessoas']].map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('')+'</table><p class="nt">A capacidade da plenária pode aumentar quando integrada ao Salão Real.</p></div></div></div>'
+   +'<div style="display:flex;flex-direction:column;gap:var(--gp);min-height:0"><div class="fr" style="overflow:hidden;position:relative;flex:1;min-height:200px">'+hPh('esp_p4_vista','Salão Vista','position:absolute;inset:0;min-height:0')+'</div><div class="g2"><div><div class="fr" style="overflow:hidden;height:120px;position:relative;margin-bottom:10px">'+hPh('esp_p4_real','Salão Real','position:absolute;inset:0;min-height:0')+'</div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Salão Real</h3>'+hCh('100 m²','<span>Pé direito <b>5,70 m</b></span>')+'<div class="lead" style="font-size:calc(var(--fb)*.82)">Ativação de mídia · Jardim vertical · Mobiliário completo · Climatizado · Vista panorâmica</div></div><div><div class="fr" style="overflow:hidden;height:120px;position:relative;margin-bottom:10px">'+hPh('esp_p4_serra','Serra do Curral','position:absolute;inset:0;min-height:0')+'</div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Espaço Serra do Curral</h3>'+hCh('200 m²','<span>Jardim vertical <b>30 m²</b></span>')+'<div class="lead" style="font-size:calc(var(--fb)*.82)">Área coberta e descoberta · Ativação de mídia · Mobiliário completo · Vista panorâmica</div></div></div></div></div>'+hInv('v','Salão Vista, Real e Serra do Curral')+'</div></section>'},
+ {id:'ouro', c:'ouro|tira', h:'<section class="page dn" id="e-ouro">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="sp3" style="flex:1;min-height:0"><div><!--S:ouro--><div class="eb">Salas · 01 e 02</div><h2 class="t2" style="margin-bottom:16px;font-size:calc(var(--fh2)*.7)">Sala Ouro Preto + Mariana</h2><p class="lead" style="margin-bottom:16px;font-size:calc(var(--fb)*.85)">A Sala Ouro Preto impressiona com sua arquitetura sofisticada e funcional, ideal para reuniões de médio e pequeno porte, proporcionando uma experiência imersiva. Equipamentos modernos e mobiliário estão inclusos na locação. A Sala Mariana serve como sala de apoio e foyer, complementando o espaço.</p><div class="g2"><div><div class="fr" style="overflow:hidden;height:130px;position:relative;margin-bottom:10px">'+hPh('esp_ouro','Sala Ouro Preto','position:absolute;inset:0;min-height:0')+'</div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Sala Ouro Preto</h3>'+hCh('80 m²','<span>Pé direito <b>2,70 m</b></span>')+hUl(['Projetor a laser de 4.000 lumens','Telão de 110 polegadas','1 microfone sem fio / Sonorização','Coffee Point','Wi-fi banda larga','Climatizado','Mobiliário executivo'])+'<p class="nt">"U" mesas e cadeiras: 23 · Escolar: 20 · Outros formatos sob consulta.</p></div><div><div class="fr" style="overflow:hidden;height:130px;position:relative;margin-bottom:10px">'+hPh('esp_mariana','Sala Mariana','position:absolute;inset:0;min-height:0')+'</div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Sala Mariana</h3>'+hCh('45 m²','<span>Pé direito <b>2,50 m</b></span>')+hUl(['Mobiliário','Wi-fi banda larga','Climatizado','Sala integrada à Sala Ouro Preto'])+'</div></div><!--/S:ouro--></div>'
+   +'<div><!--S:tira--><div class="fr" style="overflow:hidden;height:130px;position:relative;margin-bottom:10px">'+hPh('esp_tira','Sala Tiradentes','position:absolute;inset:0;min-height:0')+'</div><div class="eb">Locação à parte</div><h3 class="t2" style="font-size:calc(var(--fh2)*.62);margin-bottom:12px">Sala Tiradentes</h3><p class="lead" style="font-size:calc(var(--fb)*.82)">Sala multifuncional ideal para reuniões, sala de apoio, camarim ou armazenamento de materiais.</p>'+hCh('16 m²','')+hUl(['TV 4K 55 polegadas','Mobiliário executivo','Wi-fi banda larga','Climatizado','Coffee point'])+'<div class="cr2">Pode ser contratada à parte, quando contratado o pacote Salão Vista + Salão Real + Serra do Curral ou Sala Ouro Preto + Sala Mariana.</div><div class="hpr" style="margin-top:14px"><small style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--g3)">Valor por diária</small><br><b class="ser" style="font-size:calc(var(--fp)*.8)">§tT§</b></div><!--/S:tira--></div></div>'
+   +'<!--S:ouro-->'+hInv('o','Pacote Ouro Preto + Mariana')+'<!--/S:ouro--></div></section>'},
+ {id:'excl', c:'excl', h:'<section class="page" id="e-excl">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="eb">Exclusividade · todos os ambientes</div><div class="g2" style="align-items:end;margin-bottom:26px"><h2 class="t2">Espaço Vista Exclusivo</h2><p class="lead" style="font-size:calc(var(--fb)*.9)">Garanta a exclusividade do Espaço Vista para o seu evento. Perfeito para atividades simultâneas em diferentes ambientes e para eventos que exigem total privacidade. Os seis espaços estão incluídos, assim como os respectivos equipamentos e mobiliário.</p></div><div class="exg">'
+   +[['esp_p6_g1','Salão Vista','160 m²'],['esp_p6_g2','Salão Real','100 m²'],['esp_p6_g3','Serra do Curral','200 m²'],['esp_p6_g4','Sala Ouro Preto','80 m²'],['esp_p6_g5','Sala Mariana','45 m²'],['esp_p6_g6','Sala Tiradentes','16 m²']].map(x=>'<div class="ex">'+hPh(x[0],x[1])+'<div class="exl"><span>'+x[1]+'</span><span>'+x[2]+'</span></div></div>').join('')+'</div>'+hInv('x','Espaço Vista Exclusivo')+'</div></section>'},
+ {id:'bf', c:null, h:'<!--B--><section class="page" id="e-bf">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="g2" style="flex:1;align-items:center"><div><div class="eb">Gastronomia</div><h2 class="t2" style="margin-bottom:28px">Buffet Vista</h2><p class="lead">O Buffet Vista assina a gastronomia do Espaço Vista e é exclusivo na execução do evento. Atua desde 2009 com foco no mercado corporativo, com mais de cinco mil eventos realizados, e tem a expertise e o compromisso para entregar o melhor resultado. Faz parte do Grupo Vista, que inclui o Espaço Vista, Vista Delivery, Vista Burger e Restaurante Vista.</p><div class="h4" style="margin-top:40px">Serviços</div><div class="g2" style="gap:0 30px"><ul class="ul"><li>Serviço de sala</li><li>Coffee break</li><li>Almoço</li><li>Happy hour</li></ul><ul class="ul"><li>Brunch</li><li>Jantar</li><li>Coquetel</li><li>Coquetel temático: Comida de Buteco / Festa Junina</li></ul></div></div><div class="fr" style="overflow:hidden;height:100%;min-height:260px;position:relative">'+hPh('esp_buf1','Buffet Vista','position:absolute;inset:0;min-height:0')+'</div></div></div></section><!--/B-->'},
+ {id:'eq', c:null, h:'<section class="page" id="e-eq">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="g2" style="align-items:end;margin-bottom:18px"><div><div class="eb">Extras</div><h2 class="t2" style="font-size:calc(var(--fh2)*.8)">Mídia, equipamentos e serviços</h2></div><p class="lead" style="font-size:calc(var(--fb)*.82)">Além dos equipamentos já inclusos no valor da locação da sala, disponibilizamos uma ampla variedade de opções adicionais. Os equipamentos listados estão disponíveis para locação direta; outros aparelhos externos deverão ser previamente comunicados para análise/aprovação.</p></div><div class="cols4" style="flex:1;min-height:0">'
+   +[[0,1],[2,3],[4,5],[6,7]].map(g=>'<div>'+g.map(i=>{const x=HIB_EXTRAS[i];return '<div class="pc"><div class="h4">'+x[0]+'</div>'+hRows(x[1])+(x[2]?'<p class="nt">'+x[2]+'</p>':'')+'</div>';}).join('')+'</div>').join('')+'</div></div></section>'},
+ {id:'ig', c:null, h:'<section class="page" id="e-ig">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="eb">Condições</div><h2 class="t2" style="margin-bottom:34px">Informações gerais</h2><div class="ig" style="flex:1;align-content:start">'
+   +'<section><h3><i>01</i>Reserva e contrato</h3><ul><li>A confirmação do evento e reserva da data só será efetivada após a assinatura do contrato.</li><li>Esta proposta é válida por <b>§VALD§</b> a partir do envio.</li><li>Os valores da proposta são referentes à diária.</li></ul></section>'
+   +'<section><h3><i>02</i>Pagamento</h3><ul><li>Forma de pagamento padrão: <b>50% na assinatura do contrato e 50% até 3 dias úteis antes do evento</b>.</li><li>Para eventos faturados: pagamento via boleto bancário (sujeito à aprovação de cadastro e alteração de valor).</li></ul></section>'
+   +'<section><h3><i>03</i>Prazos</h3><ul><li>As opções do cardápio deverão ser enviadas em até <b>7 dias úteis</b> antes da realização do evento. Caso contrário, as escolhas serão realizadas pelo chef de cozinha de acordo com a categoria contratada.</li><li>O cronograma do evento, a configuração da sala e todas as demais contratações deverão ser definidas em até <b>10 dias úteis</b> antes da realização do evento.</li></ul></section>'
+   +'<section><h3><i>04</i>Horários e participantes</h3><ul><li>Duração do evento: até 10 horas. Horas adicionais: sob consulta.</li><li>Para alterações do horário de início e término do evento é necessário solicitar uma nova proposta.</li><li>A mudança do número de participantes pode alterar o valor por pessoa cobrado pelo buffet. Após a assinatura do contrato, há a possibilidade de aumentar o quantitativo e não há a possibilidade de diminuir.</li></ul></section>'
+   +'<section><h3><i>05</i>Condição especial</h3><ul><li>Para a condição especial, o crédito de consumação deve ser utilizado dentro do escopo da proposta até a assinatura do contrato, e não se aplica para extras no dia do evento.</li></ul></section>'
+   +'<section><h3><i>06</i>Montagem e equipamentos</h3><ul><li>A montagem e a desmontagem são cobradas pelo valor cheio da diária do Espaço (sem condição especial): <b>§MONT§</b>.</li><li>Para eventos com equipamentos específicos, verificar a carga máxima de energia permitida.</li><li>A projeção é compatível para equipamentos com entrada HDMI.</li></ul></section></div></div></section>'},
+ {id:'loc', c:null, h:'<section class="page" id="e-loc">'+hRh('Espaço Vista · §N2§')+'<div class="pb"><div class="g2" style="flex:1;align-items:center"><div><div class="eb">Como chegar</div><h2 class="t2" style="margin-bottom:26px">Localização privilegiada</h2><p class="lead">Rua Juiz Achilles Veloso, 385<br>Estoril · Belo Horizonte/MG</p></div><div class="mapw">'+hPh('mapa','mapa · localização')+'</div></div></div></section>'},
+ {id:'ct', c:null, h:'<section class="page dk ct" id="e-ct"><div class="pb" style="justify-content:center;max-width:1000px"><img class="lg" src="§LOGO§" alt="Espaço Vista" style="margin-bottom:46px"><h2 class="t2" style="margin-bottom:30px">Contato comercial</h2><div class="tiles">§TILE:whatsapp:WhatsApp§§TILE:instagram:Instagram§§TILE:video:Vídeo institucional§§TILE:tour:360° Tour virtual§</div><div class="cl"><small>E-mail</small>contato@espacovista.com.br<small>Telefone / WhatsApp</small>(31) 3643-8566<small>Site</small>www.espacovista.com.br<small>Instagram</small>@ovistabh</div></div></section>'}
+];
+function bufPagesH(c){
+  const L = (typeof MIDIA!=='undefined' && MIDIA.links) || {};
+  const phd = (k,st,cls) => c.F[k] ? '<div class="ph d has"'+(st?' style="'+st+'"':'')+'><img src="'+c.F[k]+'" style="'+c.st(k)+'" alt=""></div>' : '<div class="ph d"'+(st?' style="'+st+'"':'')+'></div>';
+  const lg = '<img class="lg" src="'+c.logo+'" alt="Espaço Vista">';
+  const rh = n => hRh('Buffet Vista · '+String(n).padStart(2,'0'));
+  const ul = a => '<ul class="ul">'+a.map(x=>'<li>'+x+'</li>').join('')+'</ul>';
+  const row = (a,b,u) => '<div class="row"><span>'+a+'</span><b>'+b+(u?'<i>'+u+'</i>':'')+'</b></div>';
+  const vc = id => '<a class="vc" href="#'+id+'">Ver cardápio</a>';
+  const fr = (k,h) => '<div class="fr" style="overflow:hidden;position:relative;'+(h?'height:'+h+'px;':'height:100%;min-height:220px;')+'">'+phd(k,'position:absolute;inset:0;min-height:0')+'</div>';
+  const P = [];
+  P.push('<section class="page cv" id="b-cv"><div class="cvl">'+lg+'<div><div class="eb">Proposta comercial</div><h1>Buffet Vista</h1><p class="sub" style="margin-top:22px">Soluções gastronômicas para eventos empresariais</p></div><div class="cvc">'+(c.cliente?'<div><b>'+c.cliente+'</b><small>'+(c.contato||'Cliente')+'</small></div>':'')+'<div><b>'+c.data+'</b><small>Data da proposta · válida por '+VALIDADE_DIAS+' dias</small></div><div><b>'+c.n+' pessoas</b><small>Convidados</small></div></div></div><div class="cvp">'+phd('bz_capa','position:absolute;inset:0;min-height:0')+'</div></section>');
+  P.push('<section class="page" id="b-in">'+rh(2)+'<div class="pb"><div class="g2" style="flex:1;align-items:center"><div><div class="eb">Buffet Vista</div><h2 class="t2" style="margin-bottom:30px">Soluções gastronômicas para eventos empresariais</h2><p class="lead">Conte com o melhor serviço de buffet para o seu evento corporativo. Desde 2009, o Buffet Vista oferece excelência em catering e buffet, atendendo com exclusividade o mercado empresarial.</p><p class="lead">Oferecemos uma variedade de cardápios com o quantitativo mínimo de 15 pessoas, adaptando nossas soluções gastronômicas a diversos tipos de eventos. Nosso menu inclui diferentes categorias de coffee breaks, almoços e coquetéis, sempre assegurando a máxima qualidade.</p></div>'+fr('bz_fundo2')+'</div></div></section>');
+  P.push('<section class="page" id="b-rs">'+rh(3)+'<div class="pb"><div class="eb">Número de convidados · '+c.n+' pessoas · valores por pessoa</div><h2 class="t2" style="margin-bottom:26px">Resumo de serviços e preços</h2><div class="g3"><div class="pcard"><div class="h4">Serviço de sala</div>'+BUF_SERV.map(s=>row(s[1],c.pp(s[0]),s[2])).join('')+'<p class="nt">Inclusos mão de obra, materiais e insumos. Café ilimitado e servido em garrafa. Água mineral e com gás, sob consumo.</p></div><div class="pcard"><div class="h4">Categorias Coffee Break</div>'+BUF_CB.map(s=>row(s[1],c.pp(s[0]),'por pessoa')).join('')+'<p class="nt">Duração de até 30 minutos. Cobrança mínima referente a 15 pessoas.</p>'+vc('b-cb')+'</div><div class="pcard"><div class="h4">Categorias Almoço / Jantar</div>'+BUF_AL.map(s=>row(s[1],c.pp(s[0]),'por pessoa')).join('')+'<p class="nt">Duração de até 1 hora e 30 minutos. Cobrança mínima referente a 15 pessoas.</p>'+vc('b-al1')+'</div></div>'
+   +'<div class="g2" style="margin-top:34px;flex:1;min-height:0"><div style="display:flex;flex-direction:column;gap:14px;min-height:0"><div style="flex:1;min-height:150px;position:relative" class="fr">'+phd('bz_p3b','position:absolute;inset:0;min-height:0')+'</div><div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Happy Hour Comida de Buteco</h3><p class="lead" style="font-size:calc(var(--fb)*.78)">Interpretação refinada da culinária mineira, com cantinho mineiro em ponto fixo, petit gourmet, petiscos e pratos quentes. Inclui cerveja, refrigerante e água.</p>'+vc('b-bt')+'</div></div><div style="display:flex;flex-direction:column;gap:14px;min-height:0"><div style="flex:1;min-height:150px;position:relative" class="fr">'+phd('bz_p3c','position:absolute;inset:0;min-height:0')+'</div><div><h3 class="t3" style="font-size:calc(var(--fh3)*.8)">Happy Hour Coquetel</h3><p class="lead" style="font-size:calc(var(--fb)*.78)">Cardápio sofisticado com opções da culinária contemporânea: petit gourmet, frios, assados, fritos, prato quente e pratos principais. Inclui cerveja, refrigerante e água.</p>'+vc('b-cq')+'</div></div></div></div></section>');
+  const CB = [{n:'Executivo',k:0,al:['Biscoito de Queijo','Pão de queijo','Petit four'],beb:['Café','Leite']},{n:'Master',k:1,al:['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Frutas da estação'],beb:['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],suco:'Suco Natural: 1 opção '+BUF_SUCO,san:'1 opção'},{n:'Premium',k:2,al:['Biscoito de Queijo','Pão de queijo','Bolo caseiro','Salada de frutas','Petit four'],beb:['Café','Coca Cola (Normal e zero)','Guaraná Antártica (Normal e zero)'],suco:'Suco Natural: 2 opções '+BUF_SUCO,san:'2 opções',sal:'2 opções'}];
+  P.push('<section class="page dn dn2" id="b-cb">'+rh(4)+'<div class="pb"><div class="eb">Coffee break</div><h2 class="t2" style="margin-bottom:22px;font-size:calc(var(--fh2)*.8)">Três categorias, uma para cada ocasião</h2><div class="g3" style="flex:1;min-height:0;align-content:start">'
+   +CB.map(x=>'<div class="pcard"><h3 class="t3">Coffee break <span style="color:var(--w)">'+x.n+'</span></h3><div class="big">'+c.pp(BUF_CB[x.k][0])+'</div><small>por pessoa · duração de até 30 minutos · mínimo 15 pessoas</small><div class="h4" style="margin-top:18px">Alimentos</div>'+ul(x.al)+(x.san?'<div class="h4" style="margin-top:14px">Mini sanduíche · '+x.san+'</div>'+ul(BUF_SAN):'')+(x.sal?'<div class="h4" style="margin-top:14px">Salgados · '+x.sal+'</div>'+ul(BUF_SAL):'')+'<div class="bev"><b>Bebidas</b>'+x.beb.map(y=>'<span>'+y+'</span>').join('')+(x.suco?'<span>'+x.suco+'</span>':'')+'</div></div>').join('')+'</div></div></section>');
+  const al = (k,nome,sucos) => { const key = BUF_AL.find(a=>a[1]===k)[0]; return '<div class="al"><div class="alh"><h3>Almoço / Jantar <span style="color:var(--w)">'+nome+'</span></h3><div class="hpr"><b>'+c.pp(key)+'</b><span>por pessoa</span></div></div><div class="g3">'+BUF_ALM[k].map((l,i)=>'<div><div class="h4">Cardápio '+(i+1)+'</div>'+ul(l)+'</div>').join('')+'</div><div class="bev"><b>Bebidas</b><span>Água mineral</span><span>Coca Cola (normal e zero)</span><span>Guaraná Antártica (normal e zero)</span><span>Suco natural: '+sucos+' '+BUF_SUCO+'</span></div></div>'; };
+  P.push('<section class="page dn" id="b-al1">'+rh(5)+'<div class="pb"><div class="eb">Almoço / Jantar · 1 de 2 · duração de até 1h30 · mínimo 15 pessoas</div>'+al('Executivo','Executivo','1 opção')+al('Master','Master','1 opção')+'</div></section>');
+  P.push('<section class="page dn" id="b-al2">'+rh(6)+'<div class="pb"><div class="eb">Almoço / Jantar · 2 de 2 · duração de até 1h30 · mínimo 15 pessoas</div>'+al('Premium','Premium','1 opção')+al('Mineiro','Mineiro','2 opções')+'</div></section>');
+  P.push('<section class="page" id="b-sb">'+rh(7)+'<div class="pb"><div class="g2" style="flex:1;align-items:center"><div><div class="eb">Sobremesas</div><h2 class="t2" style="margin-bottom:18px">Para fechar com doçura</h2><p class="lead">Valor cobrado por pessoa.</p></div><div>'+BUF_SOB.map(s=>row(s[1],c.pp(s[0]))).join('')+'</div></div></div></section>');
+  const opt = (o,d) => '<div class="opt">'+[0,1,2].map(i=>'<div><small>Opção '+(i+1)+' · '+c.n+' pessoas</small><div class="v">'+o[i]+'</div><div class="n">'+d[i]+'</div></div>').join('')+'</div>';
+  P.push('<section class="page dn dn2" id="b-bt">'+rh(8)+'<div class="pb"><div class="eb">Happy hour · Comida de Buteco</div><div class="g3" style="align-items:start"><div class="pcard"><div class="h4">Cantinho mineiro</div><p class="nt" style="margin:0 0 6px"><b>Todos os itens inclusos. Servido em ponto fixo.</b></p>'+ul(['Mandioquinha noisette','Torresminho crocante','Carne de panela ao molho servida com pães','Linguiça calabresa defumada','Mini tonel de cachaça'])+'</div><div class="pcard" style="grid-column:span 2"><div class="h4">Petiscos e petit gourmet</div><p class="nt" style="margin:0 0 6px"><b>Servido volante. Escolha até 7 opções.</b></p><div class="g2" style="gap:0 30px">'+ul(['Caeser salad','Bruschetta marguerita / berinjela','Espetinho caprese','Pão de queijo com lombinho canadense e catupiry','Trouxinha de alho poró','Escondidinho de frango com catupiry','Coxinha de frango com catupiry','Mini quibe ao molho de limão','Rolê de frango com bacon'])+ul(['Cubinho de lombo ao molho de abacaxi','Espetinho de frango empanado ao molho da casa','Filé aperitivo ao molho gorgonzola','Pastel de feira','Shot de batatinha frita','Empanado de peixe ao gergelim negro','Pirulito de polpetone ao molho de tomate','Brochetinho','Carne de sol na mandioca cozida c/ manteiga de garrafa'])+'</div></div></div><div class="g3" style="margin:20px 0;align-items:start"><div class="pcard"><div class="h4">Prato quente</div>'+ul(['Mexido gourmet','Tropeiro gourmet','Macarrão na chapa','Yakisoba','Caldos (até 2 opções): mandioca, feijão, alho poró e mineiro.'])+'<p class="nt">Serviço volante. Escolha até 1 variedade (item opcional).</p></div><div class="pcard"><div class="h4">Frutos do mar</div>'+ul(['Espetado de camarão ao aioli','Petit bobó de camarão','Crocante de camarão','Ceviche de peixe branco','Crisp de camarão empanado ao molho de limão','Empanado de camarão com catupiry','Batata Baby de salmão e alecrim','Bolinho de Bacalhau ao molho de limão siciliano'])+'<p class="nt">Serviço volante. Escolha até 2 variedades (item opcional).</p></div><div class="pcard"><div class="h4">Bebidas</div>'+ul(['Cerveja Original (600 ml)','Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral'])+'<p class="nt">Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa. Suco natural (1 variedade): R$ 4,00 por pessoa.</p></div></div>'
+   +opt(c.hb,['Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Cerveja Original + Refrigerante + Água Mineral','Cantinho Mineiro + 7 variedades de Petiscos / Petit Gourmet + Prato Quente + Cerveja Original + Refrigerante + Água Mineral','Cantinho Mineiro + 7 variedades de Petiscos e Petit Gourmet + Prato Quente + 2 Frutos do Mar + Cerveja Original + Refrigerante + Água Mineral'])+'</div></section>');
+  P.push('<section class="page dn" id="b-cq">'+rh(9)+'<div class="pb"><div class="eb">Happy hour · Coquetel Salgados Finos</div><div class="g3" style="align-items:start"><div class="pcard"><div class="h4">Frios</div>'+ul(['Caesar salad','Bruschetta de marguerita ou berinjela','Espetinho caprese','Cestinha de palmito ou Palmito Imperador ao manjericão','Canapé de salmão com perfume de limão siciliano','Canapé de manga e cream cheese','Mini canapé burger','Barqueta de guacamole','Crocante de camarão','Tartelette de frango com catupiry ou salmão','Ceviche de peixe branco'])+'</div><div class="pcard"><div class="h4">Assados</div>'+ul(['Batata baby de catupiry e bacon ou salmão ou bacalhau','Bombom de berinjela com gergelim negro','Cigarrete de brie e presunto parma','Crostini de cogumelos selvagens','Empada aberta carioca de siri','Empadinha de queijo canastra com geleia de pimenta','Duas flores de brie e damasco','Gravatinha de bacalhau','Mini quiche de carne seca e crisp de couve ou quiche lorraine','Trouxinha de alho-poró','Mil folhas de salmão'])+'</div><div class="pcard"><div class="h4">Fritos</div>'+ul(['Arancini','Bombom de frango com catupiry','Crocante de queijo gruyere','Risole de milho ou Meia lua de alho poró','Dadinho de tapioca','Empanado de peixe ao gergelim preto','Espetado de frango ao sour cream','Filet aperitivo ao molho parrilero','Croquete de costela e barbecue de goiabada','Pastelzinho de feira','Stick de frango'])+'</div></div><div class="g3" style="margin:20px 0;align-items:start"><div class="pcard" style="grid-column:span 2"><div class="h4">Especiais</div><div class="g2" style="gap:0 30px">'+ul(['Crisp de camarão empanado ao molho de limão','Petit bacalhoada','Crunch de camarão com catupiry','Crocante de camarão'])+ul(['Bolinho de bacalhau ao molho de limão siciliano','Tartellete de camarão','Escondidinho de carne seca','Vol-au-vent de camarão'])+'</div></div><div class="pcard"><div class="h4">Bebidas</div>'+ul(['Cerveja Original (600 ml)','Coca Cola (normal e zero)','Guaraná Antártica (normal e zero)','Água mineral'])+'<p class="nt">Bebida Premium: substitua a Original por Cerveja Heineken '+c.prem+' por pessoa. Suco natural (1 variedade): R$ 4,00 por pessoa.</p></div></div>'
+   +opt(c.hc,['12 variedades de Salgados (Frios, Assados e Fritos) + Cerveja Original + Refrigerante + Água Mineral','12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Cerveja Original + Refrigerante + Água Mineral','12 variedades de Salgados (Frios, Assados e Fritos) + 2 especiais + Mini Churros + Cerveja Original + Suco + Refrigerante + Água Mineral'])+'</div></section>');
+  const tile = (k,l) => L[k] ? '<a class="tile" href="'+esc(L[k])+'" target="_blank">'+l+'</a>' : '<div class="tile">'+l+'</div>';
+  P.push('<section class="page dk ct" id="b-ct"><div class="pb" style="justify-content:center;max-width:1000px">'+lg+'<h2 class="t2" style="margin:46px 0 30px">Fale com o Buffet Vista</h2><div class="tiles">'+tile('whatsapp','WhatsApp')+tile('instagram','Instagram')+'</div><div class="cl"><small>E-mail</small>contato@espacovista.com.br<small>Telefone / WhatsApp</small>(31) 3643-8566<small>Site</small>www.espacovista.com.br<small>Instagram</small>@ovistabh</div></div></section>');
+  return '<div class="hbz"><style>'+HIB_CSS+'</style>'+P.join('\n')+'</div>';
+}
 const HH_COQ_STYLE=`
 :root{--w:#8B0000;--wd:#5C0000;--k:#141414;--g1:#F3F1F1;--g2:#DCD8D8;--g3:#8A8585;--wh:#fff}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2853,7 +3053,9 @@ function espPages(c){
   const mapBtn = '<span class="mapbtn">📍 Abrir no Google Maps</span>';
   const photo = (m,k,l,st)=>{ if(!c.F[k]){ return (k==='mapa' && L.mapa) ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:contents">'+m+mapBtn+'</a>' : m; } const img = '<div class="ph d has"'+(st||'')+'><img src="'+c.F[k]+'" style="'+c.st(k)+'" alt=""></div>';
     return (k==='mapa' && L.mapa) ? '<a href="'+esc(L.mapa)+'" target="_blank" style="display:contents">'+img+mapBtn+'</a>' : img; };
-  let pgs = ESP2_PAGES.filter(p=>!p.c || p.c.split('|').some(k=>sel[k])).map(p=>p.h);
+  const H = tplEng('esp')==='hib';
+  const pg0 = (H ? ESP3_PAGES : ESP2_PAGES).filter(p=>!p.c || p.c.split('|').some(k=>sel[k])), ids = pg0.map(p=>p.id);
+  let pgs = pg0.map(p=>p.h);
   const hasBuf = espBufOn(e);
   pgs = pgs.map((h,i)=>{
     Object.keys(K).forEach(k=>{
@@ -2863,6 +3065,7 @@ function espPages(c){
       if(!(T[k].teto>0)) h = h.replace(new RegExp('<!--C:'+k+'-->[\\s\\S]*?<!--/C:'+k+'-->','g'),'');
     });
     if(!hasBuf) h = h.replace(/<!--B-->[\s\S]*?<!--\/B-->/g,'');
+    if(H){ ['vista','ouro','tira','excl'].forEach(k=>{ if(!sel[k]) h = h.replace(new RegExp('<!--I:'+k+'-->[\\s\\S]*?<!--/I:'+k+'-->','g'),''); }); h = h.replace(/<!--\/?I:\w+-->/g,'').replace(/§PG:(\w+)§/g,(m,a)=>{ const j = ids.indexOf(a); return j>=0 ? String(j+1).padStart(2,'0') : '—'; }).replace(/§N2§/g,String(i+1).padStart(2,'0')); }
     h = h.replace(/<!--\/?[SCB]:?\w*-->/g,'');
     h = h.replace(/<div class="ph d" data-k="([^"]+)" data-l="([^"]*)"( style="[^"]*")?><\/div>/g, photo);
     h = h.replace(/§N§/g, String(i+1)).replace(/§NP§/g, String(pgs.length));
@@ -2871,6 +3074,7 @@ function espPages(c){
     h = h.replace(/§([A-Za-z_]+)§/g,(m,a)=> tok[a]!=null ? tok[a] : m);
     return h;
   });
+  if(H) return '<div class="hbz"><style>'+HIB_CSS+'</style>'+pgs.join('')+'</div>';
   return '<div class="ev2"><style>'+ESP2_CSS+'</style>'+pgs.join('')+'</div>';
 }
 /* ═════════ PROPOSTA DE BUFFET — modelo (9 páginas, 1920×1080) · mesmo padrão visual do Espaço ═════════ */
@@ -2948,6 +3152,7 @@ function bufAlmBlock(c,k,ttlName,sucos){
   return '<div class="alb"><div class="alh"><h3>Almoço <b>'+ttlName+'</b></h3><div class="pr">'+c.pp(key)+'<span>por pessoa</span></div></div><div class="alc">'+BUF_ALM[k].map((l,i)=>'<div class="pc"><h4>Cardápio '+(i+1)+'</h4><ul class="bl">'+l.map(x=>'<li>'+x+'</li>').join('')+'</ul></div>').join('')+'</div><div class="bev"><b>Bebidas</b><span>Água mineral</span><span>Coca Cola (normal e zero)</span><span>Guaraná Antártica (normal e zero)</span><span>Suco natural: '+sucos+' '+BUF_SUCO+'</span></div></div>';
 }
 function bufPages(c){
+  if(tplEng('buf')==='hib') return bufPagesH(c);
   const L = (typeof MIDIA!=='undefined' && MIDIA.links) || {};
   const phd = (k,st) => c.F[k] ? '<div class="ph d has"'+(st?' style="'+st+'"':'')+'><img src="'+c.F[k]+'" style="'+c.st(k)+'" alt=""></div>' : '<div class="ph d"'+(st?' style="'+st+'"':'')+'></div>';
   const lg = '<img class="lg" src="'+c.logo+'" alt="Espaço Vista">';
@@ -3480,7 +3685,13 @@ const TPL_FONTS = [['','Padrão do layout'],['Georgia,serif','Georgia (serifada)
 let TPL = {ativo:{}, custom:[]}, TPL_FORCE = null, TPL_SEL = {}, TE = null;
 
 function tplLoad(v){ try{ if(v && typeof v==='object') TPL = {ativo:v.ativo||{}, custom:Array.isArray(v.custom)?v.custom:[]}; }catch(e){} }
-function tplGet(t){ if(TPL_FORCE && t in TPL_FORCE) return TPL_FORCE[t]; const id = TPL.ativo[t]; return id ? (TPL.custom.find(x=>x.id===id && x.tipo===t)||null) : null; }
+const TPL_BUILTIN = [
+  {id:'hib_esp', tipo:'esp', nome:'Híbrido · Agência + Espaço Vista', engine:'hib', builtin:true, vars:{}, font:'', css:'', textos:[]},
+  {id:'hib_buf', tipo:'buf', nome:'Híbrido · Agência + Buffet Vista', engine:'hib', builtin:true, vars:{}, font:'', css:'', textos:[]}
+];
+const TPL_HIBV = {w:'#A6201C',wd:'#20252A',k:'#1D2126',g1:'#F4ECE2'};
+const tplAll = () => TPL_BUILTIN.concat(TPL.custom);
+function tplGet(t){ if(TPL_FORCE && t in TPL_FORCE) return TPL_FORCE[t]; const id = TPL.ativo[t]; return id ? (tplAll().find(x=>x.id===id && x.tipo===t)||null) : null; }
 const tplEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const tplNorm = s => String(s).replace(/\s+/g,' ').trim();
 const tplWords = s => tplNorm(s).split(' ').map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s+');
@@ -3491,7 +3702,7 @@ function tplTxt(html,textos){
   return html;
 }
 function tplCss(t,L){
-  const sel = {esp:'.ev2',buf:'.bfv',coq:'.tplx-coq',but:'.tplx-but',inv:'body'}[t];
+  const sel = (L.engine==='hib') ? '.hbz' : {esp:'.ev2',buf:'.bfv',coq:'.tplx-coq',but:'.tplx-but',inv:'body'}[t];
   const v = (L.vars||{}); const vs = Object.keys(v).filter(k=>v[k]).map(k=>'--'+k+':'+v[k]).join(';');
   let c = ''; if(vs && t!=='inv') c += sel+'{'+vs+'}';
   if(L.font) c += sel+','+sel+' *{font-family:'+L.font+'!important}';
@@ -3525,16 +3736,16 @@ function tplSampleHtml(t,L){
   } finally { TPL_FORCE = keep; }
 }
 async function tplSave(){ try{ await Store.setSetting('templates',TPL); }catch(e){ say('Não foi possível salvar os templates: '+e.message); } }
-const tplLayouts = t => TPL.custom.filter(x=>x.tipo===t);
-const tplSel = t => { const s = (t in TPL_SEL) ? TPL_SEL[t] : (TPL.ativo[t]||''); return (s && TPL.custom.some(x=>x.id===s)) ? s : ''; };
-const tplObj = (t,id) => id ? (TPL.custom.find(x=>x.id===id)||null) : null;
+const tplLayouts = t => tplAll().filter(x=>x.tipo===t);
+const tplSel = t => { const s = (t in TPL_SEL) ? TPL_SEL[t] : (TPL.ativo[t]||''); return (s && tplAll().some(x=>x.id===s)) ? s : ''; };
+const tplObj = (t,id) => id ? (tplAll().find(x=>x.id===id)||null) : null;
 
 function tplRender(){
   const g = $('tpl-grid'); if(!g) return;
   g.innerHTML = TPL_TIPOS.map(T=>{ const sel = tplSel(T.id), act = (TPL.ativo[T.id]||'')===sel;
     return '<div class="tpl-c"><div class="tpl-th" id="tpl-th-'+T.id+'" style="height:'+Math.round(T.h*0.2)+'px"></div><div class="tpl-b"><div><b>'+esc(T.nome)+'</b><small>'+esc(T.sub)+'</small></div>'
       +'<select onchange="I2.tplPick(\''+T.id+'\',this.value)"><option value="">Layout atual (Espaço Vista)</option>'+tplLayouts(T.id).map(x=>'<option value="'+x.id+'" '+(x.id===sel?'selected':'')+'>'+esc(x.nome)+'</option>').join('')+'</select>'
-      +'<div class="tpl-ac"><button class="btn btn-o btn-sm" onclick="I2.tplView(\''+T.id+'\')">👁 Ver</button><button class="btn btn-o btn-sm" onclick="I2.tplEdit(\''+T.id+'\')">✎ Editar</button><button class="btn btn-o btn-sm" onclick="I2.tplDup(\''+T.id+'\')">⧉ Duplicar</button>'+(sel?'<button class="btn btn-o btn-sm" onclick="I2.tplDel(\''+T.id+'\')">🗑</button>':'')+'</div>'
+      +'<div class="tpl-ac"><button class="btn btn-o btn-sm" onclick="I2.tplView(\''+T.id+'\')">👁 Ver</button><button class="btn btn-o btn-sm" onclick="I2.tplEdit(\''+T.id+'\')">✎ Editar</button><button class="btn btn-o btn-sm" onclick="I2.tplDup(\''+T.id+'\')">⧉ Duplicar</button>'+(sel && !tplObj(T.id,sel).builtin?'<button class="btn btn-o btn-sm" onclick="I2.tplDel(\''+T.id+'\')">🗑</button>':'')+'</div>'
       +(act ? '<div class="tpl-use on">✔ Em uso nos novos documentos</div>' : '<button class="btn btn-w btn-sm" onclick="I2.tplUse(\''+T.id+'\')">Usar nos novos documentos</button>')+'</div></div>'; }).join('');
   TPL_TIPOS.forEach((T,i)=>setTimeout(()=>tplThumb(T),60+i*120));
 }
@@ -3548,6 +3759,7 @@ function tplClose(){ const e = $('tpl-ed'); if(e) e.remove(); TE = null; }
 function tplOpen(t,ro){
   const T = TPL_TIPOS.find(x=>x.id===t), cur = tplObj(t,tplSel(t));
   const L = cur ? JSON.parse(JSON.stringify(cur)) : {id:uid(), tipo:t, nome:'Novo layout', vars:{}, font:'', css:'', textos:[]};
+  if(cur && cur.builtin && !ro){ L.id = uid(); delete L.builtin; L.nome = cur.nome+' (cópia)'; }
   TE = {T:T, L:L, isNew:!cur, ro:!!ro, dirty:false};
   const d = document.createElement('div'); d.id = 'tpl-ed';
   d.innerHTML = '<div class="tpl-ed-h"><b>'+(ro?'👁 ':'✎ ')+esc(T.nome)+'</b><span id="tpl-ed-n" style="color:var(--gr);font-size:12px"></span><div style="margin-left:auto;display:flex;gap:8px">'
@@ -3560,7 +3772,7 @@ function tplOpen(t,ro){
 function tplPanel(){
   const L = TE.L, p = $('tpl-ed-p'); if(!p) return;
   p.innerHTML = '<label class="fl">Nome do layout</label><input id="te-nome" value="'+esc(L.nome)+'" oninput="I2.tplEdSet(\'nome\',this.value)">'
-    +'<div class="te-h">Cores</div>'+TPL_VARS.map(v=>'<div class="te-r"><span>'+v[1]+'</span><input type="color" value="'+(L.vars[v[0]]||v[2])+'" oninput="I2.tplEdVar(\''+v[0]+'\',this.value)"><button class="te-x" title="Voltar à cor original" onclick="I2.tplEdVar(\''+v[0]+'\',\'\')">↺</button></div>').join('')
+    +'<div class="te-h">Cores</div>'+TPL_VARS.map(v=>'<div class="te-r"><span>'+v[1]+'</span><input type="color" value="'+(L.vars[v[0]]||(L.engine==='hib'?TPL_HIBV[v[0]]:v[2]))+'" oninput="I2.tplEdVar(\''+v[0]+'\',this.value)"><button class="te-x" title="Voltar à cor original" onclick="I2.tplEdVar(\''+v[0]+'\',\'\')">↺</button></div>').join('')
     +'<div class="te-h">Fonte</div><select onchange="I2.tplEdSet(\'font\',this.value)">'+TPL_FONTS.map(f=>'<option value="'+esc(f[0])+'" '+(f[0]===(L.font||'')?'selected':'')+'>'+f[1]+'</option>').join('')+'</select>'
     +'<div class="te-h">Textos</div><p class="te-p">Clique em qualquer texto da prévia ao lado para editar. Textos iguais no documento são alterados juntos. Dados do cliente e valores não são editáveis aqui.</p><div id="te-tx"></div>'
     +'<div class="te-h">CSS avançado (opcional)</div><textarea id="te-css" rows="5" placeholder=".ev2 h2{letter-spacing:.1em}" oninput="I2.tplEdSet(\'css\',this.value)">'+esc(L.css||'')+'</textarea>';
@@ -3604,8 +3816,8 @@ Object.assign(I2,{
     TPL_SEL[L.tipo] = L.id; await tplSave(); tplClose(); tplRender(); say('Layout salvo. Clique em “Usar nos novos documentos” para aplicá-lo.'); },
   async tplUse(t){ const id = tplSel(t); if(id) TPL.ativo[t] = id; else delete TPL.ativo[t]; await tplSave(); tplRender(); say(id ? 'Layout aplicado aos novos documentos.' : 'Voltou ao layout atual.'); },
   async tplDup(t){ const cur = tplObj(t,tplSel(t)), L = cur ? JSON.parse(JSON.stringify(cur)) : {tipo:t, vars:{}, font:'', css:'', textos:[]};
-    L.id = uid(); L.tipo = t; L.nome = (cur ? cur.nome : 'Layout atual')+' (cópia)'; TPL.custom.push(L); TPL_SEL[t] = L.id; await tplSave(); tplRender(); say('Layout duplicado — clique em Editar para personalizar.'); },
-  async tplDel(t){ const id = tplSel(t), L = tplObj(t,id); if(!L) return; if(!(await ask('Excluir o layout “'+L.nome+'”?','Excluir'))) return;
+    L.id = uid(); delete L.builtin; L.tipo = t; L.nome = (cur ? cur.nome : 'Layout atual')+' (cópia)'; TPL.custom.push(L); TPL_SEL[t] = L.id; await tplSave(); tplRender(); say('Layout duplicado — clique em Editar para personalizar.'); },
+  async tplDel(t){ const id = tplSel(t), L = tplObj(t,id); if(!L || L.builtin) return; if(!(await ask('Excluir o layout “'+L.nome+'”?','Excluir'))) return;
     TPL.custom = TPL.custom.filter(x=>x.id!==id); if(TPL.ativo[t]===id) delete TPL.ativo[t]; delete TPL_SEL[t]; await tplSave(); tplRender(); }
 });
 
