@@ -422,6 +422,23 @@ body.sb-off .main{margin-left:0}
 #i2-chip{position:fixed;right:16px;bottom:16px;z-index:950;background:#1c1a1a;color:#fff;font:600 12.5px Inter,sans-serif;padding:9px 14px;border-radius:20px;display:none;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
 #i2-chip.on{display:flex}
 #i2-chip .ld-s{width:12px;height:12px;border-width:2px;border-color:#666;border-top-color:#fff}
+
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.tpl-c{border:1px solid var(--ru);border-radius:10px;background:#fff;overflow:hidden;display:flex;flex-direction:column}
+.tpl-th{position:relative;background:#e8e5e5;overflow:hidden;border-bottom:1px solid var(--ru)}
+.tpl-th iframe{border:0;transform-origin:0 0;pointer-events:none;position:absolute;left:0;top:0;background:#fff}
+.tpl-b{padding:12px 14px;display:flex;flex-direction:column;gap:9px}.tpl-b b{display:block;font-size:14px;color:var(--dk)}.tpl-b small{color:var(--gr);font-size:11.5px}
+.tpl-b select{width:100%}.tpl-ac{display:flex;gap:6px;flex-wrap:wrap}
+.tpl-use.on{font-size:12px;font-weight:700;color:#2e7d32;background:#EAF6EA;border-radius:6px;padding:7px 10px;text-align:center}
+#tpl-ed{position:fixed;inset:0;z-index:9000;background:#f3f1f1;display:flex;flex-direction:column}
+.tpl-ed-h{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--ru)}
+.tpl-ed-b{flex:1;display:flex;min-height:0}.tpl-ed-p{width:320px;flex:none;overflow:auto;background:#fff;border-right:1px solid var(--ru);padding:14px;display:flex;flex-direction:column;gap:7px}
+.tpl-ed-v{flex:1;overflow:auto;background:#d9d5d5}
+.te-h{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--w);margin-top:10px}
+.te-r{display:flex;align-items:center;gap:8px;font-size:12.5px}.te-r span{flex:1}.te-r input[type=color]{width:44px;height:28px;padding:0;border:1px solid var(--ru);border-radius:4px;background:#fff}
+.te-x{border:0;background:none;color:var(--gr);cursor:pointer;font-size:14px}.te-p{font-size:11.5px;color:var(--gr);line-height:1.45;margin:0}
+.te-t{display:flex;gap:6px;align-items:flex-start;font-size:11.5px;border:1px solid var(--ru);border-radius:6px;padding:5px 7px;margin-bottom:5px}.te-t s{color:var(--gr);flex:1}.te-t span{flex:1;color:var(--dk);font-weight:600}
+#te-css{width:100%;font:11px/1.4 monospace}
 .hh-top{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 .hh-sw{display:flex;border:1px solid var(--bd,#d9d4d4);border-radius:6px;overflow:hidden}
 .hh-sw button{border:0;background:#fff;padding:8px 14px;font-size:12px;cursor:pointer;color:#555}
@@ -563,6 +580,7 @@ body.sb-off .main{margin-left:0}
   <div class="sb-section">
     <div class="sb-label">Administração</div>
     <div class="sb-link" data-view="catalogo"><span class="ic">📚</span>Catálogo</div>
+    <div class="sb-link" data-view="tpl"><span class="ic">🎨</span>Templates</div>
   </div>
 
   <div id="sb-user" class="sb-user"></div>
@@ -682,6 +700,13 @@ body.sb-off .main{margin-left:0}
 
   <div class="view" id="view-orc">
     <div class="card"><div class="card-hdr"><span class="card-title">📥 Orçamentos recebidos</span><button class="btn btn-o btn-sm" onclick="I2.orcRender()">↻ Atualizar</button></div><div class="card-body"><p style="font-size:11.5px;color:var(--gr);margin-bottom:12px">Tudo o que o cliente monta na aba "Monte sua proposta" do link chega aqui, sem valores. "Abrir no Investimento" monta a proposta com as escolhas dele para você ajustar e enviar. Se o cliente alterar e enviar de novo, chega como um <b>novo</b> orçamento (marcado como reenvio) — o anterior fica guardado.</p><div id="orc-list"></div></div></div>
+  </div>
+
+  <div class="view" id="view-tpl">
+    <div class="card"><div class="card-hdr"><span class="card-title">🎨 Templates — layouts dos documentos</span></div><div class="card-body">
+      <p style="font-size:12.5px;color:var(--gr);margin:0 0 14px;line-height:1.5">Aqui estão todos os documentos que o sistema gera, com dados de exemplo. Escolha um layout em cada cartão para visualizar, <b>edite</b> (cores, fonte, textos) ou <b>duplique</b> para criar uma variação. O botão <b>“Usar nos novos documentos”</b> aplica o layout escolhido às propostas geradas daqui para frente — links já enviados não mudam.</p>
+      <div id="tpl-grid" class="tpl-grid"></div>
+    </div></div>
   </div>
 
   <div class="view" id="view-clientes">
@@ -1684,7 +1709,8 @@ const I2 = {
 };
 
 /* ───────── PDF (Layout 1) ───────── */
-function buildPrint(p,R,autoPrint){
+function buildPrint(p,R,autoPrint){ return tplApply('inv',buildPrint0(p,R,autoPrint)); }
+function buildPrint0(p,R,autoPrint){
   const logo = DATA.logo, cli = p.cliente || 'Espaço Vista';
   const days = p.dias.slice().sort((a,b)=>(a.data||'9').localeCompare(b.data||'9'));
   const idxOf = d => p.dias.indexOf(d);
@@ -1864,7 +1890,7 @@ async function boot(){
   ldShow('Carregando o sistema…');
   midiaStart();
   const G = k => Store.getSetting(k).catch(()=>null);
-  const R = await Promise.all([G('tabelas_personalizadas'),G('catalogo'),hhLoadCfg().catch(()=>{}),G('espaco_obs_padrao'),G('whats_msg'),G('email_msg'),G('condicoes_inv2')]);
+  const R = await Promise.all([G('tabelas_personalizadas'),G('catalogo'),hhLoadCfg().catch(()=>{}),G('espaco_obs_padrao'),G('whats_msg'),G('email_msg'),G('condicoes_inv2'),G('templates')]);
   const t = R[0], k = R[1], o = R[3], w = R[4], em = R[5], c = R[6];
   try{ custom = (Array.isArray(t) && t.length) ? t : JSON.parse(JSON.stringify(SEED_CUSTOM)); }catch(e){ custom = JSON.parse(JSON.stringify(SEED_CUSTOM)); }
   custom.forEach(migCustom);
@@ -1873,6 +1899,7 @@ async function boot(){
   try{ if(w && typeof w.t==='string' && w.t.trim()) WA_MSG = w.t; }catch(e){}
   try{ if(em && typeof em.s==='string' && typeof em.b==='string' && em.b.trim()) EM_MSG = {s:em.s,b:em.b}; }catch(e){}
   try{ if(Array.isArray(c) && c.length) conds = c; }catch(e){}
+  tplLoad(R[7]);
   ldHide();
   let draft = null; try{ draft = JSON.parse(LS.get('inv2_draft')||'null'); }catch(e){}
   P = newProposal(); dirty = false;
@@ -2327,8 +2354,8 @@ function hhCtx(h,fotos,calc,pre){
 }
 function hhParts(h,fotos){
   const d = hhDocs(h), out = {head:'<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Proposta Espaço Vista — '+esc(h.cliente||'Confraternização')+'</title><style>'+HH_COQ_STYLE+'</style></head><body>'};
-  if(d.coq) out.coq = hhCoqFull(hhCtx(h,fotos,hhCalc(h)));
-  if(d.but) out.but = hhButPages(hhCtx(h,fotos,hhCalcBut(h),'but_'));
+  if(d.coq) out.coq = tplApply('coq',hhCoqFull(hhCtx(h,fotos,hhCalc(h))));
+  if(d.but) out.but = tplApply('but',hhButPages(hhCtx(h,fotos,hhCalcBut(h),'but_')));
   return out;
 }
 function hhHtml(h,fotos){ const p = hhParts(h,fotos); if(!p.coq && !p.but) return ''; return p.head+(p.coq||'')+(p.but||'')+'</body></html>'; }
@@ -3038,7 +3065,7 @@ function espParts(e,fotos){
     btn:(k,ic,l)=> L[k] ? '<a class="btn" href="'+esc(L[k])+'" target="_blank"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</a>' : '<div class="btn"><b>'+(HH_ICONS[ic]||ic)+'</b>'+l+'</div>'
   };
   const head = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><script>document.addEventListener(\'click\',function(ev){if(parent===window)return;var a=ev.target.closest&&ev.target.closest(\'a[href^="#"]\');if(!a)return;var t=document.getElementById(a.getAttribute(\'href\').slice(1));if(!t)return;ev.preventDefault();parent.postMessage({vistaGo:t.getBoundingClientRect().top+window.pageYOffset},\'*\');});<\/script><title>Proposta Espaço Vista — '+esc(e.cliente||'Eventos')+'</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet"><style>'+ESP_STYLE+BUF_STYLE+'</style></head><body>';
-  const out = {head:head}; if(espEspOn(e)) out.esp = espPages(c); if(espBufOn(e)) out.buf = bufPages(c); return out;
+  const out = {head:head}; if(espEspOn(e)) out.esp = tplApply('esp',espPages(c)); if(espBufOn(e)) out.buf = tplApply('buf',bufPages(c)); return out;
 }
 function espPageCount(e){ const p = espParts(e); return ((p.esp||'')+(p.buf||'')).split('class="page').length-1; }
 function espHtml(e,fotos){ const p = espParts(e,fotos); return p.head+(p.esp||'')+(p.buf||'')+'</body></html>'; }
@@ -3440,6 +3467,147 @@ async function homeRender(){
 }
 Object.assign(I2,{homeRender});
 if(window.__AUDIT){ I2._orc = { get:()=>ORC, set:v=>{ ORC = v; }, store:Store }; }
+/* ═════════ TEMPLATES — layouts dos documentos (galeria, escolha e edição) ═════════ */
+const TPL_TIPOS = [
+  {id:'esp', nome:'Proposta do Espaço', sub:'Apresentação do espaço · 1920×1080', w:1920, h:1080},
+  {id:'buf', nome:'Proposta de Buffet', sub:'Cardápios e valores · 1920×1080', w:1920, h:1080},
+  {id:'coq', nome:'Confraternização · Salgados Finos', sub:'Coquetel · 1920×1080', w:1920, h:1080},
+  {id:'but', nome:'Confraternização · Comida de Buteco', sub:'Butiquim · 1920×1080', w:1920, h:1080},
+  {id:'inv', nome:'Planilha de Investimento (PDF)', sub:'Orçamento detalhado · A4 retrato', w:794, h:1123}
+];
+const TPL_VARS = [['w','Cor principal','#8B0000'],['wd','Cor escura','#5C0000'],['k','Cor do texto','#141414'],['g1','Fundo claro','#F3F1F1']];
+const TPL_FONTS = [['','Padrão do layout'],['Georgia,serif','Georgia (serifada)'],['"Helvetica Neue",Helvetica,Arial,sans-serif','Helvetica / Arial'],['"Trebuchet MS",sans-serif','Trebuchet'],['"Palatino Linotype",Palatino,serif','Palatino'],['"Courier New",monospace','Courier']];
+let TPL = {ativo:{}, custom:[]}, TPL_FORCE = null, TPL_SEL = {}, TE = null;
+
+function tplLoad(v){ try{ if(v && typeof v==='object') TPL = {ativo:v.ativo||{}, custom:Array.isArray(v.custom)?v.custom:[]}; }catch(e){} }
+function tplGet(t){ if(TPL_FORCE && t in TPL_FORCE) return TPL_FORCE[t]; const id = TPL.ativo[t]; return id ? (TPL.custom.find(x=>x.id===id && x.tipo===t)||null) : null; }
+const tplEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const tplNorm = s => String(s).replace(/\s+/g,' ').trim();
+const tplWords = s => tplNorm(s).split(' ').map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s+');
+function tplTxt(html,textos){
+  (textos||[]).forEach(x=>{ const de = tplNorm(x[0]); if(!de) return; const alt = tplEsc(de), src = alt!==de ? '(?:'+tplWords(de)+'|'+tplWords(alt)+')' : tplWords(de);
+    const para = tplEsc(x[1]).replace(/\n/g,'<br>');
+    html = html.replace(new RegExp('>(\\s*)'+src+'(\\s*)<','g'),(m,a,b)=>'>'+a+para+b+'<'); });
+  return html;
+}
+function tplCss(t,L){
+  const sel = {esp:'.ev2',buf:'.bfv',coq:'.tplx-coq',but:'.tplx-but',inv:'body'}[t];
+  const v = (L.vars||{}); const vs = Object.keys(v).filter(k=>v[k]).map(k=>'--'+k+':'+v[k]).join(';');
+  let c = ''; if(vs && t!=='inv') c += sel+'{'+vs+'}';
+  if(L.font) c += sel+','+sel+' *{font-family:'+L.font+'!important}';
+  if(L.css) c += L.css;
+  return c;
+}
+function tplApply(t,html){
+  const L = tplGet(t); if(!L) return html;
+  let h = tplTxt(html,L.textos);
+  if(t==='coq' || t==='but') h = h.replace(/class="page/g,'class="page tplx-'+t);
+  if(t==='inv'){ const v = L.vars||{}; if(v.w) h = h.replace(/#8B0000/gi,v.w).replace(/#8B1A10/gi,v.w); if(v.wd) h = h.replace(/#5C0000/gi,v.wd);
+    return h.replace('</head>','<style>'+tplCss(t,L)+'</style></head>'); }
+  return '<style>'+tplCss(t,L)+'</style>'+h;
+}
+function tplSampleHtml(t,L){
+  const keep = TPL_FORCE; TPL_FORCE = {}; TPL_FORCE[t] = L||null;
+  const dt = new Date(); dt.setDate(dt.getDate()+45); const dts = dt.toISOString().slice(0,10);
+  try{
+    if(t==='esp' || t==='buf'){ const e = espNew(); e.cliente = 'Empresa Exemplo Ltda'; e.contato = 'Maria Souza'; e.convidados = 80; e.tabela = baseKey(2,'mais'); e.datas = [dts]; e.docs = {esp:t==='esp',buf:t==='buf'};
+      const p = espParts(e); return p.head+(p[t]||'')+'</body></html>'; }
+    if(t==='coq' || t==='but'){ const h = hhNew(); h.cliente = 'Empresa Exemplo Ltda'; h.contato = 'Maria Souza'; h.convidados = 80; h.tabela = 2; h.datas = [dts]; h.docs = {coq:t==='coq',but:t==='but'};
+      const p = hhParts(h); return p.head+(p[t]||'')+'</body></html>'; }
+    const kp = P;
+    try{ const p = newProposal(); P = p; p.cliente = 'Empresa Exemplo Ltda'; p.contato = 'Maria Souza'; p.convidados = 80; p.tabela = baseKey(2,'mais');
+      const d = p.dias[0]; d.data = dts; d.chegada = '08:00'; d.inicio = '09:00'; d.termino = '18:00';
+      const sp = DATA.spaces[0]; d.espacos[0].nome = sp.name; d.espacos[0].obs = obsPadrao(sp.name);
+      const add = (cat,it)=>{ if(it) d[cat].push(newLine(cat,{name:it.name,src:cat})); };
+      add('gast',DATA.gast.find(i=>/^Coffee Break:/.test(i.name))); add('gast',DATA.gast.find(i=>/^Almoço:/.test(i.name))); add('equip',DATA.equip[0]); add('serv',DATA.serv[0]);
+      applyTable(); syncHE(d); return buildPrint(p,calcAll(),false);
+    } finally { P = kp; }
+  } finally { TPL_FORCE = keep; }
+}
+async function tplSave(){ try{ await Store.setSetting('templates',TPL); }catch(e){ say('Não foi possível salvar os templates: '+e.message); } }
+const tplLayouts = t => TPL.custom.filter(x=>x.tipo===t);
+const tplSel = t => { const s = (t in TPL_SEL) ? TPL_SEL[t] : (TPL.ativo[t]||''); return (s && TPL.custom.some(x=>x.id===s)) ? s : ''; };
+const tplObj = (t,id) => id ? (TPL.custom.find(x=>x.id===id)||null) : null;
+
+function tplRender(){
+  const g = $('tpl-grid'); if(!g) return;
+  g.innerHTML = TPL_TIPOS.map(T=>{ const sel = tplSel(T.id), act = (TPL.ativo[T.id]||'')===sel;
+    return '<div class="tpl-c"><div class="tpl-th" id="tpl-th-'+T.id+'" style="height:'+Math.round(T.h*0.2)+'px"></div><div class="tpl-b"><div><b>'+esc(T.nome)+'</b><small>'+esc(T.sub)+'</small></div>'
+      +'<select onchange="I2.tplPick(\''+T.id+'\',this.value)"><option value="">Layout atual (Espaço Vista)</option>'+tplLayouts(T.id).map(x=>'<option value="'+x.id+'" '+(x.id===sel?'selected':'')+'>'+esc(x.nome)+'</option>').join('')+'</select>'
+      +'<div class="tpl-ac"><button class="btn btn-o btn-sm" onclick="I2.tplView(\''+T.id+'\')">👁 Ver</button><button class="btn btn-o btn-sm" onclick="I2.tplEdit(\''+T.id+'\')">✎ Editar</button><button class="btn btn-o btn-sm" onclick="I2.tplDup(\''+T.id+'\')">⧉ Duplicar</button>'+(sel?'<button class="btn btn-o btn-sm" onclick="I2.tplDel(\''+T.id+'\')">🗑</button>':'')+'</div>'
+      +(act ? '<div class="tpl-use on">✔ Em uso nos novos documentos</div>' : '<button class="btn btn-w btn-sm" onclick="I2.tplUse(\''+T.id+'\')">Usar nos novos documentos</button>')+'</div></div>'; }).join('');
+  TPL_TIPOS.forEach((T,i)=>setTimeout(()=>tplThumb(T),60+i*120));
+}
+function tplThumb(T){
+  const box = $('tpl-th-'+T.id); if(!box) return; const w = box.clientWidth || 340, k = w/T.w; box.style.height = Math.round(T.h*k)+'px';
+  const f = document.createElement('iframe'); f.setAttribute('scrolling','no'); f.style.cssText = 'width:'+T.w+'px;height:'+T.h+'px;transform:scale('+k+')';
+  try{ f.srcdoc = tplSampleHtml(T.id,tplObj(T.id,tplSel(T.id))); }catch(e){ box.innerHTML = '<div style="padding:20px;color:var(--gr);font-size:12px">Não foi possível montar a prévia: '+esc(e.message)+'</div>'; return; }
+  box.innerHTML = ''; box.appendChild(f);
+}
+function tplClose(){ const e = $('tpl-ed'); if(e) e.remove(); TE = null; }
+function tplOpen(t,ro){
+  const T = TPL_TIPOS.find(x=>x.id===t), cur = tplObj(t,tplSel(t));
+  const L = cur ? JSON.parse(JSON.stringify(cur)) : {id:uid(), tipo:t, nome:'Novo layout', vars:{}, font:'', css:'', textos:[]};
+  TE = {T:T, L:L, isNew:!cur, ro:!!ro, dirty:false};
+  const d = document.createElement('div'); d.id = 'tpl-ed';
+  d.innerHTML = '<div class="tpl-ed-h"><b>'+(ro?'👁 ':'✎ ')+esc(T.nome)+'</b><span id="tpl-ed-n" style="color:var(--gr);font-size:12px"></span><div style="margin-left:auto;display:flex;gap:8px">'
+    +(ro ? '' : '<button class="btn btn-w" onclick="I2.tplEdSave()">💾 Salvar layout</button>')+'<button class="btn btn-o" onclick="I2.tplEdClose()">'+(ro?'Fechar':'Cancelar')+'</button></div></div>'
+    +'<div class="tpl-ed-b">'+(ro ? '' : '<div class="tpl-ed-p" id="tpl-ed-p"></div>')+'<div class="tpl-ed-v" id="tpl-ed-v"><div id="tpl-ed-w"><iframe id="tpl-ed-f" scrolling="no"></iframe></div></div></div>';
+  document.body.appendChild(d);
+  if(!ro) tplPanel();
+  tplRefresh();
+}
+function tplPanel(){
+  const L = TE.L, p = $('tpl-ed-p'); if(!p) return;
+  p.innerHTML = '<label class="fl">Nome do layout</label><input id="te-nome" value="'+esc(L.nome)+'" oninput="I2.tplEdSet(\'nome\',this.value)">'
+    +'<div class="te-h">Cores</div>'+TPL_VARS.map(v=>'<div class="te-r"><span>'+v[1]+'</span><input type="color" value="'+(L.vars[v[0]]||v[2])+'" oninput="I2.tplEdVar(\''+v[0]+'\',this.value)"><button class="te-x" title="Voltar à cor original" onclick="I2.tplEdVar(\''+v[0]+'\',\'\')">↺</button></div>').join('')
+    +'<div class="te-h">Fonte</div><select onchange="I2.tplEdSet(\'font\',this.value)">'+TPL_FONTS.map(f=>'<option value="'+esc(f[0])+'" '+(f[0]===(L.font||'')?'selected':'')+'>'+f[1]+'</option>').join('')+'</select>'
+    +'<div class="te-h">Textos</div><p class="te-p">Clique em qualquer texto da prévia ao lado para editar. Textos iguais no documento são alterados juntos. Dados do cliente e valores não são editáveis aqui.</p><div id="te-tx"></div>'
+    +'<div class="te-h">CSS avançado (opcional)</div><textarea id="te-css" rows="5" placeholder=".ev2 h2{letter-spacing:.1em}" oninput="I2.tplEdSet(\'css\',this.value)">'+esc(L.css||'')+'</textarea>';
+  tplTexts();
+}
+function tplTexts(){ const e = $('te-tx'); if(!e) return; const a = TE.L.textos;
+  e.innerHTML = a.length ? a.map((x,i)=>'<div class="te-t"><s>'+esc(x[0].length>60?x[0].slice(0,60)+'…':x[0])+'</s><span>→ '+esc(x[1].length>60?x[1].slice(0,60)+'…':x[1])+'</span><button class="te-x" title="Desfazer esta edição" onclick="I2.tplEdUndo('+i+')">↺</button></div>').join('') : '<div style="font-size:11.5px;color:var(--gr)">Nenhum texto editado.</div>'; }
+function tplRefresh(){
+  if(!TE) return; const T = TE.T, f = $('tpl-ed-f'), v = $('tpl-ed-v'), w = $('tpl-ed-w'); if(!f) return;
+  const k = Math.min(1,(v.clientWidth-32)/T.w); f.style.cssText = 'width:'+T.w+'px;height:'+T.h+'px;border:0;background:#fff;transform:scale('+k+');transform-origin:0 0';
+  w.style.cssText = 'width:'+Math.round(T.w*k)+'px;height:'+Math.round(T.h*k)+'px;margin:16px auto;position:relative';
+  let html; try{ html = tplSampleHtml(T.id,(TE.isNew && !TE.dirty && !TE.L.textos.length && !Object.keys(TE.L.vars).length && !TE.L.font && !TE.L.css) ? null : TE.L); }catch(e){ say('Erro na prévia: '+e.message); return; }
+  f.onload = ()=>{ if(!TE) return; try{ const doc = f.contentDocument, h = Math.max(doc.documentElement.scrollHeight,doc.body.scrollHeight); f.style.height = h+'px'; w.style.height = Math.round(h*k)+'px'; if(!TE.ro) tplMark(doc); }catch(e){} };
+  f.srcdoc = html;
+}
+function tplMark(doc){
+  const st = doc.createElement('style'); st.textContent = '[data-te]{cursor:text}[data-te]:hover{outline:2px dashed #C62828;outline-offset:2px}[data-te][contenteditable=true]{outline:2px solid #C62828;outline-offset:2px;background:rgba(198,40,40,.06)}'; doc.head.appendChild(st);
+  const skip = /Empresa Exemplo|Maria Souza|R\$\s*\d/;
+  doc.body.querySelectorAll('*').forEach(el=>{ if(['SCRIPT','STYLE','IMG','SVG','svg','path','A'].indexOf(el.tagName)>=0 || el.children.length) return; const t = tplNorm(el.textContent||''); if(!t || t.length>400 || skip.test(t) || /^[\d.,%\s·–—-]+$/.test(t)) return; el.setAttribute('data-te','1'); });
+  doc.addEventListener('click',ev=>{ const el = ev.target.closest && ev.target.closest('[data-te]'); if(!el) return; ev.preventDefault(); if(el.isContentEditable) return;
+    el._o = tplNorm(el.textContent); el.contentEditable = 'true'; el.focus();
+    el.addEventListener('blur',function b(){ el.removeEventListener('blur',b); el.contentEditable = 'false'; tplCommit(el); }); },true);
+}
+function tplCommit(el){
+  const nu = (el.innerText||'').replace(/\n{3,}/g,'\n\n').trim(), old = el._o; if(nu==='' || tplNorm(nu)===old) return;
+  const a = TE.L.textos, i = a.findIndex(x=>tplNorm(x[1])===old);
+  if(i>=0){ if(tplNorm(a[i][0])===tplNorm(nu)) a.splice(i,1); else a[i][1] = nu; } else a.push([old,nu]);
+  TE.dirty = true; tplTexts();
+}
+Object.assign(I2,{
+  tplRender,
+  tplPick(t,id){ TPL_SEL[t] = id; tplRender(); },
+  tplView(t){ tplOpen(t,true); },
+  tplEdit(t){ tplOpen(t,false); },
+  tplEdClose(){ if(TE && TE.dirty){ ask('Descartar as alterações deste layout?','Descartar').then(ok=>{ if(ok) tplClose(); }); } else tplClose(); },
+  tplEdSet(k,v){ if(!TE) return; TE.L[k] = v; TE.dirty = true; if(k==='nome') return; clearTimeout(TE._t); TE._t = setTimeout(tplRefresh,350); },
+  tplEdVar(k,v){ if(!TE) return; if(v) TE.L.vars[k] = v; else delete TE.L.vars[k]; TE.dirty = true; if(!v) tplPanel(); clearTimeout(TE._t); TE._t = setTimeout(tplRefresh,250); },
+  tplEdUndo(i){ if(!TE) return; TE.L.textos.splice(i,1); TE.dirty = true; tplTexts(); tplRefresh(); },
+  async tplEdSave(){ if(!TE) return; const L = TE.L; L.nome = (L.nome||'').trim() || 'Layout sem nome';
+    const j = TPL.custom.findIndex(x=>x.id===L.id); if(j>=0) TPL.custom[j] = L; else TPL.custom.push(L);
+    TPL_SEL[L.tipo] = L.id; await tplSave(); tplClose(); tplRender(); say('Layout salvo. Clique em “Usar nos novos documentos” para aplicá-lo.'); },
+  async tplUse(t){ const id = tplSel(t); if(id) TPL.ativo[t] = id; else delete TPL.ativo[t]; await tplSave(); tplRender(); say(id ? 'Layout aplicado aos novos documentos.' : 'Voltou ao layout atual.'); },
+  async tplDup(t){ const cur = tplObj(t,tplSel(t)), L = cur ? JSON.parse(JSON.stringify(cur)) : {tipo:t, vars:{}, font:'', css:'', textos:[]};
+    L.id = uid(); L.tipo = t; L.nome = (cur ? cur.nome : 'Layout atual')+' (cópia)'; TPL.custom.push(L); TPL_SEL[t] = L.id; await tplSave(); tplRender(); say('Layout duplicado — clique em Editar para personalizar.'); },
+  async tplDel(t){ const id = tplSel(t), L = tplObj(t,id); if(!L) return; if(!(await ask('Excluir o layout “'+L.nome+'”?','Excluir'))) return;
+    TPL.custom = TPL.custom.filter(x=>x.id!==id); if(TPL.ativo[t]===id) delete TPL.ativo[t]; delete TPL_SEL[t]; await tplSave(); tplRender(); }
+});
 
 window.I2 = I2;
 window.I2._t = { get MIDIA(){ return MIDIA; }, calcAll:calcAll, calcDay:calcDay, newProposal:newProposal, newLine:newLine, newDay:newDay, buildPrint:buildPrint, get P(){ return P; }, set P(v){ P = v; }, tableInfo:tableInfo, itemPrice:itemPrice, warnings:warnings, applyTable:applyTable, get custom(){ return custom; }, set custom(v){ custom = v; }, get conds(){ return conds; }, Store:Store, DATA:DATA, newEsp:newEsp, heValor:heValor, horaPadrao:horaPadrao };
@@ -3449,7 +3617,7 @@ document.querySelectorAll('.sb-link').forEach(el=>el.addEventListener('click',()
   document.querySelectorAll('.sb-link').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   el.classList.add('active'); $('view-'+v).classList.add('active'); $('topbar-title').textContent = Array.from(el.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
   document.body.classList.toggle('inv2-on', v==='inv2');
-  syncCat(); if(v==='inv2') refresh(); if(v==='home') I2.homeRender(); if(v==='clientes') I2.renderClientes(); if(v==='sim') I2.simRender(); if(v==='orc') I2.orcRender(); if(v==='catalogo') renderCatalogo(); if(v==='hh') I2.hhOpenNewIfEmpty(); if(v==='esp') I2.espOpenNewIfEmpty();
+  syncCat(); if(v==='inv2') refresh(); if(v==='home') I2.homeRender(); if(v==='clientes') I2.renderClientes(); if(v==='sim') I2.simRender(); if(v==='orc') I2.orcRender(); if(v==='catalogo') renderCatalogo(); if(v==='tpl') I2.tplRender(); if(v==='hh') I2.hhOpenNewIfEmpty(); if(v==='esp') I2.espOpenNewIfEmpty();
 }));
 window.addEventListener('beforeunload',e=>{ if(dirty){ e.preventDefault(); e.returnValue=''; } });
 window.addEventListener('scroll',e=>{ if(!sug.inp || e.target===sugBox()) return; const r = sug.inp.getBoundingClientRect(), b = sugBox(); b.style.left = r.left+'px'; b.style.top = (r.bottom+2)+'px'; b.style.maxHeight = Math.max(160, window.innerHeight - r.bottom - 20)+'px'; },true);
